@@ -155,7 +155,7 @@ class Model(ndb.Model):
 
     def _post_put_hook(self, future):
         res = future.get_result()
-        self._invoke_behaviors('after_put', res)
+        self._invoke_behaviors('after_put', self)
         return self.after_put(res)
 
     @classmethod
