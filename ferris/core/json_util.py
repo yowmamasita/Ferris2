@@ -82,7 +82,7 @@ class DatastoreEncoder(json.JSONEncoder):
 
             for name, prop in obj._properties.items():
                 try:
-                    if isinstance(prop, ndb.BlobProperty):
+                    if isinstance(prop, ndb.BlobProperty) and not isinstance(prop, (ndb.StringProperty, ndb.TextProperty)):
                         continue
                     output[name] = getattr(obj, name)
                 except AttributeError:
