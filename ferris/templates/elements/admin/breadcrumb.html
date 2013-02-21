@@ -1,0 +1,17 @@
+<ul class="breadcrumb">
+    {% if handler.prefix: %}
+        <li><a href="/{{handler.prefix}}">{{inflector.titleize(handler.prefix)}}</a> <span class="divider">/</span></li>
+    {% else %}
+        <li><a href="/">Root</a> <span class="divider">/</span><li>
+    {% endif %}
+
+    <li>
+        {% if handler.uri_exists(action='list') %}
+            <a href="{{handler.uri(action='list')}}">{{inflector.titleize(handler.name)}}</a>
+        {% else %}
+            <a href="#">{{inflector.titleize(handler.name)}}</a>
+        {% endif %}
+        <span class="divider">/</span>
+    </li>
+    <li class="active">{{inflector.titleize(handler.action)}}</li>
+</ul>

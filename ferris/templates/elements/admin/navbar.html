@@ -1,0 +1,20 @@
+
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="brand" href="/">Ferris</a>
+            <ul class='nav'>
+                {% for v in autoadmin.links.items() %}
+                    {% if handler.name == inflector.underscore(v.0) %}
+                    <li class='active'>
+                    {% else %}
+                    <li>
+                    {% endif %}
+                        <a href='{{v.1}}'>{{inflector.titleize(v.0)}}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+            {% include 'elements/admin/user_info.html' %}
+        </div>
+    </div>
+</div>

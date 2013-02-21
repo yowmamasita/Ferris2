@@ -1,0 +1,41 @@
+{% import 'scaffolding/macros.html' as s with context %}
+{% extends s.admin_or_default() %}
+
+{% block layout_content %}
+
+{% set list = context[scaffolding.pluralized] %}
+
+<table class='table table-striped table-hover'>
+    <thead>
+        <tr>
+            <th class='span1'>#</th>
+                {% for property_name, property in scaffolding.display_properties %}
+                    <th>{{inflector.humanize(property_name)}}</th>
+                {% endfor %}
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in list %}
+            <tr>
+                <td class='span1'>
+                    <span class='badge' title='{{scaffolding.key_urlsafe_for(item)}}'>{{scaffolding.key_id_for(item)}}</span>
+                </td>
+                {% for property_name, property in scaffolding.display_properties %}
+                    <td>
+                        {{s.print_value(item[property_name])}}
+                    </td>
+                {% endfor %}
+                <td class='span2'>
+                    {% block item_action_buttons scoped %}
+                        {{s.action_buttons(item)}}
+                    {% endblock %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{{s.next_page_link()}}
+
+{% endblock %}

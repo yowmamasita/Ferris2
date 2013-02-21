@@ -1,0 +1,86 @@
+application: cs-ferris    #.appspot.com
+version: baseline
+
+runtime: python27
+api_version: 1
+threadsafe: yes 
+
+builtins:
+- deferred: on
+#- appstats: on
+
+libraries:
+- name: jinja2
+  version: latest
+- name: lxml
+  version: latest
+- name: webob
+  version: latest
+
+skip_files:
+- ^(.*/)?app\.yaml
+- ^(.*/)?app\.yml
+- ^(.*/)?index\.yaml
+- ^(.*/)?index\.yml
+- ^(.*/)?#.*#
+- ^(.*/)?.*~
+- ^(.*/)?.*\.py[co]
+- ^(.*/)?.*/RCS/.*
+- ^(.*/)?\..*
+- ^/docs*
+
+handlers:
+
+- url: /static
+  static_dir: app/static
+
+- url: /css
+  static_dir: app/static/css
+
+- url: /js
+  static_dir: app/static/js
+
+- url: /img
+  static_dir: app/static/img
+
+- url: /ferris/static
+  static_dir: ferris/static
+
+- url: /ferris/css
+  static_dir: ferris/static/css
+
+- url: /ferris/js
+  static_dir: ferris/static/js
+
+- url: /ferris/img
+  static_dir: ferris/static/img
+
+- url: /favicon\.ico
+  static_files: app/static/favicon.ico
+  upload: app/static/favicon\.ico
+
+- url: /robots\.txt
+  static_files: app/static/robots.txt
+  upload: app/static/robots\.txt
+
+- url: /humans\.txt
+  static_files: app/static/humans.txt
+  upload: app/static/humans\.txt
+
+- url: /plugins/(.*?)/(.*)
+  static_files: plugins/\1/static/\2
+  upload: plugins/(.*?)/static/(.*)
+
+- url: /cron/.*
+  script: main.app
+  login: admin
+
+- url: /api/.*
+  script: main.app
+
+- url: /_ah/start
+  script: main.app
+
+- url: .*
+  script: main.app
+  login: required
