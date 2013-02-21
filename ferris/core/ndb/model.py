@@ -19,6 +19,10 @@ class ModelMeta(ndb.model.MetaModel):
         if set(['beforeDelete', 'afterDelete', 'beforePut', 'afterPut']) & set(dct.keys()):
             raise AttributeError('NDB Models use before_delete style callbacks')
 
+        # Behaviors
+        setattr(cls, '_behaviors', [x(cls) for x in cls.behaviors])
+
+        # find_by_x and find_all_by_x
         for prop_name, property in cls._properties.items():
             find_all_name = 'find_all_by_' + prop_name
 
@@ -48,6 +52,8 @@ class Model(ndb.Model):
     Base class that augments ndb Models by adding easier find methods and callbacks.
     """
     __metaclass__ = ModelMeta
+
+    behaviors = []
 
     @classmethod
     def find_all_by_properties(cls, **kwargs):
@@ -138,27 +144,40 @@ class Model(ndb.Model):
 
     # Impl details
 
+    @classmethod
+    def _invoke_behaviors(cls, method, *args, **kwargs):
+        for b in cls._behaviors:
+            getattr(b, method)(*args, **kwargs)
+
     def _pre_put_hook(self):
+        self._invoke_behaviors('before_put', self)
         return self.before_put()
 
     def _post_put_hook(self, future):
-        return self.after_put(future.get_result())
+        res = future.get_result()
+        self._invoke_behaviors('after_put', res)
+        return self.after_put(res)
 
     @classmethod
     def _pre_delete_hook(cls, key):
+        cls._invoke_behaviors('before_delete', key)
         return cls.before_delete(key)
 
     @classmethod
     def _post_delete_hook(cls, key, future):
+        cls._invoke_behaviors('after_delete', key)
         return cls.after_delete(key)
 
     @classmethod
     def _pre_get_hook(cls, key):
+        cls._invoke_behaviors('before_get', key)
         return cls.before_get(key)
 
     @classmethod
     def _post_get_hook(cls, key, future):
-        return cls.after_get(key, future.get_result())
+        res = future.get_result()
+        cls._invoke_behaviors('after_get', res)
+        return cls.after_get(key, res)
 
     def __unicode__(self):
         if hasattr(self, 'name'):
