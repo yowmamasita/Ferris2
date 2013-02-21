@@ -53,8 +53,6 @@ Documentation
 #. :doc:`tutorial/1_introduction` example shows you how to create your first application.
 #. :doc:`users_guide/index` has detailed usage documentation.
 
-Contributing
-============
 
 Indexes
 =======
