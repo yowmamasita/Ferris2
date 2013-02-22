@@ -116,7 +116,7 @@ def require_admin_credentials(method, handler, *args, **kwargs):
     Will redirect the user for authorization if the user is an admin.
     """
     oauth = handler.components.oauth
-    user_credentials = OAuth2UserCredentials.find(user=handler.user, scopes=oauth.scopes, admin=True)
+    user_credentials = OAuth2UserCredentials.find(scopes=oauth.scopes, admin=True)
     oauth._user_credentials = user_credentials
     if not oauth.has_credentials():
         return handler.redirect(oauth.authorization_url(admin=True))
