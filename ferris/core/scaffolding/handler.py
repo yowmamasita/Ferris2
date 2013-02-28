@@ -24,7 +24,7 @@ class Handler(object):
         """
         Passes a single entity by id to the template.
 
-        If your handler is Cats, it ddoes::
+        If your handler is Cats, it does::
 
             self.set(cat=self.key_from_string(id).get())
 
