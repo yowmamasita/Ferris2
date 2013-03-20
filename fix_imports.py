@@ -18,9 +18,3 @@ for filename in os.listdir(package_dir_path):
         if not path in sys.path:
             logging.debug('Adding zip package %s to path' % path)
             sys.path.insert(0, path)
-
-# Fix jinja2 debugging on local environment
-import os
-if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):
-    from google.appengine.tools.dev_appserver import HardenedModulesHook
-    HardenedModulesHook._WHITE_LIST_C_MODULES += ['_ctypes', 'gestalt']
