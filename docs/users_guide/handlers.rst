@@ -8,7 +8,7 @@ Handlers are responsible for processing and responding to HTTP requests. Handler
 Conventions
 -----------
 
-Handlers are named plural nouns from the models that they are associated with (for example: Pages, Users, Images, Bears, etc.). The are many cases where the plural convention doesn't make sense, such as handlers that don't have an associated model or handlers that span multiple models.
+Handlers are named plural nouns in upper camel case (UpperCamelCase) from the models that they are associated with (for example: Pages, Users, Images, Bears, etc.). The are many cases where the plural convention doesn't make sense, such as handlers that don't have an associated model or handlers that span multiple models.
 
 Each handler class should be in its own file under ``/app/handlers`` and the name of the file should be the underscored class name. For example, to create a handler to act on fuzzy bears, you would create the file ``/app/handlers/fuzzy_bears.py`` and inside of that define a class named ``FuzzyBears``.
 
@@ -102,7 +102,7 @@ Even if you return a string or integer, any changes to ``self.response`` are kep
         self.response.content_type = 'text/html'
         return '<h1>Hello!</h1>'
 
-Returing nothing (``None``) will trigger the automatic template rendering unless :attr:`~Handler.auto_render` is set to ``False``::
+Returning nothing (``None``) will trigger the automatic template rendering unless :attr:`~Handler.auto_render` is set to ``False``::
 
     def list(self):
         pass

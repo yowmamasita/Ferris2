@@ -13,7 +13,7 @@ Concepts
 
 * *Templates* (or views) are used by :doc:handlers to display the result of actions.
 * *Layouts* are used by templates to provide boilerplate code, templates inherit from layouts.
-* *Elements* are small pieces of templates that are including to reduce code duplication.
+* *Elements* are small pieces of templates that are included to reduce code duplication.
 * *Macros* are files that contain macros (reusable functions) and pieces of with more complex objects.
 * *Themes* are a collection of templates, macros, layouts, and elements that can override those in the default theme.
 

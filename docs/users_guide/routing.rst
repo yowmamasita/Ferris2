@@ -116,7 +116,7 @@ Generating URLs to Actions
 
 There is a standard way to generate URLs to actions across the application:
 
-.. automethod:: ferris.core.handler.Handler.uri
+.. automethod:: ferris.core.handler.Handler.uri(route_name = None, prefix = <sentinel>, handler = <sentinel>, action = <sentinel>, _pass_all = False, _full = False, *args, **kwargs)
 
 Attempting to generate a URL to an action that doesn't exist will result in an exception.
 
