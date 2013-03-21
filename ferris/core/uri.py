@@ -69,6 +69,9 @@ class Uri(object):
 
         tkwargs = {key: value for key, value in tkwargs.items()
              if value is not None}
+        for key, value in tkwargs.items():
+            if isinstance(value, unicode):
+                tkwargs[key] = value.encode("utf8")
 
         return webapp2.uri_for(route_name, *args, **tkwargs)
 
