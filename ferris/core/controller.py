@@ -7,7 +7,6 @@ from google.appengine.api import users
 from ferris.core import inflector
 from ferris.core.ndb import key_urlsafe_for, key_from_string
 from ferris.core.uri import Uri
-from ferris.core.event import NamedEvents
 from ferris.core import events
 from ferris.core.json_util import DatastoreEncoder, DatastoreDecoder
 from ferris.core.view import ViewContext, TemplateView
@@ -81,7 +80,7 @@ class Controller(webapp2.RequestHandler, Uri):
         super(Controller, self).__init__(*args, **kwargs)
 
     def _build_components(self):
-        self._delegate_event('before_build_components', handler=self)
+        self.events.before_build_components(handler=self)
         if hasattr(self, 'components'):
             components = self.components
             self.components = Bunch()
@@ -93,7 +92,7 @@ class Controller(webapp2.RequestHandler, Uri):
                 self.components[name] = (cls(self))
         else:
             self.components = Bunch()
-        self._delegate_event('after_build_components', handler=self)
+        self.events.after_build_components(handler=self)
 
     def _init_route_members(self):
         self.action = self.request.route.handler_method
@@ -105,26 +104,10 @@ class Controller(webapp2.RequestHandler, Uri):
     def _init_meta(self):
         self.name = inflector.underscore(self.__class__.__name__)
         self.proper_name = self.__class__.__name__
-        self.events = NamedEvents()
+        self.events = events.NamedBroadcastEvents(prefix='controller_')
         self.meta = self.Meta()
         self.context = ViewContext()
-
-    def _delegate_event(self, name, *args, **kwargs):
-        """
-        Calls an event locally, globally, and invokes callback methods
-        """
-        # callback events
-        if name == 'before_dispatch':
-            self.before_dispatch()
-        elif name == 'after_dispatch':
-            self.after_dispatch(kwargs['response'])
-        elif name == 'before_render':
-            self.before_render()
-        elif name == 'after_render':
-            self.after_render(kwargs['result'])
-
-        self.events[name].fire(*args, **kwargs)  # Local events
-        events.fire('handler_' + name, *args, **kwargs)  # Global Events
+        self.meta.view = self.meta.View(self, self.context)
 
     @classmethod
     def build_routes(cls, router):
@@ -155,26 +138,10 @@ class Controller(webapp2.RequestHandler, Uri):
             if not users.get_current_user().email().split('@').pop() in app_config['allowed_auth_domains']:
                 return Response("Your domain does not have access to this application.", status="401 Unauthorized")
         try:
-            self._delegate_event('is_authorized', handler=self)
+            self.events.is_authorized(handler=self)
         except Exception, e:
             return Response(str(e), status='401 Unauthorized')
         return True
-
-    def before_dispatch(self):
-        """Called during dispatch before control is handed over to the action"""
-        pass
-
-    def after_dispatch(self, response):
-        """Called during dispatch after control is handed back from the action"""
-        pass
-
-    def before_render(self):
-        """Called during render_template before invoking the template engine"""
-        pass
-
-    def after_render(self, result):
-        """Called during render_template after the template has been rendered by the template engine"""
-        pass
 
     def dispatch(self):
         """
@@ -189,30 +156,30 @@ class Controller(webapp2.RequestHandler, Uri):
         and the result (return value) is returned to the dispatcher.
         """
 
-        self._init_meta()
         self.user = users.get_current_user()
         self._init_route_members()
+        self._init_meta()
 
         self.session_store = sessions.get_store(request=self.request)
         self.context.set_dotted('handler.session', self.session)
 
-        self._delegate_event('before_startup', handler=self)
+        self.events.before_startup(handler=self)
         self.startup()
-        self._delegate_event('after_startup', handler=self)
+        self.events.after_startup(handler=self)
 
         auth_result = self.is_authorized()
         if auth_result is not True:
             return auth_result
 
         try:
-            self._delegate_event('before_dispatch', handler=self)
+            self.events.before_dispatch(handler=self)
 
             response = super(Controller, self).dispatch()
 
-            self._delegate_event('after_dispatch', response=response, handler=self)
+            self.events.after_dispatch(response=response, handler=self)
 
             if self.auto_render and response is None and not self.response.body:
-                response = self.meta.View(self, self.context).render()
+                response = self.meta.view.render()
 
         finally:
             pass
@@ -235,7 +202,7 @@ class Controller(webapp2.RequestHandler, Uri):
         elif response is None:
             pass
 
-        self._delegate_event('dispatch_complete', handler=self)
+        self.events.dispatch_complete(handler=self)
 
         self.session_store.save_sessions(self.response)
         return self.response
@@ -250,62 +217,6 @@ class Controller(webapp2.RequestHandler, Uri):
     def json(self, data, *args, **kwargs):
         """Returns a json encoded string for the given object. Uses :mod:`ferris.core.json_util` so it is capable of handling Datastore types."""
         return json.dumps(data, cls=DatastoreEncoder, *args, **kwargs)
-
-    def render_template(self, template):
-        """
-        Render a given template with :attr:`template_vars` as the context.
-
-        This is called automatically during :meth:`dispatch` if :attr:`auto_render` is ``True`` and an action returns ``None``.
-        """
-        self._delegate_event('before_render', handler=self)
-
-        result = templating.render_template(template, self.template_vars, theme=self.theme)
-
-        self._delegate_event('after_render', handler=self, result=result)
-
-        return result
-
-    def _get_template_name(self):
-        """
-        Generates a list of template names.
-
-        The template engine will try each template in the list until it finds one.
-
-        For non-prefixed actions, the return value is simply: ``[ "[handler]/[action].[ext]" ]``.
-        For prefixed actions, another entry is added to the list : ``[ "[handler]/[prefix_][action].[ext]" ]``. This means that actions that are prefixed can fallback to using the non-prefixed template.
-
-        For example, the action ``Posts.json_list`` would try these templates::
-
-            posts/json_list.html
-            posts/list.html
-
-        """
-        if not self.template_name == None:
-            return self.template_name
-
-        templates = []
-
-        if self.prefix:
-            template = self.name + '/' + self.prefix + '_' + self.action + '.' + self.template_ext
-            templates.append(template)
-
-        # non-prefixed
-        template = self.name + '/' + self.action + '.' + self.template_ext
-        templates.append(template)
-
-        self._delegate_event('template_names', handler=self, templates=templates)
-
-        return templates
-
-    def set(self, name=None, value=None, **kwargs):
-        """ Set a variable in the template context. You can specify name and value or specify multiple values using kwargs. """
-        if not name == None:
-            self.context[name] = value
-        self.context.update(kwargs)
-
-    def get(self, name, default=None):
-        """ Get a variable from the template context """
-        return self.context.get(name, default)
 
     def url_id_for(self, item):
         """
@@ -327,7 +238,7 @@ class Controller(webapp2.RequestHandler, Uri):
 
         If obj is specified, that's used as the fallback data for the form is nothing was submitted.
         """
-        self._delegate_event('before_process_form_data', handler=self, form=form)
+        self.events.before_process_form_data(handler=self, form=form)
 
         form.process(formdata=self.request.params, obj=obj, **form.data)
 
@@ -356,25 +267,5 @@ class Controller(webapp2.RequestHandler, Uri):
                 logging.error('Request content-type is json, but I was unable to parse it!')
                 logging.error(self.request.body)
 
-        self._delegate_event('after_process_form_data', handler=self, form=form)
+        self.events.after_process_form_data(handler=self, form=form)
         return form
-
-
-# Pre register some events
-events.register([
-    'handler_before_build_components',
-    'handler_after_build_components',
-    'handler_template_vars',
-    'handler_build_routes',
-    'handler_is_authorized',
-    'handler_before_startup',
-    'handler_after_startup',
-    'handler_before_dispatch',
-    'handler_after_dispatch',
-    'handler_dispatch_complete',
-    'handler_before_render',
-    'handler_after_render',
-    'handler_template_names',
-    'handler_before_process_form_data',
-    'handler_after_process_form_data',
-])

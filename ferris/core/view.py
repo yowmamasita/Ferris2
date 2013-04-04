@@ -50,12 +50,12 @@ class TemplateView(View):
             'url_key_for': self.handler.url_id_for,
             'user': self.handler.user
         }
-        self.handler._delegate_event('template_vars', handler=self.handler)
+        self.handler.events.template_vars(handler=self.handler)
 
     def render(self, *args, **kwargs):
-        self.handler._delegate_event('before_render', handler=self.handler)
+        self.handler.events.before_render(handler=self.handler)
         result = template.render_template(self.get_template_names(), self.context, theme=self.theme)
-        self.handler._delegate_event('after_render', handler=self.handler, result=result)
+        self.handler.events.after_render(handler=self.handler, result=result)
 
         return result
 
@@ -87,6 +87,6 @@ class TemplateView(View):
         template = self.handler.name + '/' + self.handler.action + '.' + self.template_ext
         templates.append(template)
 
-        self.handler._delegate_event('template_names', handler=self.handler, templates=templates)
+        self.handler.events.template_names(handler=self.handler, templates=templates)
 
         return templates
