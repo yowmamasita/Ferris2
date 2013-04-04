@@ -84,13 +84,13 @@ class TemplateView(View):
 
         templates = []
 
-        template_path = self.handler.name + '/'
-        action_name = self.handler.route.action + '.' + self.template_ext
+        template_path = "%s/" % self.handler.name
+        action_name = "%s.%s" % (self.handler.route.action, self.template_ext)
 
-        templates.append(template_path + action_name)
+        templates.append("%s%s" % (template_path, action_name))
 
-        if self.handler.prefix:
-            templates.insert(0, )
+        if self.handler.route.prefix:
+            templates.insert(0, "%s%s_%s" % (template_path, self.handler.route.prefix, action_name))
 
         self.handler.events.template_names(handler=self.handler, templates=templates)
 

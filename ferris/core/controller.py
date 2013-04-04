@@ -46,23 +46,8 @@ class Controller(webapp2.RequestHandler, Uri):
     discovery and rendering.
     """
 
-    #: List of components.
-    #: When declaring a handler, this must be a list of classes.
-    #: When the handler is constructed, this will be transformed into a Bunch of instances.
-    components = ()
-
     #: If set to true, the handler will attempt to render the template determined by :meth:`_get_template_name` if an action returns ``None``.
     auto_render = True
-
-    # Prefixes are added in from of handlers (like admin_list) and will cause routing
-    # to produce a url such as '/admin/name/list' and a name such as 'admin-name-list'
-    prefixes = ()
-
-    #: The current action
-    action = None
-
-    #: The current prefix
-    prefix = None
 
     # The name of this class, lowercase (automatically determined)
     name = 'handler'
@@ -73,8 +58,17 @@ class Controller(webapp2.RequestHandler, Uri):
     #: View Context, all these variables will be passed to the view.
     context = property(lambda self: self.meta.view.context)
 
-
     class Meta(object):
+        #: List of components.
+        #: When declaring a handler, this must be a list of classes.
+        #: When the handler is constructed, this will be transformed into a Bunch of instances.
+        components = ()
+
+        #: Prefixes are added in from of handlers (like admin_list) and will cause routing
+        #: to produce a url such as '/admin/name/list' and a name such as 'admin-name-list'
+        prefixes = ()
+
+        #: Which view class to use by default.
         View = TemplateView
 
     def __init__(self, *args, **kwargs):
@@ -82,10 +76,10 @@ class Controller(webapp2.RequestHandler, Uri):
 
     def _build_components(self):
         self.events.before_build_components(handler=self)
-        if hasattr(self, 'components'):
-            components = self.components
+        if hasattr(self.Meta, 'components'):
+            component_classes = self.Meta.components
             self.components = Bunch()
-            for cls in components:
+            for cls in component_classes:
                 if hasattr(cls, 'name'):
                     name = cls.name
                 else:
@@ -98,7 +92,7 @@ class Controller(webapp2.RequestHandler, Uri):
     def _init_route(self):
         action = self.request.route.handler_method
         prefix = None
-        for possible_prefix in self.prefixes:
+        for possible_prefix in self.Meta.prefixes:
             if action.startswith(possible_prefix):
                 prefix = possible_prefix
                 action = action.replace(prefix + '_', '')
@@ -118,6 +112,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self.events = events.NamedBroadcastEvents(prefix='controller_')
         self.meta = self.Meta()
         self.meta.view = self.meta.View(self)
+        self._build_components()
 
     @classmethod
     def build_routes(cls, router):
@@ -128,7 +123,7 @@ class Controller(webapp2.RequestHandler, Uri):
 
         # Route the rest methods
         router.add(routing.build_scaffold_routes_for_handler(cls))
-        for prefix in cls.prefixes:
+        for prefix in cls.Meta.prefixes:
             router.add(routing.build_scaffold_routes_for_handler(cls, prefix))
 
         # Auto route the remaining methods
@@ -142,7 +137,7 @@ class Controller(webapp2.RequestHandler, Uri):
         pass
 
     def is_authorized(self):
-        if self.prefix == 'admin' and not users.is_current_user_admin():
+        if self.route.prefix == 'admin' and not users.is_current_user_admin():
             return Response("You must be an administrator.", status="401 Unauthorized")
         if 'allowed_auth_domains' in app_config:
             if not users.get_current_user().email().split('@').pop() in app_config['allowed_auth_domains']:
