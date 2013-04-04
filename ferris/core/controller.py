@@ -10,6 +10,7 @@ from ferris.core.uri import Uri
 from ferris.core.event import NamedEvents
 from ferris.core import events
 from ferris.core.json_util import DatastoreEncoder, DatastoreDecoder
+from ferris.core.view import ViewContext, TemplateView
 import ferris.core.routing as routing
 import ferris.core.template as templating
 from bunch import Bunch
@@ -49,26 +50,14 @@ class Controller(webapp2.RequestHandler, Uri):
     #: List of components.
     #: When declaring a handler, this must be a list of classes.
     #: When the handler is constructed, this will be transformed into a Bunch of instances.
-    components = []
+    components = ()
 
     #: If set to true, the handler will attempt to render the template determined by :meth:`_get_template_name` if an action returns ``None``.
     auto_render = True
 
-    #: If set, this will be used as the template to render instead of calling :meth:`_get_template_name`
-    template_name = None
-
-    #: The extension used by :meth:`_get_template_name` when finding templates.
-    template_ext = 'html'
-
-    #: Set to change the theme used by render_template
-    theme = None
-
-    #: Context that is passed on to the template, use :meth:`get` and and :meth:`set`.
-    template_vars = {}
-
     # Prefixes are added in from of handlers (like admin_list) and will cause routing
     # to produce a url such as '/admin/name/list' and a name such as 'admin-name-list'
-    prefixes = []
+    prefixes = ()
 
     #: The current action
     action = None
@@ -82,19 +71,14 @@ class Controller(webapp2.RequestHandler, Uri):
     #: The current user as determined by ``google.appengine.api.users.get_current_user()``.
     user = None
 
-    def __init__(self, *args, **kwargs):
-        """
-        * Constructs the events map
-        * Constructs all of the components
-        * Determines the prefix and action
-        * Populates default template arguments
-        """
-        super(Controller, self).__init__(*args, **kwargs)
+    #: View Context, all these variables will be passed to the view.
+    context = None
 
-        self.events = NamedEvents()
-        self._init_route_members()
-        self._init_template_vars()
-        self._build_components()
+    class Meta(object):
+        View = TemplateView
+
+    def __init__(self, *args, **kwargs):
+        super(Controller, self).__init__(*args, **kwargs)
 
     def _build_components(self):
         self._delegate_event('before_build_components', handler=self)
@@ -118,24 +102,12 @@ class Controller(webapp2.RequestHandler, Uri):
                 self.prefix = prefix
                 self.action = self.action.replace(self.prefix + '_', '')
 
-    def _init_template_vars(self):
+    def _init_meta(self):
         self.name = inflector.underscore(self.__class__.__name__)
         self.proper_name = self.__class__.__name__
-        self.template_vars = {}
-        self.template_vars['handler'] = {
-            'name': self.name,
-            'uri': self.uri,
-            'prefix': self.prefix,
-            'action': self.action,
-            'uri_exists': self.uri_exists,
-            'on_uri': self.on_uri,
-            'request': self.request,
-            'self': self,
-            'url_id_for': self.url_id_for,
-            'url_key_for': self.url_id_for,
-            'user': self.user
-        }
-        self._delegate_event('template_vars', handler=self)
+        self.events = NamedEvents()
+        self.meta = self.Meta()
+        self.context = ViewContext()
 
     def _delegate_event(self, name, *args, **kwargs):
         """
@@ -217,19 +189,19 @@ class Controller(webapp2.RequestHandler, Uri):
         and the result (return value) is returned to the dispatcher.
         """
 
+        self._init_meta()
         self.user = users.get_current_user()
         self._init_route_members()
-        self._init_template_vars()
 
         self.session_store = sessions.get_store(request=self.request)
-        self.template_vars['handler']['session'] = self.session
+        self.context.set_dotted('handler.session', self.session)
 
         self._delegate_event('before_startup', handler=self)
         self.startup()
         self._delegate_event('after_startup', handler=self)
 
         auth_result = self.is_authorized()
-        if auth_result != True:
+        if auth_result is not True:
             return auth_result
 
         try:
@@ -239,8 +211,8 @@ class Controller(webapp2.RequestHandler, Uri):
 
             self._delegate_event('after_dispatch', response=response, handler=self)
 
-            if self.auto_render and response == None and not self.response.body:
-                response = self.render_template(self._get_template_name())
+            if self.auto_render and response is None and not self.response.body:
+                response = self.meta.View(self, self.context).render()
 
         finally:
             pass
@@ -260,7 +232,7 @@ class Controller(webapp2.RequestHandler, Uri):
             self.response = Response(response)
         elif isinstance(response, int):
             self.response.status = response
-        elif response == None:
+        elif response is None:
             pass
 
         self._delegate_event('dispatch_complete', handler=self)
@@ -328,12 +300,12 @@ class Controller(webapp2.RequestHandler, Uri):
     def set(self, name=None, value=None, **kwargs):
         """ Set a variable in the template context. You can specify name and value or specify multiple values using kwargs. """
         if not name == None:
-            self.template_vars[name] = value
-        self.template_vars.update(kwargs)
+            self.context[name] = value
+        self.context.update(kwargs)
 
     def get(self, name, default=None):
         """ Get a variable from the template context """
-        return self.template_vars.get(name, default)
+        return self.context.get(name, default)
 
     def url_id_for(self, item):
         """
