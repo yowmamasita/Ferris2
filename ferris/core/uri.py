@@ -20,9 +20,9 @@ class Uri(object):
         will give you "admin-pages-view". Set prefix to False to exclude the
         current prefix from the route name.
         """
-        prefix = prefix if prefix != route_sentinel else self.prefix
-        handler = handler if handler != route_sentinel else self.name
-        action = action if action != route_sentinel else self.action
+        prefix = prefix if prefix != route_sentinel else self.route.prefix
+        handler = handler if handler != route_sentinel else self.route.handler
+        action = action if action != route_sentinel else self.route.action
 
         if self.prefix:
             action = action.replace(self.prefix + '_', '')

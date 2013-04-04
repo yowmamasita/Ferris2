@@ -5,7 +5,7 @@
     <title>Admin - 
         {% block layout_head_title %}
             {% if scaffolding %}{{scaffolding.title}}{% endif %}
-            {{inflector.humanize(handler.action)}}
+            {{inflector.humanize(handler.route.action)}}
         {% endblock %}
     </title>
 

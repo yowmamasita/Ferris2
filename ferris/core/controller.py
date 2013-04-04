@@ -94,16 +94,26 @@ class Controller(webapp2.RequestHandler, Uri):
             self.components = Bunch()
         self.events.after_build_components(handler=self)
 
-    def _init_route_members(self):
-        self.action = self.request.route.handler_method
-        for prefix in self.prefixes:
-            if self.action.startswith(prefix):
-                self.prefix = prefix
-                self.action = self.action.replace(self.prefix + '_', '')
+    def _init_route(self):
+        action = self.request.route.handler_method
+        prefix = None
+        for possible_prefix in self.prefixes:
+            if action.startswith(possible_prefix):
+                prefix = possible_prefix
+                action = action.replace(prefix + '_', '')
+                break
+
+        self.route = Bunch(
+            prefix=prefix,
+            handler=self.name,
+            action=action,
+            name=self.request.route.name)
 
     def _init_meta(self):
         self.name = inflector.underscore(self.__class__.__name__)
         self.proper_name = self.__class__.__name__
+        self.user = users.get_current_user()
+        self._init_route()
         self.events = events.NamedBroadcastEvents(prefix='controller_')
         self.meta = self.Meta()
         self.context = ViewContext()
@@ -156,8 +166,6 @@ class Controller(webapp2.RequestHandler, Uri):
         and the result (return value) is returned to the dispatcher.
         """
 
-        self.user = users.get_current_user()
-        self._init_route_members()
         self._init_meta()
 
         self.session_store = sessions.get_store(request=self.request)

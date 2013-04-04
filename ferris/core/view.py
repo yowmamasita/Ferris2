@@ -38,10 +38,9 @@ class TemplateView(View):
 
     def setup_template_variables(self):
         self.context['handler'] = {
+            'route': self.handler.route,
             'name': self.handler.name,
             'uri': self.handler.uri,
-            'prefix': self.handler.prefix,
-            'action': self.handler.action,
             'uri_exists': self.handler.uri_exists,
             'on_uri': self.handler.on_uri,
             'request': self.handler.request,
@@ -79,13 +78,13 @@ class TemplateView(View):
 
         templates = []
 
-        if self.handler.prefix:
-            template = self.handler.name + '/' + self.handler.prefix + '_' + self.handler.action + '.' + self.template_ext
-            templates.append(template)
+        template_path = self.handler.name + '/'
+        action_name = self.handler.route.action + '.' + self.template_ext
 
-        # non-prefixed
-        template = self.handler.name + '/' + self.handler.action + '.' + self.template_ext
-        templates.append(template)
+        templates.append(template_path + action_name)
+
+        if self.handler.prefix:
+            templates.insert(0, )
 
         self.handler.events.template_names(handler=self.handler, templates=templates)
 
