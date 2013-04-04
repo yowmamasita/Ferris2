@@ -14,12 +14,18 @@ class ViewContext(dict):
         container = self.get_dotted('.'.join(path[:-1]), {})
         container[path[-1]] = value
 
+    def set(self, **kwargs):
+        self.update(**kwargs)
+
 
 class View(object):
 
-    def __init__(self, handler, context):
+    def __init__(self, handler, context=None):
         self.handler = handler
-        if isinstance(context, dict):
+
+        if not context:
+            context = ViewContext()
+        if isinstance(context, dict) and not isinstance(context, ViewContext):
             context = ViewContext(**context)
         self.context = context
 
@@ -29,7 +35,7 @@ class View(object):
 
 class TemplateView(View):
 
-    def __init__(self, handler, context):
+    def __init__(self, handler, context=None):
         super(TemplateView, self).__init__(handler, context)
         self.template_name = None
         self.template_ext = 'html'

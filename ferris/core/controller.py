@@ -71,7 +71,8 @@ class Controller(webapp2.RequestHandler, Uri):
     user = None
 
     #: View Context, all these variables will be passed to the view.
-    context = None
+    context = property(lambda self: self.meta.view.context)
+
 
     class Meta(object):
         View = TemplateView
@@ -116,8 +117,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self._init_route()
         self.events = events.NamedBroadcastEvents(prefix='controller_')
         self.meta = self.Meta()
-        self.context = ViewContext()
-        self.meta.view = self.meta.View(self, self.context)
+        self.meta.view = self.meta.View(self)
 
     @classmethod
     def build_routes(cls, router):
