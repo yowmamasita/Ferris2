@@ -22,6 +22,7 @@ class View(object):
 
     def __init__(self, handler, context=None):
         self.handler = handler
+        self.auto_render = True
 
         if not context:
             context = ViewContext()

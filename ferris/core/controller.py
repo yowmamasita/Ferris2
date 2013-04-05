@@ -176,6 +176,7 @@ class Controller(webapp2.RequestHandler, Uri):
         and the result (return value) is returned to the dispatcher.
         """
 
+        # Setup everything, the session, etc.
         self._init_meta()
 
         self.session_store = sessions.get_store(request=self.request)
@@ -185,23 +186,20 @@ class Controller(webapp2.RequestHandler, Uri):
         self.startup()
         self.events.after_startup(handler=self)
 
+        # Authorization
         auth_result = self.is_authorized()
         if auth_result is not True:
             return auth_result
 
-        try:
-            self.events.before_dispatch(handler=self)
+        # Dispatch to the method
+        self.events.before_dispatch(handler=self)
+        response = super(Controller, self).dispatch()
+        self.events.after_dispatch(response=response, handler=self)
 
-            response = super(Controller, self).dispatch()
-
-            self.events.after_dispatch(response=response, handler=self)
-
-            if self.auto_render and response is None and not self.response.body:
-                response = self.meta.view.render()
-
-        finally:
-            pass
-
+        # Return value handlers.
+        # Response has highest precendence, the view class has lowest.
+        if isinstance(response, Response):
+            self.response = response
         if isinstance(response, basestring):
             # Clear redirect
             if self.response.status_int in [300, 301, 302]:
@@ -217,8 +215,15 @@ class Controller(webapp2.RequestHandler, Uri):
             self.response = Response(response)
         elif isinstance(response, int):
             self.response.status = response
-        elif response is None:
-            pass
+
+        # View rendering works similar to the string mode above.
+        elif response is None and self.meta.view.auto_render:
+            if self.response.status_int in [300, 301, 302]:
+                self.response.status = 200
+                del self.response.headers['Location']
+
+            self.response.charset = 'utf8'
+            self.response.unicode_body = self.meta.view.render()
 
         self.events.dispatch_complete(handler=self)
 
