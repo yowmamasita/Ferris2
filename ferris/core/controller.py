@@ -71,8 +71,25 @@ class Controller(webapp2.RequestHandler, Uri):
         #: Which view class to use by default.
         View = TemplateView
 
+        def __init__(self, handler):
+            self._handler = handler
+            self.view = None
+            self.change_view(self.View)
+
+        def change_view(self, viewclass, persist_context=True):
+            context = self.view.context if self.view else None
+            self.View = viewclass
+            self.view = self.View(self._handler, context)
+
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
+
+        self.name = inflector.underscore(self.__class__.__name__)
+        self.proper_name = self.__class__.__name__
+
+        # Make sure the Meta class has a proper chain
+        if self.__class__ != Controller and not issubclass(self.Meta, Controller.Meta):
+            self.Meta = type('Meta', (self.Meta, Controller.Meta), {})
 
     def _build_components(self):
         self.events.before_build_components(handler=self)
@@ -105,13 +122,11 @@ class Controller(webapp2.RequestHandler, Uri):
             name=self.request.route.name)
 
     def _init_meta(self):
-        self.name = inflector.underscore(self.__class__.__name__)
-        self.proper_name = self.__class__.__name__
         self.user = users.get_current_user()
         self._init_route()
+
         self.events = events.NamedBroadcastEvents(prefix='controller_')
-        self.meta = self.Meta()
-        self.meta.view = self.meta.View(self)
+        self.meta = self.Meta(self)
         self._build_components()
 
     @classmethod
