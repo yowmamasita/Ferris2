@@ -46,7 +46,6 @@ def _load_model(handler):
     try:
         module = __import__('%s.models.%s' % (import_form_base, inflector.underscore(model_name)), fromlist=['*'])
         setattr(handler.Meta, 'Model', getattr(module, model_name))
-        setattr(handler.meta, 'Model', getattr(module, model_name))
     except (ImportError, AttributeError):
         raise RuntimeError("Scaffold coudn't automatically determine a model class for handler %s, please assign it a Meta.Model class variable." % handler.__class__.__name__)
 
