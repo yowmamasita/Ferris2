@@ -24,8 +24,8 @@ class Uri(object):
         handler = handler if handler != route_sentinel else self.route.handler
         action = action if action != route_sentinel else self.route.action
 
-        if self.prefix:
-            action = action.replace(self.prefix + '_', '')
+        if self.route.prefix:
+            action = action.replace(self.route.prefix + '_', '')
 
         return routing.name_from_canonical_parts(prefix, handler, action)
 
