@@ -1,3 +1,5 @@
+import wtforms_json
+wtforms_json.init()
 from google.appengine.ext import db, ndb
 import wtforms.ext.appengine.db as wtfdb
 import wtfndb
