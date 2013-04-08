@@ -10,6 +10,7 @@ from ferris.core.uri import Uri
 from ferris.core import events
 from ferris.core.json_util import DatastoreEncoder, DatastoreDecoder
 from ferris.core.view import ViewContext, TemplateView
+from ferris.core.request_parsers import RequestParser
 import ferris.core.routing as routing
 import ferris.core.template as templating
 from bunch import Bunch
@@ -255,40 +256,18 @@ class Controller(webapp2.RequestHandler, Uri):
         """
         return key_from_string(str, kind)
 
-    def process_form_data(self, form, obj=None):
-        """
-        Processes POST and JSON data and provides it to the given form.
+    def parse_request(self, mode='form', fallback=None, container=None, parser=None):
+        if not container:
+            container_name = inflector.camelize(mode)
+            if not hasattr(self.meta, container_name):
+                raise AttributeError('Meta has no %s class, can not parse request' % container_name)
+            container = getattr(self.meta, container_name)()
 
-        If obj is specified, that's used as the fallback data for the form is nothing was submitted.
-        """
-        self.events.before_process_form_data(handler=self, form=form)
+        if not parser:
+            if hasattr(self.meta, 'Parser'):
+                parser = self.meta.Parser
+            else:
+                parser_name = inflector.camelize(mode) + 'Parser'
+                parser = RequestParser.factory(parser_name)
 
-        form.process(formdata=self.request.params, obj=obj, **form.data)
-
-        if 'application/json' in self.request.content_type:
-            try:
-                data = json.loads(self.request.body)
-                if '__class__' in data:
-                    # This is a complex Json data object, treat it as such.
-                    data = json.loads(self.request.body, cls=DatastoreDecoder)
-                    form.process(obj=data, **form.data)
-                else:
-                    # This is a plain json object, load it in via multidict
-                    # Do some special handling for list values in the dict.
-                    if isinstance(data, dict):
-                        new_data = MultiDict()
-                        for key, value in data.iteritems():
-                            if isinstance(value, list):
-                                for v in value:
-                                    new_data.add(key, v)
-                            else:
-                                new_data.add(key, value)
-                        form.process(formdata=new_data, **form.data)
-                    else:
-                        raise Exception
-            except Exception:
-                logging.error('Request content-type is json, but I was unable to parse it!')
-                logging.error(self.request.body)
-
-        self.events.after_process_form_data(handler=self, form=form)
-        return form
+        return parser.process(self.request, container, fallback)
