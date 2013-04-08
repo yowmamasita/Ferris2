@@ -87,7 +87,12 @@ def canonical_parts_from_method(method):
     method_class_name = inflector.underscore(method_class.__name__)
     prefix = None
 
-    for tprefix in method_class.prefixes:
+    if hasattr(method_class, 'Meta'):
+        prefixes = method_class.Meta.prefixes
+    else:
+        prefixes = method_class.prefixes
+
+    for tprefix in prefixes:
         if method_name.startswith(tprefix + '_'):
             prefix = tprefix
             method_name = method_name.replace(prefix + '_', '')
