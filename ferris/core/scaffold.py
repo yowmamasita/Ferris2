@@ -26,6 +26,20 @@ class Scaffolding(object):
         if not hasattr(self.handler.Meta, 'Model'):
             _load_model(self.handler)
 
+        self.handler.events.template_names += self._on_template_names
+
+    def _on_template_names(self, handler, templates):
+        """Injects scaffold templates into the template list"""
+
+        handler, prefix, action, ext = self.handler.route.name, self.handler.route.prefix, self.handler.route.action, self.handler.meta.view.template_ext
+
+        # Try the prefix template first
+        if prefix:
+            templates.append('scaffolding/%s_%s.%s' % (prefix, action, ext))
+
+        # Then try the non-prefix one.
+        templates.append('scaffolding/%s.%s' % (action, ext))
+
 
 class Scaffold(object):
     """
