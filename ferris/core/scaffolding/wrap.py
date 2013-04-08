@@ -1,4 +1,4 @@
-from ferris.core.ndb import key_id_for, key_urlsafe_for
+from ferris.core.ndb import encode_key, decode_key, new_key
 
 
 class Wrap(object):
@@ -23,8 +23,8 @@ class Wrap(object):
             key depending on settings.
             """
             if self.scaffold.use_ids:
-                return key_id_for(item)
-            return ':' + key_urlsafe_for(item)
+                return new_key(item).id()
+            return ':' + encode_key(item)
         return f
 
     @staticmethod

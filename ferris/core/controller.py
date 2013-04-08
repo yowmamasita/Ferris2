@@ -5,7 +5,7 @@ from webapp2 import Response, cached_property
 from webapp2_extras import sessions
 from google.appengine.api import users
 from ferris.core import inflector
-from ferris.core.ndb import key_urlsafe_for, key_from_string
+from ferris.core.ndb import encode_key, decode_key
 from ferris.core.uri import Uri
 from ferris.core import events
 from ferris.core.json_util import DatastoreEncoder, DatastoreDecoder
@@ -82,6 +82,13 @@ class Controller(webapp2.RequestHandler, Uri):
             self.View = viewclass
             self.view = self.View(self._handler, context)
 
+    class Util(object):
+        def __init__(self, handler):
+            self._handler = handler
+
+        decode_key = staticmethod(decode_key)
+        encode_key = staticmethod(encode_key)
+
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
 
@@ -91,6 +98,8 @@ class Controller(webapp2.RequestHandler, Uri):
         # Make sure the Meta class has a proper chain
         if self.__class__ != Controller and not issubclass(self.Meta, Controller.Meta):
             self.Meta = type('Meta', (self.Meta, Controller.Meta), {})
+
+        self.util = self.Util(self)
 
     def _build_components(self):
         self.events.before_build_components(handler=self)
@@ -238,25 +247,16 @@ class Controller(webapp2.RequestHandler, Uri):
         """
         return self.session_store.get_session(backend='memcache')
 
-    def json(self, data, *args, **kwargs):
-        """Returns a json encoded string for the given object. Uses :mod:`ferris.core.json_util` so it is capable of handling Datastore types."""
-        return json.dumps(data, cls=DatastoreEncoder, *args, **kwargs)
-
-    def url_id_for(self, item):
-        """
-        Returns a properly formatted urlsafe version of an ``ndb.Key``.
-        """
-        return ':' + key_urlsafe_for(item)
-
-    url_key_for = url_id_for
-
-    def key_from_string(self, str, kind=None):
-        """
-        Returns an ``ndb.Key`` object from a properly formatted urlsafe version.
-        """
-        return key_from_string(str, kind)
-
     def parse_request(self, mode='form', fallback=None, container=None, parser=None):
+        """
+        Parses request data (like GET, POST, JSON, XML) into a container (like a Form or Message)
+        instance using a RequestParser. By default, it assumes you want to process GET/POST data
+        into a Form instance, for that simple case you can use::
+
+            data = self.parse_request()
+
+        provided you've set the From attribute of the Meta class.
+        """
         if not container:
             container_name = inflector.camelize(mode)
             if not hasattr(self.meta, container_name):

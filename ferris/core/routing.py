@@ -206,7 +206,7 @@ def build_scaffold_routes_for_handler(handlercls, prefix_name=None):
 
     # GET /handler/:urlsafe -> Handler::view
     if hasattr(handlercls, prefix_string + 'view'):
-        path.append(Route('/<id:%s>' % id_regex, handlercls, 'view', handler_method=prefix_string + 'view', methods=['HEAD', 'GET']))
+        path.append(Route('/:<key>', handlercls, 'view', handler_method=prefix_string + 'view', methods=['HEAD', 'GET']))
 
     # GET/POST /handler/add -> Handler::add
     # POST /handler -> Handler::add
@@ -218,21 +218,21 @@ def build_scaffold_routes_for_handler(handlercls, prefix_name=None):
     # PUT /handler/:urlsafe -> Handler::edit
     if hasattr(handlercls, prefix_string + 'edit'):
         id.append(Route('/edit', handlercls, 'edit', handler_method=prefix_string + 'edit', methods=['GET', 'POST']))
-        path.append(Route('/<id:%s>' % id_regex, handlercls, 'edit-rest', handler_method=prefix_string + 'edit', methods=['PUT', 'POST']))
+        path.append(Route('/:<key>', handlercls, 'edit-rest', handler_method=prefix_string + 'edit', methods=['PUT', 'POST']))
 
     # GET /handler/:urlsafe/delete -> Handler::delete
     # DELETE /handler/:urlsafe -> Handler::d
     if hasattr(handlercls, prefix_string + 'delete'):
         id.append(Route('/delete', handlercls, 'delete', handler_method=prefix_string + 'delete'))
-        path.append(Route('/<id:%s>' % id_regex, handlercls, 'delete-rest', handler_method=prefix_string + 'delete', methods=["DELETE"]))
+        path.append(Route('/:<key>', handlercls, 'delete-rest', handler_method=prefix_string + 'delete', methods=["DELETE"]))
 
     top_route = routes.NamePrefixRoute(name + '-', top + [
         routes.PathPrefixRoute('/' + name, path + [
-            routes.PathPrefixRoute('/<id:%s>' % id_regex, id)
+            routes.PathPrefixRoute('/:<key>', id)
         ])
     ])
 
-    if not prefix_name == None:
+    if prefix_name:
         prefix_route = routes.NamePrefixRoute(prefix_name + '-', [
             routes.PathPrefixRoute('/' + prefix_name, [top_route])
         ])

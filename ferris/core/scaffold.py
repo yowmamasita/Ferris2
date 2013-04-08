@@ -48,6 +48,7 @@ class Scaffold(object):
     def __init__(self, handler):
         if not hasattr(self, 'plural'):
             self.plural = inflector.pluralize(handler.name)
+            self.singular = inflector.underscore(handler.name)
 
 
 # Utility Functions
@@ -70,3 +71,8 @@ def _load_model(handler):
 def list(handler):
     handler.context.set(**{
         handler.scaffold.plural: handler.meta.Model.query()})
+
+
+def view(handler, key):
+    handler.context.set(**{
+        handler.scaffold.singular: handler.util.decode_key(key).get()})

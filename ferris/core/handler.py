@@ -6,7 +6,7 @@ from webapp2_extras import sessions
 from google.appengine.api import users
 from wtforms.ext.appengine.db import model_form
 from ferris.core import inflector
-from ferris.core.ndb import key_urlsafe_for, key_from_string
+from ferris.core.ndb import encode_key, decode_key
 from ferris.core.uri import Uri
 from ferris.core.event import NamedEvents
 from ferris.core import events
@@ -341,7 +341,7 @@ class Handler(webapp2.RequestHandler, Uri):
         """
         Returns a properly formatted urlsafe version of an ``ndb.Key``.
         """
-        return ':' + key_urlsafe_for(item)
+        return ':' + encode_key(item)
 
     url_key_for = url_id_for
 
@@ -349,7 +349,7 @@ class Handler(webapp2.RequestHandler, Uri):
         """
         Returns an ``ndb.Key`` object from a properly formatted urlsafe version.
         """
-        return key_from_string(str, kind)
+        return decode_key(str, kind)
 
     def process_form_data(self, form, obj=None):
         """

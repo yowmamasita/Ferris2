@@ -52,8 +52,8 @@ class TemplateView(View):
             'on_uri': self.handler.on_uri,
             'request': self.handler.request,
             'self': self.handler,
-            'url_id_for': self.handler.url_id_for,
-            'url_key_for': self.handler.url_id_for,
+            'encode_key': self.handler.util.encode_key,
+            'decode_key': self.handler.util.decode_key,
             'user': self.handler.user
         }
         self.handler.events.template_vars(handler=self.handler)
