@@ -98,7 +98,7 @@ class TestHandler(Handler):
         return str(form.data)
 
 
-class HandlerTest(FerrisTestCase):
+class _HandlerTest(FerrisTestCase):
     def setUp(self):
         super(HandlerTest, self).setUp()
         TestHandler.build_routes(self.testapp.app.router)
