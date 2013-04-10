@@ -39,7 +39,7 @@ class Widgets(Handler):
         pass
 
 
-class TestScaffoldInjection(unittest.TestCase):
+class _TestScaffoldInjection(unittest.TestCase):
 
     def testAttributes(self):
         self.assertTrue(hasattr(Widgets, 'scaffold'))
@@ -65,7 +65,7 @@ class TestScaffoldInjection(unittest.TestCase):
         self.assertEqual(Widgets.admin_list.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
 
 
-class TestScaffoldBehavior(FerrisTestCase):
+class _TestScaffoldBehavior(FerrisTestCase):
     def setUp(self):
         super(TestScaffoldBehavior, self).setUp()
         Widgets.build_routes(self.testapp.app.router)

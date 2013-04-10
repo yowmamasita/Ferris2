@@ -43,7 +43,7 @@ class RestWidgets(Handler):
         pass
 
 
-class TestRestApi(FerrisTestCase):
+class _TestRestApi(FerrisTestCase):
     def setUp(self):
         super(TestRestApi, self).setUp()
         RestWidgets.build_routes(self.testapp.app.router)
