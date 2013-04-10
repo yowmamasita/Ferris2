@@ -1,4 +1,5 @@
 from ferris.core import inflector
+from ferris.core.forms import model_form
 
 
 class Scaffolding(object):
@@ -15,6 +16,10 @@ class Scaffolding(object):
         Constructs the handler's scaffold property from the handler's Scaffold class.
         If the handler doens't have a scaffold, uses the automatic one.
         """
+
+        if not hasattr(self.handler.Meta, 'Model'):
+            _load_model(self.handler)
+
         if not hasattr(self.handler, 'Scaffold'):
             setattr(self.handler, 'Scaffold', Scaffold)
 
@@ -22,9 +27,6 @@ class Scaffolding(object):
             self.handler.Scaffold = type('Scaffold', (self.handler.Scaffold, Scaffold), {})
 
         setattr(self.handler, 'scaffold', self.handler.Scaffold(self.handler))
-
-        if not hasattr(self.handler.Meta, 'Model'):
-            _load_model(self.handler)
 
         self.handler.events.template_names += self._on_template_names
 
@@ -48,7 +50,10 @@ class Scaffold(object):
     def __init__(self, handler):
         if not hasattr(self, 'plural'):
             self.plural = inflector.pluralize(handler.name)
+        if not hasattr(self, 'singular'):
             self.singular = inflector.underscore(handler.name)
+        if not hasattr(self, 'ModelForm'):
+            self.ModelForm = model_form(handler.meta.Model)
 
 
 # Utility Functions
@@ -76,3 +81,16 @@ def list(handler):
 def view(handler, key):
     handler.context.set(**{
         handler.scaffold.singular: handler.util.decode_key(key).get()})
+
+
+def add(handler):
+    modelform = handler.scaffold.ModelForm()
+    handler.parse_request(container=modelform)
+
+    if handler.request.method in ('PUT', 'POST', 'PATCH'):
+        if modelform.validate():
+            item = handler.meta.Model(**modelform.data)
+            item.put()
+            return handler.redirect(handler.uri(action='list'))
+
+    handler.context['form'] = modelform
