@@ -16,6 +16,7 @@ class Widgets(Controller):
         Model = Widget
 
     list = scaffold.list
+    view = scaffold.view
     add = scaffold.add
 
 
@@ -58,10 +59,10 @@ class TestScaffoldBehavior(FerrisTestCase):
         r = self.testapp.get('/widgets')
         self.assertTrue('Inigo Montoya' in r)
 
-        # id = Widget.query().fetch(1)[0].key.urlsafe()
+        id = Widget.query().fetch(1)[0].key.urlsafe()
 
-        # r = self.testapp.get('/widgets/:%s' % id)
-        # self.assertTrue('Inigo Montoya' in r)
+        r = self.testapp.get('/widgets/:%s' % id)
+        self.assertTrue('Inigo Montoya' in r)
 
         # self.testapp.get('/widgets/:%s/edit' % id)
         # self.testapp.post('/widgets/:%s/edit' % id, {'name': 'Dread Pirate Roberts'})
