@@ -91,15 +91,18 @@ def _load_model(handler):
 
 # Handler Methods
 
-
 def list(handler):
     handler.context.set(**{
         handler.scaffold.plural: handler.meta.Model.query()})
 
 
 def view(handler, key):
+    item = handler.util.decode_key(key).get()
+    if not item:
+        return 404
+
     handler.context.set(**{
-        handler.scaffold.singular: handler.util.decode_key(key).get()})
+        handler.scaffold.singular: item})
 
 
 def add(handler):
