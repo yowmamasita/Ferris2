@@ -29,6 +29,7 @@ class Scaffolding(object):
         setattr(self.handler, 'scaffold', self.handler.Scaffold(self.handler))
 
         self.handler.events.template_names += self._on_template_names
+        self.handler.events.before_render += self._on_before_render
 
     def _on_template_names(self, handler, templates):
         """Injects scaffold templates into the template list"""
@@ -42,18 +43,33 @@ class Scaffolding(object):
         # Then try the non-prefix one.
         templates.append('scaffolding/%s.%s' % (action, ext))
 
+    def _on_before_render(self, handler):
+        handler.context['scaffolding'] = {
+            'name': handler.name,
+            'proper_name': handler.proper_name,
+            'title': handler.scaffold.title,
+            'plural': handler.scaffold.plural,
+            'singular': handler.scaffold.singular,
+            'form_action': handler.scaffold.form_action,
+            'form_encoding': handler.scaffold.form_encoding
+        }
+
 
 class Scaffold(object):
     """
     Scaffold Meta Object Base Class
     """
     def __init__(self, handler):
+        if not hasattr(self, 'title'):
+            self.title = inflector.titleize(handler.proper_name)
         if not hasattr(self, 'plural'):
             self.plural = inflector.pluralize(handler.name)
         if not hasattr(self, 'singular'):
             self.singular = inflector.underscore(handler.name)
         if not hasattr(self, 'ModelForm'):
             self.ModelForm = model_form(handler.meta.Model)
+        self.form_action = None
+        self.form_encoding = 'application/x-www-form-urlencoded'
 
 
 # Utility Functions

@@ -56,7 +56,7 @@ class TemplateView(View):
             'decode_key': self.handler.util.decode_key,
             'user': self.handler.user
         }
-        self.handler.events.template_vars(handler=self.handler)
+        self.handler.events.setup_template_variables(handler=self.handler)
 
     def render(self, *args, **kwargs):
         self.handler.events.before_render(handler=self.handler)
