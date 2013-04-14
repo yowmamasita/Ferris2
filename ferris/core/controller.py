@@ -1,5 +1,4 @@
 import webapp2
-import json
 from settings import app_config
 from webapp2 import Response, cached_property
 from webapp2_extras import sessions
@@ -9,12 +8,10 @@ from ferris.core.ndb import encode_key, decode_key
 from ferris.core.uri import Uri
 from ferris.core import events
 from ferris.core.json_util import parse as json_parse, stringify as json_stringify
-from ferris.core.view import ViewContext, TemplateView
+from ferris.core.view import TemplateView
 from ferris.core.request_parsers import RequestParser
 import ferris.core.routing as routing
-import ferris.core.template as templating
 from bunch import Bunch
-from webob.multidict import MultiDict
 import logging
 
 
