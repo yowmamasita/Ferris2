@@ -53,7 +53,11 @@ def route_all_handlers(app_router, plugin=None):
                     root_module = 'plugins.%s.handlers' % plugin
                 module = __import__('%s.%s' % (root_module, name), fromlist=['*'])
                 cls = getattr(module, inflector.camelize(name))
-                cls.build_routes(app_router)
+
+                if hasattr(cls, '_build_routes'):
+                    cls._build_routes(app_router)
+                else:
+                    cls.build_routes(app_router)
             except AttributeError, e:
                 logging.error('Thought %s was a controller, but was wrong (or ran into some weird error): %s' % (file, e))
                 raise

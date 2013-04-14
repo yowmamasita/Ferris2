@@ -140,7 +140,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self._build_components()
 
     @classmethod
-    def build_routes(cls, router):
+    def _build_routes(cls, router):
         """
         Called in the main app router to get all of this handler's routes.
         Override to add custom/additional routes.
