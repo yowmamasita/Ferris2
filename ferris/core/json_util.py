@@ -16,7 +16,7 @@ def parse(str):
     return json.loads(str, cls=DatastoreDecoder)
 
 
-def encode(data):
+def stringify(data):
     return json.dumps(data, cls=DatastoreEncoder)
 
 

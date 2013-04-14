@@ -8,7 +8,7 @@ from ferris.core import inflector
 from ferris.core.ndb import encode_key, decode_key
 from ferris.core.uri import Uri
 from ferris.core import events
-from ferris.core.json_util import DatastoreEncoder, DatastoreDecoder
+from ferris.core.json_util import parse as json_parse, stringify as json_stringify
 from ferris.core.view import ViewContext, TemplateView
 from ferris.core.request_parsers import RequestParser
 import ferris.core.routing as routing
@@ -88,6 +88,8 @@ class Controller(webapp2.RequestHandler, Uri):
 
         decode_key = staticmethod(decode_key)
         encode_key = staticmethod(encode_key)
+        parse_json = staticmethod(json_parse)
+        stringify_json = staticmethod(json_stringify)
 
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
