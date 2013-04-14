@@ -18,6 +18,7 @@ class Widgets(Controller):
     list = scaffold.list
     view = scaffold.view
     add = scaffold.add
+    edit = scaffold.edit
 
 
 class _TestScaffoldInjection(unittest.TestCase):
@@ -64,11 +65,13 @@ class TestScaffoldBehavior(FerrisTestCase):
         r = self.testapp.get('/widgets/:%s' % id)
         self.assertTrue('Inigo Montoya' in r)
 
-        # self.testapp.get('/widgets/:%s/edit' % id)
-        # self.testapp.post('/widgets/:%s/edit' % id, {'name': 'Dread Pirate Roberts'})
+        r = self.testapp.get('/widgets/:%s/edit' % id)
+        self.assertTrue('Inigo Montoya' in r)
+        r.form['name'] = 'Dread Pirate Roberts'
+        r = r.form.submit()
 
-        # r = self.testapp.get('/widgets/:%s' % id)
-        # self.assertTrue('Dread Pirate Roberts' in r)
+        r = self.testapp.get('/widgets/:%s' % id)
+        self.assertTrue('Dread Pirate Roberts' in r)
 
         # r = self.testapp.get('/widgets/:%s/delete' % id)
         # self.assertEqual(Widget.query().count(), 0)

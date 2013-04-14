@@ -113,3 +113,22 @@ def add(handler):
             return handler.redirect(handler.uri(action='list'))
 
     handler.context['form'] = modelform
+
+
+def edit(handler, key):
+    item = handler.util.decode_key(key).get()
+    if not item:
+        return 404
+
+    modelform = handler.scaffold.ModelForm()
+    handler.parse_request(container=modelform, fallback=item)
+
+    if handler.request.method in ('PUT', 'POST', 'PATCH'):
+        if modelform.validate():
+            modelform.populate_obj(item)
+            item.put()
+            return handler.redirect(handler.uri(action='list'))
+
+    handler.context.set(**{
+        'form': modelform,
+        handler.scaffold.singular: item})
