@@ -19,6 +19,7 @@ class Widgets(Controller):
     view = scaffold.view
     add = scaffold.add
     edit = scaffold.edit
+    delete = scaffold.delete
 
 
 class _TestScaffoldInjection(unittest.TestCase):
@@ -73,8 +74,8 @@ class TestScaffoldBehavior(FerrisTestCase):
         r = self.testapp.get('/widgets/:%s' % id)
         self.assertTrue('Dread Pirate Roberts' in r)
 
-        # r = self.testapp.get('/widgets/:%s/delete' % id)
-        # self.assertEqual(Widget.query().count(), 0)
+        r = self.testapp.get('/widgets/:%s/delete' % id)
+        self.assertEqual(Widget.query().count(), 0)
 
     def _testRestMethods(self):
         self.testapp.post('/widgets', {'name': 'Inigo Montoya'})

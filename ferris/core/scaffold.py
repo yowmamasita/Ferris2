@@ -135,3 +135,8 @@ def edit(handler, key):
     handler.context.set(**{
         'form': modelform,
         handler.scaffold.singular: item})
+
+
+def delete(handler, key):
+    handler.util.decode_key(key).delete()
+    return handler.redirect(handler.uri(action='list'))
