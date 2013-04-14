@@ -6,7 +6,7 @@
     on the prefix of the handler.
 #}
 {% macro admin_or_default() -%}
-    {% if handler.prefix == 'admin' -%}
+    {% if handler.route.prefix == 'admin' -%}
         layouts/admin.html
     {%- else -%}
         layouts/default.html
@@ -88,7 +88,7 @@
 {% macro action_button(item, action, icon, btn, class=None, confirm=False): -%}
     {% if handler.uri_exists(action=action) %}
         <a
-            href='{{ action_uri(action,id=scaffolding.url_id_for(item)) }}'
+            href='{{ action_uri(action,key=handler.encode_key(item)) }}'
             class='btn {{btn}} {{class}}'
             rel="tooltip"
             title='{{inflector.titleize(action)}}'
