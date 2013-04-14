@@ -99,10 +99,10 @@ class TestController(Controller):
         return str(form.data)
 
 
-class HandlerTest(FerrisTestCase):
+class ControllerTest(FerrisTestCase):
     def setUp(self):
-        super(HandlerTest, self).setUp()
-        TestController.build_routes(self.testapp.app.router)
+        super(ControllerTest, self).setUp()
+        TestController._build_routes(self.testapp.app.router)
 
     def testCrudRoutes(self):
         response = self.testapp.get('/test_controller')
@@ -118,15 +118,6 @@ class HandlerTest(FerrisTestCase):
         self.assertEqual(response.body, 'edit')
 
         response = self.testapp.get('/test_controller/:abcd/delete')
-        self.assertEqual(response.body, 'delete')
-
-        response = self.testapp.get('/test_controller/12')
-        self.assertEqual(response.body, 'view')
-
-        response = self.testapp.get('/test_controller/12/edit')
-        self.assertEqual(response.body, 'edit')
-
-        response = self.testapp.get('/test_controller/12/delete')
         self.assertEqual(response.body, 'delete')
 
     def testRestRoutes(self):
@@ -181,7 +172,7 @@ class HandlerTest(FerrisTestCase):
         response = self.testapp.get('/monster/test_controller/template_names')
         self.assertEqual(response.body, str(['test_controller/monster_template_names.html', 'test_controller/template_names.html']))
 
-    def testProcessFormData(self):
+    def testFormDataProcessor(self):
         data = {'field2': u'f2', 'field1': u'f1'}
         response = self.testapp.post('/test_controller/form', data)
         self.assertEqual(response.body, str(data))
@@ -191,12 +182,6 @@ class HandlerTest(FerrisTestCase):
         self.assertNotEqual(response.body, str(data), 'Field3 should not be in data')
 
         data = json.dumps(data, cls=DatastoreEncoder)
-        response = self.testapp.post('/test_controller/form', data, headers={'Content-Type': 'application/json'})
-        self.assertTrue('f1' in response)
-        self.assertTrue('f2' in response)
-
-        ins = TestModel(field1='f1', field2='f2')
-        data = json.dumps(ins, cls=DatastoreEncoder)
         response = self.testapp.post('/test_controller/form', data, headers={'Content-Type': 'application/json'})
         self.assertTrue('f1' in response)
         self.assertTrue('f2' in response)
