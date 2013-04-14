@@ -77,7 +77,7 @@ class TestScaffoldBehavior(FerrisTestCase):
         r = self.testapp.get('/widgets/:%s/delete' % id)
         self.assertEqual(Widget.query().count(), 0)
 
-    def _testRestMethods(self):
+    def testRestMethods(self):
         self.testapp.post('/widgets', {'name': 'Inigo Montoya'})
         self.assertEqual(Widget.query().count(), 1)
 
