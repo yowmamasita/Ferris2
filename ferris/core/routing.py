@@ -11,9 +11,6 @@ from ferris.core import inflector
 from webapp2 import Route
 from webapp2_extras import routes
 
-# Used to detect :key or 123 in urls
-id_regex = "\:?(\d+|(?<=\:)[A-Za-z0-9\-\_]+)"
-
 
 def auto_route(app_router=None, plugin=None):
     if not app_router:
@@ -68,9 +65,7 @@ def route_name_exists(name, *args, **kwargs):
     Checks if a particlar named route (i.e. 'entries-list') exists.
     """
     route = webapp2.get_app().router.build_routes.get(name)
-    if route == None:
-        return False
-    return True
+    return True if route else False
 
 
 def current_route_name():
@@ -197,7 +192,7 @@ def build_scaffold_routes_for_handler(handlercls, prefix_name=None):
     name = inflector.underscore(handlercls.__name__)
     prefix_string = ''
 
-    if not prefix_name == None:
+    if prefix_name:
         prefix_string = prefix_name + '_'
 
     top = []
