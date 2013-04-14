@@ -247,7 +247,7 @@ class Controller(webapp2.RequestHandler, Uri):
         """
         return self.session_store.get_session(backend='memcache')
 
-    def parse_request(self, mode='form', fallback=None, container=None, parser=None):
+    def parse_request(self, container=None, fallback=None, mode='form', parser=None):
         """
         Parses request data (like GET, POST, JSON, XML) into a container (like a Form or Message)
         instance using a RequestParser. By default, it assumes you want to process GET/POST data
