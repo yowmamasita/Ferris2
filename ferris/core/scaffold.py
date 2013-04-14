@@ -51,7 +51,8 @@ class Scaffolding(object):
             'plural': handler.scaffold.plural,
             'singular': handler.scaffold.singular,
             'form_action': handler.scaffold.form_action,
-            'form_encoding': handler.scaffold.form_encoding
+            'form_encoding': handler.scaffold.form_encoding,
+            'display_properties': handler.scaffold.display_properties
         }
 
 
@@ -68,6 +69,8 @@ class Scaffold(object):
             self.singular = inflector.underscore(handler.name)
         if not hasattr(self, 'ModelForm'):
             self.ModelForm = model_form(handler.meta.Model)
+        if not hasattr(self, 'display_properties'):
+            self.display_properties = [name for name, property in handler.meta.Model._properties.items()]
         self.form_action = None
         self.form_encoding = 'application/x-www-form-urlencoded'
 
