@@ -26,6 +26,6 @@ class FlashMessages(object):
         return flashes
 
     def _on_before_render(self, handler, *args, **kwargs):
-        handler.context.set_dotted('ferris.flash_messages', self.messages)
+        handler.context.set_dotted('self.flash_messages', self.messages)
 
     __call__ = flash
