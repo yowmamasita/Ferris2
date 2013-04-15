@@ -1,5 +1,6 @@
 from ferris.core import inflector
 from ferris.core.forms import model_form
+from ferris.components.flash_messages import FlashMessages
 
 
 class Scaffolding(object):
@@ -10,6 +11,11 @@ class Scaffolding(object):
     def __init__(self, Handler):
         self.handler = Handler
         self._init_meta()
+        self._init_flash()
+
+    def _init_flash(self):
+        if not FlashMessages in self.handler.Meta.components:
+            self.handler.components['flash_messages'] = FlashMessages(self.handler)
 
     def _init_meta(self):
         """
@@ -70,7 +76,8 @@ class Scaffold(object):
             display_properties=[name for name, property in handler.meta.Model._properties.items()],
             redirect=handler.uri(action='list'),
             form_action=None,
-            form_encoding='application/x-www-form-urlencoded'
+            form_encoding='application/x-www-form-urlencoded',
+            flash_messages=True
         )
 
         for k, v in defaults.iteritems():
@@ -90,6 +97,11 @@ def _load_model(handler):
         setattr(handler.Meta, 'Model', getattr(module, model_name))
     except (ImportError, AttributeError):
         raise RuntimeError("Scaffold coudn't automatically determine a model class for handler %s, please assign it a Meta.Model class variable." % handler.__class__.__name__)
+
+
+def _flash(handler, *args, **kwargs):
+    if 'flash_messages' in handler.components and handler.scaffold.flash_messages:
+        handler.components.flash_messages(*args, **kwargs)
 
 
 # Handler Methods
@@ -130,9 +142,15 @@ def add(handler):
             handler.context.set(**{
                 handler.scaffold.singular: item})
 
+            # Flash Message
+            _flash(handler, 'The item was created successfully', 'success')
+
             # redirect
             if handler.scaffold.redirect:
                 return handler.redirect(handler.scaffold.redirect)
+
+        else:
+            _flash(handler, 'There were errors on the form, please correct and try again.', 'error')
 
     # expose the form/message to the template.
     handler.context['form'] = modelform
@@ -159,8 +177,13 @@ def edit(handler, key):
             handler.context.set(**{
                 handler.scaffold.singular: item})
 
+            _flash(handler, 'The item was saved successfully', 'success')
+
             if handler.scaffold.redirect:
                 return handler.redirect(handler.scaffold.redirect)
+
+        else:
+            _flash(handler, 'There were errors on the form, please correct and try again.', 'error')
 
     handler.context.set(**{
         'form': modelform,
@@ -172,5 +195,6 @@ def delete(handler, key):
     handler.events.scaffold_before_delete(handler=handler, key=key)
     key.delete()
     handler.events.scaffold_after_delete(handler=handler, key=key)
+    _flash(handler, 'The item was deleted successfully', 'success')
     if handler.scaffold.redirect:
         return handler.redirect(handler.scaffold.redirect)

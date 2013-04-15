@@ -20,6 +20,7 @@
 {% block layout_body %}
     {% block layout_before_content %}{% endblock %}
     <div class="container">
+        {% include "elements/flash_messages.html" with context %}
         {% block layout_content %}
         {% endblock %}
     </div>
