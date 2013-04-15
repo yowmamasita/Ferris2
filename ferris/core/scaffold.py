@@ -61,18 +61,21 @@ class Scaffold(object):
     Scaffold Meta Object Base Class
     """
     def __init__(self, handler):
-        if not hasattr(self, 'title'):
-            self.title = inflector.titleize(handler.proper_name)
-        if not hasattr(self, 'plural'):
-            self.plural = inflector.pluralize(handler.name)
-        if not hasattr(self, 'singular'):
-            self.singular = inflector.underscore(handler.name)
-        if not hasattr(self, 'ModelForm'):
-            self.ModelForm = model_form(handler.meta.Model)
-        if not hasattr(self, 'display_properties'):
-            self.display_properties = [name for name, property in handler.meta.Model._properties.items()]
-        self.form_action = None
-        self.form_encoding = 'application/x-www-form-urlencoded'
+
+        defaults = dict(
+            title=inflector.titleize(handler.proper_name),
+            plural=inflector.pluralize(handler.name),
+            singular=inflector.underscore(handler.name),
+            ModelForm=model_form(handler.meta.Model),
+            display_properties=[name for name, property in handler.meta.Model._properties.items()],
+            redirect=handler.uri(action='list'),
+            form_action=None,
+            form_encoding='application/x-www-form-urlencoded'
+        )
+
+        for k, v in defaults.iteritems():
+            if not hasattr(self, k):
+                setattr(self, k, v)
 
 
 # Utility Functions
@@ -113,7 +116,9 @@ def add(handler):
         if modelform.validate():
             item = handler.meta.Model(**modelform.data)
             item.put()
-            return handler.redirect(handler.uri(action='list'))
+
+            if handler.scaffold.redirect:
+                return handler.redirect(handler.scaffold.redirect)
 
     handler.context['form'] = modelform
 
@@ -130,7 +135,9 @@ def edit(handler, key):
         if modelform.validate():
             modelform.populate_obj(item)
             item.put()
-            return handler.redirect(handler.uri(action='list'))
+
+            if handler.scaffold.redirect:
+                return handler.redirect(handler.scaffold.redirect)
 
     handler.context.set(**{
         'form': modelform,
