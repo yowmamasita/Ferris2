@@ -199,7 +199,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self._init_meta()
 
         self.session_store = sessions.get_store(request=self.request)
-        self.context.set_dotted('handler.session', self.session)
+        self.context.set_dotted('this.session', self.session)
 
         self.events.before_startup(handler=self)
         self.startup()

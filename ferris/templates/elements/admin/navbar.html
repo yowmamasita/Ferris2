@@ -6,7 +6,7 @@
             <ul class='nav'>
                 {% if autoadmin %}
                 {% for v in autoadmin.links.items() %}
-                    {% if handler.name == inflector.underscore(v.0) %}
+                    {% if this.name == inflector.underscore(v.0) %}
                     <li class='active'>
                     {% else %}
                     <li>

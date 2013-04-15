@@ -3,7 +3,7 @@
 <head>
     <title>{% block layout_head_title %}
             {% if scaffolding %}{{scaffolding.title}}{% endif %}
-            {{inflector.humanize(handler.route.action)}}
+            {{inflector.humanize(this.route.action)}}
         {% endblock %}</title>
 
     <link rel="stylesheet" type="text/css" href="/ferris/css/bootstrap.min.css">

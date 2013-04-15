@@ -18,7 +18,7 @@
 {% block layout_content %}
 
 {% block form_tag %}
-<form method="POST" action="{{scaffolding.form_action|default(handler.uri(_pass_all=True), True)}}" class="form" enctype="{{scaffolding.form_encoding|default('application/x-www-form-urlencoded', True)}}">
+<form method="POST" action="{{scaffolding.form_action|default(this.uri(_pass_all=True), True)}}" class="form" enctype="{{scaffolding.form_encoding|default('application/x-www-form-urlencoded', True)}}">
 {% endblock %}
     <fieldset>
 
@@ -36,7 +36,7 @@
                     <button class='btn btn-primary btn-large' type='submit'>
                         {% block submit_text %}Create{% endblock %}
                     </button>
-                    {% if handler.action != 'add' %}
+                    {% if this.action != 'add' %}
                         <button type='button' class="btn btn-primary btn-large dropdown-toggle" data-toggle="dropdown">
                             <span class="caret"></span>
                         </button>

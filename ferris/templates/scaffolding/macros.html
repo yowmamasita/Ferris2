@@ -3,10 +3,10 @@
 
 {#
     Chooses either the admin layout or the default layout depending
-    on the prefix of the handler.
+    on the prefix of the this.
 #}
 {% macro admin_or_default() -%}
-    {% if handler.route.prefix == 'admin' -%}
+    {% if this.route.prefix == 'admin' -%}
         layouts/admin.html
     {%- else -%}
         layouts/default.html
@@ -41,11 +41,11 @@
 
 
 {#
-    Includes {{handler.name}}/{{template}} and falls back to
+    Includes {{this.name}}/{{template}} and falls back to
     scaffolding/{{template}}
 #}
 {% macro override_include(template) -%}
-{% include [handler.name+'/'+template,'scaffolding/'+template] %}
+{% include [this.name+'/'+template,'scaffolding/'+template] %}
 {%- endmacro %}
 
 
@@ -53,7 +53,7 @@
     Creates a uri for the current handler with a given action.
 #}
 {% macro action_uri(action) -%}
-    {{ handler.uri(action=action,*varargs,**kwargs) }}
+    {{ this.uri(action=action,*varargs,**kwargs) }}
 {%- endmacro %}
 
 
@@ -69,9 +69,9 @@
     Generates a single action button for an item
 #}
 {% macro action_button(item, action, icon, btn, class=None, confirm=False): -%}
-    {% if handler.uri_exists(action=action) %}
+    {% if this.uri_exists(action=action) %}
         <a
-            href='{{ action_uri(action,key=handler.encode_key(item)) }}'
+            href='{{ action_uri(action,key=this.encode_key(item)) }}'
             class='btn {{btn}} {{class}}'
             rel="tooltip"
             title='{{inflector.titleize(action)}}'
@@ -100,8 +100,8 @@
     Generates a link for the sidebar
 #}
 {% macro nav_link(title, action, icon): -%}
-    {% if handler.uri_exists(action=action) %}
-        {% if handler.action == action %}
+    {% if this.uri_exists(action=action) %}
+        {% if this.action == action %}
             {% set active = True %}
         {% else %}
             {% set active = False %}

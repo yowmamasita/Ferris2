@@ -4,7 +4,7 @@
 <div class='paging-container'>
 	<ul class="pager single-pager pagination-centered">
 		<li class="next" {% if not paging.next_cursor %}class='disabled'{% endif %}>
-			<a href="{{handler.uri(cursor=paging.next_cursor, *args, **kwargs)}}">More  &rarr;</a>
+			<a href="{{this.uri(cursor=paging.next_cursor, *args, **kwargs)}}">More  &rarr;</a>
 		</li>
 	</ul>
 
@@ -31,8 +31,8 @@ var paging_config = {
 	cursor: {{paging.cursor|json}},
 	next_cursor: {{paging.next_cursor|json}},
 	limit: {{paging.limit|json}},
-	uri: {{handler.uri(_pass_all=True, cursor=None, limit=None, *args, **kwargs)|json}},
-	storage_key: 'paging_' + {{handler.uri(*args, **kwargs)|json}} + '_' + {{paging.limit|json}},
+	uri: {{this.uri(_pass_all=True, cursor=None, limit=None, *args, **kwargs)|json}},
+	storage_key: 'paging_' + {{this.uri(*args, **kwargs)|json}} + '_' + {{paging.limit|json}},
 	results: {{context[scaffolding.pluralized]|length|json}}
 };
 console.log(paging_config)

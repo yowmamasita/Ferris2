@@ -44,7 +44,7 @@ class TemplateView(View):
         self.setup_template_variables()
 
     def setup_template_variables(self):
-        self.context['handler'] = {
+        self.context.get_dotted('this', {}).update({
             'route': self.handler.route,
             'name': self.handler.name,
             'uri': self.handler.uri,
@@ -55,7 +55,7 @@ class TemplateView(View):
             'encode_key': self.handler.util.encode_key,
             'decode_key': self.handler.util.decode_key,
             'user': self.handler.user
-        }
+        })
         self.handler.events.setup_template_variables(handler=self.handler)
 
     def render(self, *args, **kwargs):

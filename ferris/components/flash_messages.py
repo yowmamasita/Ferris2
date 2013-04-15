@@ -22,10 +22,10 @@ class FlashMessages(object):
         """
         flashes = self.handler.session.get('__flash', [])
         if clear:
-            self.handler.session['__flash'] == []
+            self.handler.session['__flash'] = []
         return flashes
 
     def _on_before_render(self, handler, *args, **kwargs):
-        handler.context.set_dotted('self.flash_messages', self.messages)
+        handler.context.set_dotted('this.flash_messages', self.messages)
 
     __call__ = flash
