@@ -4,6 +4,7 @@
         <div class="container">
             <a class="brand" href="/">Ferris</a>
             <ul class='nav'>
+                {% if autoadmin %}
                 {% for v in autoadmin.links.items() %}
                     {% if handler.name == inflector.underscore(v.0) %}
                     <li class='active'>
@@ -13,6 +14,7 @@
                         <a href='{{v.1}}'>{{inflector.titleize(v.0)}}</a>
                     </li>
                 {% endfor %}
+                {% endif %}
             </ul>
             {% include 'elements/admin/user_info.html' %}
         </div>
