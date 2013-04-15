@@ -42,7 +42,7 @@ class OauthManager(Controller):
 
     def admin_add(self):
         form = AddForm()
-        self.process_form_data(form)
+        self.parse_request(container=form)
 
         if(self.request.method != 'GET' and form.validate()):
             scopes = map(lambda x: x.strip(), form.scopes.data.split(','))

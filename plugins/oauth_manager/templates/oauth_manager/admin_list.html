@@ -21,7 +21,7 @@
         {% for item in list %}
             <tr>
                 <td class='span1'>
-                    <span class='badge'>{{scaffolding.key_id_for(item)}}</span>
+                    <span class='badge'>{{item.key.id()}}</span>
                 </td>
                 <td>
                     {{s.print_value(item.user)}}
