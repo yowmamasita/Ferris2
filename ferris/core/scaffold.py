@@ -1,6 +1,7 @@
-from ferris.core import inflector
+from ferris.core import inflector, autoadmin
 from ferris.core.forms import model_form
 from ferris.components.flash_messages import FlashMessages
+(autoadmin)  # load autoadmin here, if any handler use scaffold it'll be included and initialized
 
 
 class Scaffolding(object):

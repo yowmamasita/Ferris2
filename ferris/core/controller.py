@@ -44,6 +44,16 @@ class Controller(webapp2.RequestHandler, Uri):
     discovery and rendering.
     """
 
+    _controllers = []
+
+    class __metaclass__(type):
+        def __new__(meta, name, bases, dict):
+            cls = type.__new__(meta, name, bases, dict)
+            if name != 'Controller':
+                if not cls in Controller._controllers:
+                    Controller._controllers.append(cls)
+            return cls
+
     #: If set to true, the handler will attempt to render the template determined by :meth:`_get_template_name` if an action returns ``None``.
     auto_render = True
 
