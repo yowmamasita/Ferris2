@@ -8,7 +8,6 @@ from ferris.core import events, inflector, controller
 
 @events.on('before_template_render')
 def render_template_listener(name, context, env):
-    import logging; logging.info('called')
 
     admin_links = {}
     for x in controller.Controller._controllers:
