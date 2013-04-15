@@ -109,17 +109,32 @@ def view(handler, key):
 
 
 def add(handler):
+    # Get the form/message and data
     modelform = handler.scaffold.ModelForm()
     handler.parse_request(container=modelform)
 
+    # If the form was submitted
     if handler.request.method in ('PUT', 'POST', 'PATCH'):
-        if modelform.validate():
-            item = handler.meta.Model(**modelform.data)
-            item.put()
+        if modelform.validate():  # validate the container
+            handler.events.scaffold_before_apply(handler=handler, container=modelform, item=None)
 
+            # construct the item
+            item = handler.meta.Model(**modelform.data)
+
+            handler.events.scaffold_before_save(handler=handler, container=modelform, item=item)
+            # save the item
+            item.put()
+            handler.events.scaffold_after_save(handler=handler, container=modelform, item=item)
+
+            # set the item in the context to allow other things to access it.
+            handler.context.set(**{
+                handler.scaffold.singular: item})
+
+            # redirect
             if handler.scaffold.redirect:
                 return handler.redirect(handler.scaffold.redirect)
 
+    # expose the form/message to the template.
     handler.context['form'] = modelform
 
 
@@ -133,8 +148,16 @@ def edit(handler, key):
 
     if handler.request.method in ('PUT', 'POST', 'PATCH'):
         if modelform.validate():
+
+            handler.events.scaffold_before_apply(handler=handler, container=modelform, item=None)
             modelform.populate_obj(item)
+
+            handler.events.scaffold_before_save(handler=handler, container=modelform, item=item)
             item.put()
+            handler.events.scaffold_after_save(handler=handler, container=modelform, item=item)
+
+            handler.context.set(**{
+                handler.scaffold.singular: item})
 
             if handler.scaffold.redirect:
                 return handler.redirect(handler.scaffold.redirect)
@@ -145,5 +168,9 @@ def edit(handler, key):
 
 
 def delete(handler, key):
-    handler.util.decode_key(key).delete()
-    return handler.redirect(handler.uri(action='list'))
+    key = handler.util.decode_key(key)
+    handler.events.scaffold_before_delete(handler=handler, key=key)
+    key.delete()
+    handler.events.scaffold_after_delete(handler=handler, key=key)
+    if handler.scaffold.redirect:
+        return handler.redirect(handler.scaffold.redirect)
