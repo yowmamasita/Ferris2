@@ -5,4 +5,4 @@ from ferris.handlers.root import Root
 from ferris.handlers.oauth import Oauth
 
 ferris_app.router.add(Route('/admin', Root, handler_method='admin'))
-Oauth.build_routes(ferris_app.router)
+Oauth._build_routes(ferris_app.router)

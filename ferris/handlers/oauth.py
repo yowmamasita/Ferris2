@@ -1,12 +1,12 @@
 from __future__ import absolute_import
 from google.appengine.ext import ndb
-from ferris.core.handler import Handler, route, route_with
+from ferris.core.controller import Controller, route, route_with
 from oauth2client.client import OAuth2WebServerFlow
 from ferris.core.oauth2.user_credentials import UserCredentials as OAuth2UserCredentials
 from settings import app_config
 
 
-class Oauth(Handler):
+class Oauth(Controller):
 
     @route
     def start(self, session):
