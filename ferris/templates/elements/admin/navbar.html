@@ -5,7 +5,7 @@
             <a class="brand" href="/">Ferris</a>
             <ul class='nav'>
                 {% if autoadmin %}
-                {% for v in autoadmin.links.items() %}
+                {% for v in autoadmin.links|dictsort %}
                     {% if this.name == inflector.underscore(v.0) %}
                     <li class='active'>
                     {% else %}
