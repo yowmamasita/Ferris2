@@ -26,11 +26,11 @@ def register_plugin(name):
 
 def enable_plugin(name):
     """
-    Routes all of the handlers inside of a plugin
+    Routes all of the controllers inside of a plugin
     """
-    from routing import route_all_handlers
+    from routing import route_all_controllers
     try:
-        route_all_handlers(ferris.app.app.router, name)
+        route_all_controllers(ferris.app.app.router, name)
     except ImportError, e:
         logging.error("Plugin %s does not exist, or contains a bad import: %s" % (name, e))
         raise

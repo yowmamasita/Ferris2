@@ -7,9 +7,9 @@
 
     <li>
         {% if this.uri_exists(action='list') %}
-            <a href="{{this.uri(action='list')}}">{{inflector.titleize(this.route.handler)}}</a>
+            <a href="{{this.uri(action='list')}}">{{inflector.titleize(this.route.controller)}}</a>
         {% else %}
-            <a href="#">{{inflector.titleize(this.route.handler)}}</a>
+            <a href="#">{{inflector.titleize(this.route.controller)}}</a>
         {% endif %}
         <span class="divider">/</span>
     </li>

@@ -50,7 +50,7 @@
 
 
 {#
-    Creates a uri for the current handler with a given action.
+    Creates a uri for the current controller with a given action.
 #}
 {% macro action_uri(action) -%}
     {{ this.uri(action=action,*varargs,**kwargs) }}
