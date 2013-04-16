@@ -1,4 +1,4 @@
-from ferris.core.ndb import ndb
+import wtforms
 
 
 class TinyMce(object):
@@ -6,13 +6,13 @@ class TinyMce(object):
     Automatically makes TextProperty fields into TinyMCE editors (for the admin interface
     """
 
-    def __init__(self, handler):
-        self.handler = handler
-        self.handler.events.after_process_form_data += self.after_process_form_data.__get__(self)
+    def __init__(self, controller):
+        self.controller = controller
+        self.controller.events.before_render += self.before_render.__get__(self)
 
-    def after_process_form_data(self, handler, form):
-        if handler.Model:
+    def before_render(self, controller, *args, **kwargs):
+        form = controller.context.get('form', None)
+        if form:
             for field in form:
-                if field.name in handler.Model._properties.keys():
-                    if isinstance(handler.Model._properties[field.name], ndb.TextProperty):
-                        field.flags.tinymce = True
+                if isinstance(field, wtforms.fields.simple.TextAreaField):
+                    field.flags.tinymce = True
