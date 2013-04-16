@@ -26,7 +26,7 @@ class RoutingTest(unittest.TestCase):
             routing.canonical_parts_from_method(TestClass.method1),
             {
                 'prefix': None,
-                'handler': 'test_class',
+                'controller': 'test_class',
                 'action': 'method1',
                 'args': []
             }
@@ -36,7 +36,7 @@ class RoutingTest(unittest.TestCase):
             routing.canonical_parts_from_method(TestClass.method2),
             {
                 'prefix': None,
-                'handler': 'test_class',
+                'controller': 'test_class',
                 'action': 'method2',
                 'args': ['arg1', 'arg2']
             }
@@ -46,7 +46,7 @@ class RoutingTest(unittest.TestCase):
             routing.canonical_parts_from_method(TestClass.pre_method1),
             {
                 'prefix': 'pre',
-                'handler': 'test_class',
+                'controller': 'test_class',
                 'action': 'method1',
                 'args': []
             }
@@ -56,7 +56,7 @@ class RoutingTest(unittest.TestCase):
             routing.canonical_parts_from_method(TestClass.pre_method2),
             {
                 'prefix': 'pre',
-                'handler': 'test_class',
+                'controller': 'test_class',
                 'action': 'method2',
                 'args': ['arg1', 'arg2']
             }

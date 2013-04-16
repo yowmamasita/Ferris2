@@ -39,7 +39,7 @@ def route_with(*args, **kwargs):
 
 class Controller(webapp2.RequestHandler, Uri):
     """
-    Handler allows grouping of common actions and provides them with
+    Controllers allows grouping of common actions and provides them with
     automatic routing, reusable components, and automatic template
     discovery and rendering.
     """
@@ -54,11 +54,11 @@ class Controller(webapp2.RequestHandler, Uri):
                     Controller._controllers.append(cls)
             return cls
 
-    #: If set to true, the handler will attempt to render the template determined by :meth:`_get_template_name` if an action returns ``None``.
+    #: If set to true, the controller will attempt to render the template determined by :meth:`_get_template_name` if an action returns ``None``.
     auto_render = True
 
     # The name of this class, lowercase (automatically determined)
-    name = 'handler'
+    name = 'controller'
 
     #: The current user as determined by ``google.appengine.api.users.get_current_user()``.
     user = None
@@ -68,30 +68,30 @@ class Controller(webapp2.RequestHandler, Uri):
 
     class Meta(object):
         #: List of components.
-        #: When declaring a handler, this must be a list of classes.
-        #: When the handler is constructed, this will be transformed into a Bunch of instances.
+        #: When declaring a controller, this must be a list of classes.
+        #: When the controller is constructed, this will be transformed into a Bunch of instances.
         components = ()
 
-        #: Prefixes are added in from of handlers (like admin_list) and will cause routing
+        #: Prefixes are added in from of controller (like admin_list) and will cause routing
         #: to produce a url such as '/admin/name/list' and a name such as 'admin-name-list'
         prefixes = ()
 
         #: Which view class to use by default.
         View = TemplateView
 
-        def __init__(self, handler):
-            self._handler = handler
+        def __init__(self, controller):
+            self._controller = controller
             self.view = None
             self.change_view(self.View)
 
         def change_view(self, viewclass, persist_context=True):
             context = self.view.context if self.view else None
             self.View = viewclass
-            self.view = self.View(self._handler, context)
+            self.view = self.View(self._controller, context)
 
     class Util(object):
-        def __init__(self, handler):
-            self._handler = handler
+        def __init__(self, controller):
+            self._controller = controller
 
         decode_key = staticmethod(decode_key)
         encode_key = staticmethod(encode_key)
@@ -111,7 +111,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self.util = self.Util(self)
 
     def _build_components(self):
-        self.events.before_build_components(handler=self)
+        self.events.before_build_components(controller=self)
         if hasattr(self.Meta, 'components'):
             component_classes = self.Meta.components
             self.components = Bunch()
@@ -123,7 +123,7 @@ class Controller(webapp2.RequestHandler, Uri):
                 self.components[name] = (cls(self))
         else:
             self.components = Bunch()
-        self.events.after_build_components(handler=self)
+        self.events.after_build_components(controller=self)
 
     def _init_route(self):
         action = self.request.route.handler_method
@@ -136,7 +136,7 @@ class Controller(webapp2.RequestHandler, Uri):
 
         self.route = Bunch(
             prefix=prefix,
-            handler=self.name,
+            controller=self.name,
             action=action,
             name=self.request.route.name)
 
@@ -151,20 +151,20 @@ class Controller(webapp2.RequestHandler, Uri):
     @classmethod
     def _build_routes(cls, router):
         """
-        Called in the main app router to get all of this handler's routes.
+        Called in the main app router to get all of this controller's routes.
         Override to add custom/additional routes.
         """
 
         # Route the rest methods
-        router.add(routing.build_scaffold_routes_for_handler(cls))
+        router.add(routing.build_scaffold_routes_for_controller(cls))
         for prefix in cls.Meta.prefixes:
-            router.add(routing.build_scaffold_routes_for_handler(cls, prefix))
+            router.add(routing.build_scaffold_routes_for_controller(cls, prefix))
 
         # Auto route the remaining methods
-        for route in routing.build_routes_for_handler(cls):
+        for route in routing.build_routes_for_controller(cls):
             router.add(route)
 
-        events.fire('handler_build_routes', cls=cls, router=router)
+        events.fire('controller_build_routes', cls=cls, router=router)
 
     def startup(self):
         """Called when a new request is received before authorization and dispatching."""
@@ -177,21 +177,21 @@ class Controller(webapp2.RequestHandler, Uri):
             if not users.get_current_user().email().split('@').pop() in app_config['allowed_auth_domains']:
                 return Response("Your domain does not have access to this application.", status="401 Unauthorized")
         try:
-            self.events.is_authorized(handler=self)
+            self.events.is_authorized(controller=self)
         except Exception, e:
             return Response(str(e), status='401 Unauthorized')
         return True
 
     def dispatch(self):
         """
-        Calls startup and then the handler method. Will also make sure that the user
+        Calls startup and then the controller method. Will also make sure that the user
         is an administrator is the current prefix is 'admin'.
 
         If self.auto_render is True, then we will try to automatically render the template
         at templates/{name}/{prefix}_{action}.{extension}. The automatic name can be overriden
         by setting self.template_name.
 
-        If the handler method returns anything other than None, auto-rendering is skipped
+        If the controller method returns anything other than None, auto-rendering is skipped
         and the result (return value) is returned to the dispatcher.
         """
 
@@ -201,9 +201,9 @@ class Controller(webapp2.RequestHandler, Uri):
         self.session_store = sessions.get_store(request=self.request)
         self.context.set_dotted('this.session', self.session)
 
-        self.events.before_startup(handler=self)
+        self.events.before_startup(controller=self)
         self.startup()
-        self.events.after_startup(handler=self)
+        self.events.after_startup(controller=self)
 
         # Authorization
         auth_result = self.is_authorized()
@@ -211,9 +211,9 @@ class Controller(webapp2.RequestHandler, Uri):
             return auth_result
 
         # Dispatch to the method
-        self.events.before_dispatch(handler=self)
+        self.events.before_dispatch(controller=self)
         response = super(Controller, self).dispatch()
-        self.events.after_dispatch(response=response, handler=self)
+        self.events.after_dispatch(response=response, controller=self)
 
         # Return value handlers.
         # Response has highest precendence, the view class has lowest.
@@ -244,7 +244,7 @@ class Controller(webapp2.RequestHandler, Uri):
             self.response.charset = 'utf8'
             self.response.unicode_body = self.meta.view.render()
 
-        self.events.dispatch_complete(handler=self)
+        self.events.dispatch_complete(controller=self)
 
         self.session_store.save_sessions(self.response)
         return self.response

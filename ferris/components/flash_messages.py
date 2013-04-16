@@ -4,28 +4,28 @@ class FlashMessages(object):
     the next page. These are useful for things like create/edit/delete acknowledgements.
     """
 
-    def __init__(self, handler):
-        self.handler = handler
-        self.handler.events.before_render += self._on_before_render
+    def __init__(self, controller):
+        self.controller = controller
+        self.controller.events.before_render += self._on_before_render
 
     def flash(self, message, type='info'):
         """
         Adds the given message to the list of "flash" messages to show to the user on the next page.
         """
-        flash = self.handler.session.get('__flash', [])
+        flash = self.controller.session.get('__flash', [])
         flash.append((message, type))
-        self.handler.session['__flash'] = flash
+        self.controller.session['__flash'] = flash
 
     def messages(self, clear=True):
         """
         returns all flash messsages, and by default clears the queue
         """
-        flashes = self.handler.session.get('__flash', [])
+        flashes = self.controller.session.get('__flash', [])
         if clear:
-            self.handler.session['__flash'] = []
+            self.controller.session['__flash'] = []
         return flashes
 
-    def _on_before_render(self, handler, *args, **kwargs):
-        handler.context.set_dotted('this.flash_messages', self.messages)
+    def _on_before_render(self, controller, *args, **kwargs):
+        controller.context.set_dotted('this.flash_messages', self.messages)
 
     __call__ = flash
