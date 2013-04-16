@@ -7,7 +7,7 @@ auto_route()
 
 # Default root route
 from webapp2 import Route
-from ferris.handlers.root import Root
+from ferris.controllers.root import Root
 ferris_app.router.add(Route('/', Root, handler_method='root'))
 
 # Plugins
