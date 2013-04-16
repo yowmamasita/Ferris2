@@ -16,22 +16,19 @@
 
     var hide_popups = function(){
         var wm = window.tinymce.activeEditor.windowManager;
-        for(var win in wm.windows){
-            if(wm.windows.hasOwnProperty(win)){
-                $('#' + wm.windows[win].id).hide();
-            }
+        this._hidden_windows = [];
+        for(var winx in wm.windows){
+            var win = wm.windows[winx];
+            if(win._visible) win.hide();
+            this._hidden_windows.push(win);
         }
-        $('#mceModalBlocker').hide();
     };
 
     var show_popups = function(){
         var wm = window.tinymce.activeEditor.windowManager;
-        for(var win in wm.windows){
-            if(wm.windows.hasOwnProperty(win)){
-                $('#' + wm.windows[win].id).show();
-            }
+        for(var winx in this._hidden_windows){
+            this._hidden_windows[winx].show();
         }
-        $('#mceModalBlocker').show();
     };
 
     var file_browser_callback = function(field_name, url, type, win){
