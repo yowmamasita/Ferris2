@@ -27,8 +27,8 @@ class OAuth(object):
     force_prompt = False
 
     def __init__(self, controller):
-        if hasattr(controller, 'oauth_scopes'):
-            self._scopes = controller.oauth_scopes
+        if hasattr(controller.meta, 'oauth_scopes'):
+            self._scopes = controller.meta.oauth_scopes
         else:
             self._scopes = []
         self._user_credentials = None

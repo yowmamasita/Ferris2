@@ -16,11 +16,10 @@ class OauthManager(Controller):
         prefixes = ('admin',)
         components = (scaffold.Scaffolding, oauth.OAuth)
         Model = UserCredentials
+        oauth_scopes = ['https://www.googleapis.com/auth/userinfo.profile']
 
     class Scaffold:
         pass
-
-    oauth_scopes = ['https://www.googleapis.com/auth/userinfo.profile']
 
     def startup(self):
         self.oauth.force_prompt = True
