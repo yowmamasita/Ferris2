@@ -17,8 +17,8 @@ app_config['webapp2_extras.sessions'] = {
 app_config['oauth2'] = {
     # OAuth2 Configuration should be generated from
     # https://code.google.com/apis/console
-    'client_id': '428882505205.apps.googleusercontent.com',  # XXXXXXXXXXXXXXX.apps.googleusercontent.com
-    'client_secret': 'UPMHYuaXlWwlk9AVsJW1oEEP'
+    'client_id': None,  # XXXXXXXXXXXXXXX.apps.googleusercontent.com
+    'client_secret': None
 }
 
 # This enables the template debugger.
