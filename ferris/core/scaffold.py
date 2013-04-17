@@ -75,7 +75,7 @@ class Scaffold(object):
             singular=inflector.underscore(controller.name),
             ModelForm=model_form(controller.meta.Model),
             display_properties=[name for name, property in controller.meta.Model._properties.items()],
-            redirect=controller.uri(action='list'),
+            redirect=controller.uri(action='list') if controller.uri_exists(action='list') else None,
             form_action=None,
             form_encoding='application/x-www-form-urlencoded',
             flash_messages=True
