@@ -52,6 +52,8 @@ class Controller(webapp2.RequestHandler, Uri):
             if name != 'Controller':
                 if not cls in Controller._controllers:
                     Controller._controllers.append(cls)
+                if not issubclass(cls.Meta, Controller.Meta):
+                    cls.Meta = type('Meta', (cls.Meta, Controller.Meta), {})
             return cls
 
     #: If set to true, the controller will attempt to render the template determined by :meth:`_get_template_name` if an action returns ``None``.
@@ -70,11 +72,11 @@ class Controller(webapp2.RequestHandler, Uri):
         #: List of components.
         #: When declaring a controller, this must be a list of classes.
         #: When the controller is constructed, this will be transformed into a Bunch of instances.
-        components = ()
+        components = tuple()
 
         #: Prefixes are added in from of controller (like admin_list) and will cause routing
         #: to produce a url such as '/admin/name/list' and a name such as 'admin-name-list'
-        prefixes = ()
+        prefixes = tuple()
 
         #: Which view class to use by default.
         View = TemplateView
@@ -103,11 +105,6 @@ class Controller(webapp2.RequestHandler, Uri):
 
         self.name = inflector.underscore(self.__class__.__name__)
         self.proper_name = self.__class__.__name__
-
-        # Make sure the Meta class has a proper chain
-        if self.__class__ != Controller and not issubclass(self.Meta, Controller.Meta):
-            self.Meta = type('Meta', (self.Meta, Controller.Meta), {})
-
         self.util = self.Util(self)
 
     def _build_components(self):

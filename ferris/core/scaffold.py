@@ -71,8 +71,8 @@ class Scaffold(object):
 
         defaults = dict(
             title=inflector.titleize(controller.proper_name),
-            plural=inflector.pluralize(controller.name),
-            singular=inflector.underscore(controller.name),
+            plural=inflector.underscore(controller.name),
+            singular=inflector.underscore(inflector.singularize(controller.name)),
             ModelForm=model_form(controller.meta.Model),
             display_properties=[name for name, property in controller.meta.Model._properties.items()],
             redirect=controller.uri(action='list') if controller.uri_exists(action='list') else None,
