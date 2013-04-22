@@ -1,10 +1,8 @@
-from ferris.core.controller import Controller, route
-from ferris.core import scaffold
+from ferris import Controller, route, scaffold
 from ferris.core.oauth2.user_credentials import UserCredentials
 from ferris.components import oauth
 from apiclient.discovery import build
 import wtforms
-import logging
 
 
 class AddForm(wtforms.Form):
