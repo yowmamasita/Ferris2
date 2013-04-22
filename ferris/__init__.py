@@ -5,7 +5,7 @@ from core import scaffold, events, routing, oauth2, forms
 from core.event import Event
 from core.bunch import Bunch
 from core.json_util import stringify as json_stringify, parse as json_parse
-from core.controller import Controller, route, route_with
+from core.controller import Controller, route, route_with, auth
 from core.memcache import cached, arg_cached, chunked_cache
 from core.plugins import has_plugin, register_plugin, enable_plugin, list_plugins
 from core.request_parsers import RequestParser, FormParser
@@ -19,6 +19,7 @@ __all__ = (
     ndb,
     tests,
     core,
+    auth,
     components,
     behaviors,
     routing,

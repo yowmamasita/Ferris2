@@ -3,7 +3,7 @@ from settings import app_config
 from webapp2 import Response, cached_property
 from webapp2_extras import sessions
 from google.appengine.api import users
-from ferris.core import inflector
+from ferris.core import inflector, auth
 from ferris.core.ndb import encode_key, decode_key
 from ferris.core.uri import Uri
 from ferris.core import events
@@ -77,6 +77,14 @@ class Controller(webapp2.RequestHandler, Uri):
         #: Prefixes are added in from of controller (like admin_list) and will cause routing
         #: to produce a url such as '/admin/name/list' and a name such as 'admin-name-list'
         prefixes = tuple()
+
+        #: Authorizations control access to the controller. Each authorization is a callable.
+        #: Authorizations are called in order and all must return True for the request to be
+        #: processed. If they return False or a tuple like (False, 'message'), the request will
+        #: be rejected.
+        #: You should **always** have auth.require_admin_for_prefix(prefix=('admin',)) in your
+        #: authorization chain.
+        authorizations = (auth.require_admin_for_prefix(prefix=('admin',)),)
 
         #: Which view class to use by default.
         View = TemplateView
@@ -167,17 +175,20 @@ class Controller(webapp2.RequestHandler, Uri):
         """Called when a new request is received before authorization and dispatching."""
         pass
 
-    def is_authorized(self):
-        if self.route.prefix == 'admin' and not users.is_current_user_admin():
-            return Response("You must be an administrator.", status="401 Unauthorized")
-        if 'allowed_auth_domains' in app_config:
-            if not users.get_current_user().email().split('@').pop() in app_config['allowed_auth_domains']:
-                return Response("Your domain does not have access to this application.", status="401 Unauthorized")
-        try:
-            self.events.is_authorized(controller=self)
-        except Exception, e:
-            return Response(str(e), status='401 Unauthorized')
-        return True
+    def _is_authorized(self):
+        auth_result = True
+
+        for chain in self.meta.authorizations:
+            auth_result = chain(self)
+            if auth_result is not True:
+                break
+
+        if auth_result is not True:
+            self.response.status = 401
+            self.response.content = u"Authorization chain rejected request"
+            if isinstance(auth_result, tuple):
+                self.response.content = auth_result[1]
+            return self.response
 
     def dispatch(self):
         """
@@ -203,8 +214,8 @@ class Controller(webapp2.RequestHandler, Uri):
         self.events.after_startup(controller=self)
 
         # Authorization
-        auth_result = self.is_authorized()
-        if auth_result is not True:
+        auth_result = self._is_authorized()
+        if auth_result:
             return auth_result
 
         # Dispatch to the method
