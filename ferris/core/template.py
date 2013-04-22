@@ -107,7 +107,7 @@ class TemplateEngine(object):
                 'theme': self.theme,
                 'app_config': app_config,
                 'has_plugin': plugins.has_plugin,
-                'plugins': plugins.list,
+                'plugins': plugins.list_plugins,
                 'version': ferris.version
             },
             'json': _json_filter,

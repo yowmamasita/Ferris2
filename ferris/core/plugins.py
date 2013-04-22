@@ -36,5 +36,5 @@ def enable_plugin(name):
         raise
 
 
-def list():
+def list_plugins():
     return _plugins
