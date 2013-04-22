@@ -88,20 +88,20 @@ class RoutingTest(unittest.TestCase):
 
         self.assertEquals(
             routing.name_from_canonical_parts(None, 'one', 'two', []),
-            'one-two'
+            'one:two'
         )
 
         self.assertEquals(
             routing.name_from_canonical_parts('pre', 'one', 'two', []),
-            'pre-one-two'
+            'pre:one:two'
         )
 
         self.assertEquals(
             routing.name_from_canonical_parts(None, 'one', 'two', ['x', 'y']),
-            'one-two'
+            'one:two'
         )
 
         self.assertEquals(
             routing.name_from_canonical_parts('pre', 'one', 'two', ['x', 'y']),
-            'pre-one-two'
+            'pre:one:two'
         )

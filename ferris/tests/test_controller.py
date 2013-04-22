@@ -64,9 +64,9 @@ class TestController(Controller):
         assert self.uri(action='list') == '/test_controller'
         assert self.uri(prefix='monster', action='list') == '/monster/test_controller'
         assert self.uri(action='edit', key=12) == '/test_controller/%3A12/edit'
-        assert self.uri('test_controller-list') == '/test_controller'
-        assert self.uri('monster-test_controller-list') == '/monster/test_controller'
-        assert self.uri('test_controller-monkey', key=13) == '/test_controller/monkey/13'
+        assert self.uri('test_controller:list') == '/test_controller'
+        assert self.uri('monster:test_controller:list') == '/monster/test_controller'
+        assert self.uri('test_controller:monkey', key=13) == '/test_controller/monkey/13'
 
         return 'success'
 
@@ -86,7 +86,7 @@ class TestController(Controller):
 
     @route
     def do_redirect(self):
-        return self.redirect(self.uri('test_controller-list'))
+        return self.redirect(self.uri('test_controller:list'))
 
     @route
     def monster_template_names(self):

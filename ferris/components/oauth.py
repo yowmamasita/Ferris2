@@ -73,7 +73,7 @@ class OAuth(object):
 
         session = OAuth2Session(scopes=self._scopes, redirect=redirect, admin=admin, force_prompt=force_prompt)
         session.put()
-        uri = controller.uri('oauth-start', session=session.key.urlsafe())
+        uri = controller.uri('oauth:start', session=session.key.urlsafe())
         return uri
 
 
