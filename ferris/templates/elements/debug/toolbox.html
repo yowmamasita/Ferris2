@@ -31,10 +31,10 @@ $(function(){prettyPrint();});
                     <dd>{{template.name}}</dt>
 
                     <dt>Template List</dt>
-                    <dd>{{template.list|join(', ')}}</dt>
+                    <dd>{{template.list}}</dt>
 
                     <dt>Context</dt>
-                    <dd><pre class='prettyprint'>{{context|json(indent=4)|e}}</pre></dd>
+                    <dd><pre class='prettyprint'>{{context|json(indent=2)|e}}</pre></dd>
                 </dl>
             </div>
 
@@ -75,20 +75,20 @@ $(function(){prettyPrint();});
                     {% if this.self.scaffold %}
 
                     <dt>Model</dt>
-                    <dd>{{this.self.Model.__name__}}</dd>
+                    <dd>{{this.self.meta.Model.__name__}}</dd>
 
                     <dt>ModelForm</dt>
-                    <dd>{{this.self.ModelForm.__name__}}</dd>
+                    <dd>{{this.self.scaffold.ModelForm.__name__}}</dd>
 
                     {% endif %}
 
                     <dt>Prefixes</dt>
-                    <dd>{{this.self.prefixes|join(', ')}}</dd>
+                    <dd>{{this.self.meta.prefixes|join(', ')}}</dd>
 
                     <dt>Components</dt>
                     <dd>
-                        {% for x in this.self.components %}
-                            {{x}}: {{this.self.components[x].__class__.__name__}}{% if not loop.last %}, {% endif %}
+                        {% for x in this.self.meta.components %}
+                            {{x}}: {{this.self.meta.components[x].__class__.__name__}}{% if not loop.last %}, {% endif %}
                         {% endfor %}
                     </dd>
 
@@ -102,15 +102,15 @@ $(function(){prettyPrint();});
             <div class="tab-pane" id="rooney_tab4">
                 <dl>
                     <dt>Current Prefix</dt>
-                    <dd>{{this.prefix|default('None', True)}}</dd>
+                    <dd>{{this.route.prefix|default('None', True)}}</dd>
 
 
                     <dt>Current Controller</dt>
-                    <dd>{{this.name}}</dd>
+                    <dd>{{this.route.name}}</dd>
 
 
                     <dt>Current Action</dt>
-                    <dd>{{this.action}}</dd>
+                    <dd>{{this.route.action}}</dd>
 
                     <dt>Current Route Name</dt>
                     <dd>{{this.request.route.name}}</dd>
@@ -129,10 +129,10 @@ $(function(){prettyPrint();});
                             </thead>
                             <tbody>
                                 {% for name, route in this.request.app.router.build_routes.items()|sort %}
-                                    <tr {% if route.this.__name__ == this.self.__class__.__name__ %}class='info'{% endif %} >
+                                    <tr {% if route.handler.__name__ == this.self.__class__.__name__ %}class='info'{% endif %} >
                                         <td>{{name}}</td>
                                         <td>{{route.template|e}}</td>
-                                        <td>{{route.this.__name__}}</td>
+                                        <td>{{route.handler.__name__}}</td>
                                         <td>{{route.handler_method}}</td>
                                     </tr>
                                 {% endfor %}
