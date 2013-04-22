@@ -65,6 +65,7 @@ class Search(object):
 
             self.controller.context.set_dotted('paging.limit', limit)
             self.controller.context.set_dotted('paging.cursor', cursor)
+            self.controller.context.set_dotted('paging.count', len(results))
             if index_results.cursor:
                 self.controller.context.set_dotted('paging.cursor', str(index_results.cursor.web_safe_string))
 
