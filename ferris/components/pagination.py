@@ -1,5 +1,5 @@
 from ferris.core import inflector
-from google.appengine.ext import db, ndb
+from google.appengine.ext import ndb
 from google.appengine.datastore.datastore_query import Cursor
 import logging
 
@@ -14,11 +14,28 @@ class Pagination(object):
     In automatic operation, it looks for a template variable with the underscored pluralized version of the Handler's name. For instance, if you're on ``Pages`` it looks for the template variable ``pages``.
     """
 
-    def __init__(self, handler):
-        self.handler = handler
-        self.handler.events.after_dispatch += self.after_dispatch_callback.__get__(self)
+    def __init__(self, controller):
+        self.controller = controller
+        if not hasattr(self.controller.meta, 'pagination_action'):
+            setattr(self.controller.meta, 'pagination_actions', ('list',))
+        self.controller.events.after_dispatch += self.after_dispatch_callback.__get__(self)
 
-    def paginate(self, query_or_var_name=None):
+    def _get_query(self, name):
+        if not name and hasattr(self.controller, 'scaffold'):
+            name = self.controller.scaffold.plural
+
+        if isinstance(name, basestring):
+            query = self.controller.context[name]
+        else:
+            query = name
+
+        if not isinstance(query, (ndb.Query,)):
+            logging.info('Unable to paginate, couldn\'t locate a query')
+            return None
+
+        return query
+
+    def paginate(self, query=None, cursor=None, limit=None):
         """
         Paginates a query and sets up the appropriate template variables.
 
@@ -34,82 +51,29 @@ class Pagination(object):
 
         Returns the data, and if ``query_or_var_name`` is a string, sets that template variable.
         """
-        if not query_or_var_name:
-            query_or_var_name = inflector.pluralize(self.handler.name)
-        if isinstance(query_or_var_name, basestring):
-            query = self.handler.get(query_or_var_name)
-        else:
-            query = query_or_var_name
 
-        if not isinstance(query, (db.Query, ndb.Query)):
-            logging.debug('Unable to paginate, query is not a Query or ndb Query object')
-            return
-
-        cursor = self.handler.request.params.get('cursor', None)
-
-        default_limit = 10
-
-        if hasattr(self.handler, 'paginate_limit'):
-            default_limit = self.handler.paginate_limit
-
-        limit = int(self.handler.request.params.get('limit', default_limit))
-
-        if hasattr(self.handler, 'max_paginate_limit'):
-            if limit > self.handler.max_paginate_limit:
-                limit = self.handler.max_paginate_limit
-
-        if isinstance(query, db.Query):
-            data = self.paginate_db(query, cursor, limit)
-        elif isinstance(query, ndb.Query):
-            data = self.paginate_ndb(query, cursor, limit)
-
-        if isinstance(query_or_var_name, basestring):
-            self.handler.set(query_or_var_name, data)
-        else:
-            self.handler.set(inflector.pluralize(self.handler.name), data)
-
-        return data
-
-    def paginate_db(self, query, cursor, limit):
-
-        if cursor:
-            query.with_cursor(cursor)
-
-        data = query.fetch(limit)
-        next_cursor = query.cursor()
-
-        if len(data) < limit:
-            next_cursor = ''
-        else:
-            # Hack alert!  Fetch one more result to see if this is the end of the results.
-            # (Prevents potential blank last page.)
-            query.with_cursor(next_cursor)
-            if not query.fetch(1):
-                next_cursor = ''
-
-        self.handler.set('paging', {
-            'cursor': cursor,
-            'next_cursor': next_cursor,
-            'limit': limit
-        })
-
-        return data
-
-    def paginate_ndb(self, query, cursor, limit):
-        if cursor:
+        cursor = cursor if cursor else self.controller.request.params.get('cursor', None)
+        if cursor and not isinstance(cursor, Cursor):
             cursor = Cursor(urlsafe=cursor)
+
+        limit = limit if limit else self.controller.meta.pagination_limit if hasattr(self.controller.meta, 'pagination_limit') else 100
+        query = self._get_query(query)
+
+        if not query:
+            return
 
         data, next_cursor, more = query.fetch_page(limit, start_cursor=cursor)
 
-        self.handler.set('paging', {
-            'cursor': cursor.urlsafe() if cursor else '',
-            'next_cursor': next_cursor.urlsafe() if more else '',
-            'limit': limit
-        })
+        if hasattr(self.controller, 'scaffold'):
+            self.controller.context[self.controller.scaffold.plural] = data
 
-        return data
+        self.controller.context.set_dotted('paging.cursor', cursor.urlsafe() if cursor else False)
+        self.controller.context.set_dotted('paging.next_cursor', next_cursor.urlsafe() if more else False)
+        self.controller.context.set_dotted('paging.limit', limit)
+        self.controller.context.set_dotted('paging.count', len(data))
+
+        return data, next_cursor if more else False
 
     def after_dispatch_callback(self, response, *args, **kwargs):
-        if not 'list' in self.handler.action:  # checks for list and any prefixed lists
-            return
-        self.paginate()
+        if self.controller.route.action in self.controller.meta.pagination_actions:  # checks for list and any prefixed lists
+            self.paginate()

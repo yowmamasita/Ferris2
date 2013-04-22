@@ -33,7 +33,7 @@ var paging_config = {
 	limit: {{paging.limit|json}},
 	uri: {{this.uri(_pass_all=True, cursor=None, limit=None, *args, **kwargs)|json}},
 	storage_key: 'paging_' + {{this.uri(*args, **kwargs)|json}} + '_' + {{paging.limit|json}},
-	results: {{context[scaffolding.pluralized]|length|json}}
+	results: {{paging.count|json}}
 };
 console.log(paging_config)
 </script>
