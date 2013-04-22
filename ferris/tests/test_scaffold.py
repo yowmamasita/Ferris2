@@ -22,32 +22,6 @@ class Widgets(Controller):
     delete = scaffold.delete
 
 
-class _TestScaffoldInjection(unittest.TestCase):
-
-    def testAttributes(self):
-        self.assertTrue(hasattr(Widgets, 'scaffold'))
-        self.assertTrue(hasattr(Widgets, 'ModelForm'))
-        self.assertTrue(hasattr(Widgets.scaffold, 'display_properties'))
-        self.assertTrue(hasattr(Widgets, 'modelform'))
-        self.assertTrue(hasattr(Widgets, '_scaffold_on_before_render'))
-        self.assertTrue(hasattr(Widgets, '_determine_display_properties'))
-        self.assertTrue(hasattr(Widgets, 'get_modelform'))
-        self.assertTrue(hasattr(Widgets, 'flash'))
-        self.assertEqual(Widgets.dispatch.im_func.__module__, 'ferris.core.scaffolding.wrap')
-
-    def testAutoAdmin(self):
-        from ferris.core.autoadmin import admin_handlers
-        self.assertTrue(Widgets in admin_handlers)
-
-    def testMethods(self):
-        self.assertEqual(Widgets.list.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.add.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.view.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.edit.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.delete.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.admin_list.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-
-
 class TestScaffoldBehavior(FerrisTestCase):
     def setUp(self):
         super(TestScaffoldBehavior, self).setUp()

@@ -1,4 +1,5 @@
 import template
+import json_util
 
 
 class ViewContext(dict):
@@ -68,10 +69,15 @@ class TemplateView(View):
 
     def render(self, *args, **kwargs):
         self.controller.events.before_render(controller=self.controller)
+
         result = template.render_template(self.get_template_names(), self.context, theme=self.theme)
+        self.controller.response.content_type = 'text/html'
+        self.controller.response.charset = 'utf8'
+        self.controller.response.unicode_body = result
+
         self.controller.events.after_render(controller=self.controller, result=result)
 
-        return result
+        return self.controller.response
 
     def get_template_names(self):
         """
@@ -104,3 +110,33 @@ class TemplateView(View):
         self.controller.events.template_names(controller=self.controller, templates=templates)
 
         return templates
+
+
+class JsonView(View):
+
+    def __init__(self, controller, context=None):
+        super(JsonView, self).__init__(controller, context)
+        self.variable_name = ('data',)
+
+    def _get_data(self):
+        self.variable_name = self.variable_name if isinstance(self.variable_name, (list, tuple)) else (self.variable_name,)
+
+        if hasattr(self.controller, 'scaffold'):
+            self.variable_name += (self.controller.scaffold.singular, self.controller.scaffold.plural)
+
+        for v in self.variable_name:
+            data = self.controller.context.get(v, None)
+            if data:
+                return data
+
+    def render(self, *args, **kwargs):
+        self.controller.events.before_render(controller=self.controller)
+
+        result = unicode(json_util.stringify(self._get_data()))
+        self.controller.response.content_type = 'application/json'
+        self.controller.response.charset = 'utf8'
+        self.controller.response.unicode_body = result
+
+        self.controller.events.after_render(controller=self.controller, result=result)
+
+        return self.controller.response

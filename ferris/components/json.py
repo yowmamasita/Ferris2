@@ -32,7 +32,7 @@ class Json(object):
             self.render_as_json = True
 
     def after_dispatch_callback(self, response, *args, **kwargs):
-        if response == None and self.render_as_json == True:
+        if response is None and self.render_as_json is True:
             self.render()
 
     def render(self):

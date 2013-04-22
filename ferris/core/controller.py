@@ -267,8 +267,7 @@ class Controller(webapp2.RequestHandler, Uri):
                 self.response.status = 200
                 del self.response.headers['Location']
 
-            self.response.charset = 'utf8'
-            self.response.unicode_body = self.meta.view.render()
+            self.response = self.meta.view.render()
 
         self.events.dispatch_complete(controller=self)
 
