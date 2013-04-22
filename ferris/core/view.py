@@ -56,6 +56,14 @@ class TemplateView(View):
             'decode_key': self.controller.util.decode_key,
             'user': self.controller.user
         })
+        self.context.update({
+            'route': self.controller.route,
+            'uri': self.controller.uri,
+            'uri_exists': self.controller.uri_exists,
+            'on_uri': self.controller.on_uri,
+            'request': self.controller.request,
+            'user': self.controller.user
+        })
         self.controller.events.setup_template_variables(controller=self.controller)
 
     def render(self, *args, **kwargs):
