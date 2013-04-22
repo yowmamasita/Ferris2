@@ -126,7 +126,7 @@ def name_from_canonical_parts(prefix, controller, action, args=None):
     """
     route_parts = [prefix, controller, action]
     route_parts = [x for x in route_parts if x]
-    route_name = '-'.join(route_parts)
+    route_name = ':'.join(route_parts)
 
     return route_name
 
@@ -177,15 +177,15 @@ def build_scaffold_routes_for_controller(controllercls, prefix_name=None):
 
     The routes generated are:
 
-    controller-list : /controller
-    controller-view : /controller/:id
-    controller-add  : /controller/add
-    controller-edit : /controller/:id/edit
-    controller-delete : /controller/:id/delete
+    controller:list : /controller
+    controller:view : /controller/:id
+    controller:add  : /controller/add
+    controller:edit : /controller/:id/edit
+    controller:delete : /controller/:id/delete
 
     prefixes just add to the beginning of the name and uri, for example:
 
-    admin-controller-edit: /admin/controller/:id/edit
+    admin:controller:edit: /admin/controller/:id/edit
     """
     if(hasattr(controllercls, 'name')):
         name = controllercls.name
@@ -211,28 +211,28 @@ def build_scaffold_routes_for_controller(controllercls, prefix_name=None):
     # POST /controller -> controller::add
     if hasattr(controllercls, prefix_string + 'add'):
         path.append(Route('/add', controllercls, 'add', handler_method=prefix_string + 'add', methods=['GET', 'POST']))
-        top.append(Route('/' + name, controllercls, 'add-rest', handler_method=prefix_string + 'add', methods=['POST']))
+        top.append(Route('/' + name, controllercls, 'add:rest', handler_method=prefix_string + 'add', methods=['POST']))
 
     # GET/POST /controller/:urlsafe/edit -> controller::edit
     # PUT /controller/:urlsafe -> controller::edit
     if hasattr(controllercls, prefix_string + 'edit'):
         id.append(Route('/edit', controllercls, 'edit', handler_method=prefix_string + 'edit', methods=['GET', 'POST']))
-        path.append(Route('/:<key>', controllercls, 'edit-rest', handler_method=prefix_string + 'edit', methods=['PUT', 'POST']))
+        path.append(Route('/:<key>', controllercls, 'edit:rest', handler_method=prefix_string + 'edit', methods=['PUT', 'POST']))
 
     # GET /controller/:urlsafe/delete -> controller::delete
     # DELETE /controller/:urlsafe -> controller::d
     if hasattr(controllercls, prefix_string + 'delete'):
         id.append(Route('/delete', controllercls, 'delete', handler_method=prefix_string + 'delete'))
-        path.append(Route('/:<key>', controllercls, 'delete-rest', handler_method=prefix_string + 'delete', methods=["DELETE"]))
+        path.append(Route('/:<key>', controllercls, 'delete:rest', handler_method=prefix_string + 'delete', methods=["DELETE"]))
 
-    top_route = routes.NamePrefixRoute(name + '-', top + [
+    top_route = routes.NamePrefixRoute(name + ':', top + [
         routes.PathPrefixRoute('/' + name, path + [
             routes.PathPrefixRoute('/:<key>', id)
         ])
     ])
 
     if prefix_name:
-        prefix_route = routes.NamePrefixRoute(prefix_name + '-', [
+        prefix_route = routes.NamePrefixRoute(prefix_name + ':', [
             routes.PathPrefixRoute('/' + prefix_name, [top_route])
         ])
         return prefix_route

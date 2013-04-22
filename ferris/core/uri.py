@@ -17,7 +17,7 @@ class Uri(object):
         """
         Function used to build the route name for a given prefix, controller, and
         action. For example, build_action_route('admin','pages','view', id=2)
-        will give you "admin-pages-view". Set prefix to False to exclude the
+        will give you "admin:pages:view". Set prefix to False to exclude the
         current prefix from the route name.
         """
         prefix = prefix if prefix != route_sentinel else self.route.prefix
@@ -45,7 +45,7 @@ class Uri(object):
 
         Examples::
 
-            uri('foxes-run') # -> /foxes/run
+            uri('foxes:run') # -> /foxes/run
             uri(prefix=False, controller='foxes', action='run')  # -> /foxes/run
 
             # when currently at /foxes/run

@@ -12,7 +12,7 @@ def render_template_listener(name, context, env):
     admin_links = {}
     for x in controller.Controller._controllers:
         try:
-            admin_links[x.__name__] = webapp2.uri_for('admin-' + inflector.underscore(x.__name__) + '-list')
+            admin_links[x.__name__] = webapp2.uri_for('admin:' + inflector.underscore(x.__name__) + ':list')
         except:
             pass
 
