@@ -1,4 +1,5 @@
 from settings import app_config
+from ferris.core.view import TemplateView
 from google.appengine.api import mail
 
 
@@ -7,8 +8,8 @@ class Email(object):
     Provides some helper methods to send email using templates.
     """
 
-    def __init__(self, handler):
-        self.handler = handler
+    def __init__(self, controller):
+        self.controller = controller
 
     def test(self):
         self.send(
@@ -40,5 +41,6 @@ class Email(object):
         The current template context is used, so use ``Handler.set`` to bind any variables to the template.
         """
         template = 'email/' + template + '.html'
-        body = self.handler.render_template(template)
+        view = TemplateView(self.controller, context=self.controller.context)
+        body = view.render(template)
         self.send(recipient, subject, body, reply_to, **kwargs)
