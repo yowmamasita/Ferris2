@@ -30,37 +30,50 @@ class UserCredentials(Model):
             self.filter_scopes = ','.join(sorted(self.scopes))
 
     @classmethod
-    def find(cls, user=None, scopes=None, admin=None):
-        scopes = ','.join(sorted(scopes))
-        kwargs = {}
-        if user:
-            kwargs['user'] = user
-        if scopes:
-            kwargs['filter_scopes'] = scopes
-        if admin:
-            kwargs['admin'] = True
-        else:
-            kwargs['admin'] = False
+    def _get_parent_key(cls, user, admin):
+        if user and not admin:
+            return ndb.Key('oauth2_parent', 'User:%s' % user)
+        elif admin:
+            return ndb.Key('oauth2_parent', 'Admin')
 
-        x = cls.find_by_properties(**kwargs)
+    @classmethod
+    def _find_query(cls, user=None, scopes=None, admin=None):
+        parent_key = cls._get_parent_key(user, admin)
+
+        q = cls.query(ancestor=parent_key)
+
+        if scopes:
+            scopes = ','.join(sorted(scopes))
+            q = q.filter(cls.filter_scopes == scopes)
+
+        if user:
+            q = q.filter(cls.user == user)
+
+        return q
+
+    @classmethod
+    def create(cls, user, scopes, credentials, admin):
+        parent = cls._get_parent_key(user, admin)
+        item = cls(parent=parent, user=user, scopes=scopes, credentials=credentials, admin=admin)
+        item.put()
+        return item
+
+    @classmethod
+    def find(cls, user=None, scopes=None, admin=None):
+        x = cls._find_query(user, scopes, admin).get()
         if x:
             cls.after_get(x.key, x)
         return x
 
     @classmethod
     def find_all(cls, user, scopes, admin):
-        scopes = ','.join(sorted(scopes))
-        kwargs = {}
-        if user:
-            kwargs['user'] = user
-        if scopes:
-            kwargs['filter_scopes'] = scopes
-        if admin:
-            kwargs['admin'] = True
-        else:
-            kwargs['admin'] = False
-
-        x = cls.find_all_by_properties(**kwargs)
+        x = cls._find_query(user, scopes, admin)
         for _ in x:
             cls.after_get(_.key, _)
         return x
+
+    @classmethod
+    def delete_all(cls, user, scopes, admin):
+        c = cls.find_all(user, scopes, admin)
+        for x in c:
+            x.key.delete()

@@ -44,7 +44,7 @@ class OauthManager(Controller):
         if(self.request.method != 'GET' and form.validate()):
             scopes = map(lambda x: x.strip(), form.scopes.data.split(','))
             self.oauth.scopes = scopes
-            return self.redirect(self.oauth._create_oauth_session(handler=self, admin=True, redirect=self.uri(action='list')))
+            return self.redirect(self.oauth._create_oauth_session(controller=self, admin=True, redirect=self.uri(action='list')))
 
         self.context['form'] = form
 
