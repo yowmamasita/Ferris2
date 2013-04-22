@@ -92,7 +92,7 @@
     {% set class = class or ''%}
     {{action_button(item, 'view', 'icon-search', 'btn-success', class)}}
     {{action_button(item, 'edit', 'icon-pencil', 'btn-primary', class)}}
-    {{action_button(item, 'delete', 'icon-trash', 'btn-danger', class)}}
+    {{action_button(item, 'delete', 'icon-trash', 'btn-danger', class, True)}}
 </div>
 {%- endmacro %}
 
@@ -101,14 +101,14 @@
 #}
 {% macro nav_link(title, action, icon): -%}
     {% if this.uri_exists(action=action) %}
-        {% if this.action == action %}
+        {% if this.route.action == action %}
             {% set active = True %}
         {% else %}
             {% set active = False %}
         {% endif %}
         <li {% if active %}class='active'{% endif %}>
             <a href="{{action_uri(action, **kwargs)}}">
-                <i class="{{icon}} {% if active %}icon-white{% endif %}"></i>
+                <i class="{{icon}}"></i>
                 {{title}}
             </a>
         </li>

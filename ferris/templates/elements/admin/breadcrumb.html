@@ -1,5 +1,5 @@
 <ul class="breadcrumb">
-    {% if this.prefix: %}
+    {% if this.route.prefix: %}
         <li><a href="/{{this.route.prefix}}">{{inflector.titleize(this.route.prefix)}}</a> <span class="divider">/</span></li>
     {% else %}
         <li><a href="/">Root</a> <span class="divider">/</span><li>
