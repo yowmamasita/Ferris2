@@ -37,6 +37,17 @@ def route_with(*args, **kwargs):
     return inner
 
 
+def add_authorizations(*args):
+    """
+    Adds additional authorization chains to a particular action. These are executed after the
+    chains set in Controller.Meta.
+    """
+    def inner(f):
+        setattr(f, 'authorizations', args)
+        return f
+    return inner
+
+
 class Controller(webapp2.RequestHandler, Uri):
     """
     Controllers allows grouping of common actions and provides them with
@@ -176,9 +187,16 @@ class Controller(webapp2.RequestHandler, Uri):
         pass
 
     def _is_authorized(self):
+        authorizations = self.meta.authorizations
+
+        #per-handler authorizations
+        method = getattr(self, self.request.route.handler_method)
+        if hasattr(method, 'authorizations'):
+            authorizations = authorizations + method.authorizations
+
         auth_result = True
 
-        for chain in self.meta.authorizations:
+        for chain in authorizations:
             auth_result = chain(self)
             if auth_result is not True:
                 break
