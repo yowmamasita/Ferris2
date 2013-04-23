@@ -251,11 +251,8 @@ class Controller(webapp2.RequestHandler, Uri):
                 self.response.status = 200
                 del self.response.headers['Location']
 
-            if isinstance(response, unicode):
-                self.response.charset = 'utf8'
-                self.response.unicode_body = response
-            else:
-                self.response.body = response
+            self.response.charset = 'utf8'
+            self.response.unicode_body = unicode(response)
         elif isinstance(response, tuple):
             self.response = Response(response)
         elif isinstance(response, int):
