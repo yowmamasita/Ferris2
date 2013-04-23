@@ -1,5 +1,6 @@
 import template
 import json_util
+from protorpc import protojson
 
 
 class ViewContext(dict):
@@ -20,6 +21,19 @@ class ViewContext(dict):
 
 
 class View(object):
+
+    _views = {}
+
+    class __metaclass__(type):
+        def __new__(meta, name, bases, dict):
+            cls = type.__new__(meta, name, bases, dict)
+            if name != 'View':
+                View._views[name] = cls
+            return cls
+
+    @classmethod
+    def factory(cls, name):
+        return cls._views.get(name, cls._views.get(name+'View'))
 
     def __init__(self, controller, context=None):
         self.controller = controller
@@ -133,6 +147,21 @@ class JsonView(View):
         self.controller.events.before_render(controller=self.controller)
 
         result = unicode(json_util.stringify(self._get_data()))
+        self.controller.response.content_type = 'application/json'
+        self.controller.response.charset = 'utf8'
+        self.controller.response.unicode_body = result
+
+        self.controller.events.after_render(controller=self.controller, result=result)
+
+        return self.controller.response
+
+
+class MessageView(JsonView):
+    def render(self, *args, **kwargs):
+        self.controller.events.before_render(controller=self.controller)
+
+        data = self._get_data()
+        result = unicode(protojson.encode_message(data))
         self.controller.response.content_type = 'application/json'
         self.controller.response.charset = 'utf8'
         self.controller.response.unicode_body = result

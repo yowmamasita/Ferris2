@@ -33,3 +33,11 @@ class FormParser(RequestParser):
 
         container.process(formdata=request_data, obj=fallback, **container.data)
         return container.data
+
+
+class MessageParser(RequestParser):
+
+    def process(self, request, container, fallback=None):
+        from protorpc import protojson
+        result = protojson.decode_message(container, request.body)
+        return result

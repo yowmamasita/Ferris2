@@ -8,7 +8,7 @@ from ferris.core.ndb import encode_key, decode_key
 from ferris.core.uri import Uri
 from ferris.core import events
 from ferris.core.json_util import parse as json_parse, stringify as json_stringify
-from ferris.core.view import TemplateView
+from ferris.core.view import View, TemplateView
 from ferris.core.request_parsers import RequestParser
 import ferris.core.routing as routing
 from bunch import Bunch
@@ -105,9 +105,9 @@ class Controller(webapp2.RequestHandler, Uri):
             self.view = None
             self.change_view(self.View)
 
-        def change_view(self, viewclass, persist_context=True):
+        def change_view(self, view, persist_context=True):
             context = self.view.context if self.view else None
-            self.View = viewclass
+            self.View = view if not isinstance(view, basestring) else View.factory(view)
             self.view = self.View(self._controller, context)
 
     class Util(object):
