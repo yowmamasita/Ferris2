@@ -42,7 +42,6 @@ def prefix_predicate(prefix):
     prefix = prefix if isinstance(prefix, (list, tuple)) else (prefix,)
 
     def inner(controller):
-        logging.info(controller.route)
         if controller.route.prefix in prefix:
             return True
         return False
