@@ -37,6 +37,11 @@ class Scaffolding(object):
 
         self.controller.events.template_names += self._on_template_names
         self.controller.events.before_render += self._on_before_render
+        self.controller.events.scaffold_before_parse += self._on_scaffold_before_parse
+
+    def _on_scaffold_before_parse(self, controller):
+        if not hasattr(controller.meta, 'Form') or not controller.meta.Form:
+            controller.meta.Form = controller.scaffold.ModelForm
 
     def _on_template_names(self, controller, templates):
         """Injects scaffold templates into the template list"""
@@ -123,21 +128,25 @@ def view(controller, key):
 
 def add(controller):
     # Get the form/message and data
-    modelform = controller.scaffold.ModelForm()
-    controller.parse_request(container=modelform)
+    controller.events.scaffold_before_parse(controller=controller)
+    parser = controller.parse_request()
 
     # If the form was submitted
     if controller.request.method in ('PUT', 'POST', 'PATCH'):
-        if modelform.validate():  # validate the container
-            controller.events.scaffold_before_apply(controller=controller, container=modelform, item=None)
+        if parser.validate():  # validate the container
 
             # construct the item
-            item = controller.meta.Model(**modelform.data)
+            item = controller.meta.Model()
 
-            controller.events.scaffold_before_save(controller=controller, container=modelform, item=item)
+            controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=None)
+
+            # update the properties
+            parser.update(item)
+
+            controller.events.scaffold_before_save(controller=controller, container=parser.container, item=item)
             # save the item
             item.put()
-            controller.events.scaffold_after_save(controller=controller, container=modelform, item=item)
+            controller.events.scaffold_after_save(controller=controller, container=parser.container, item=item)
 
             # set the item in the context to allow other things to access it.
             controller.context.set(**{
@@ -154,7 +163,7 @@ def add(controller):
             _flash(controller, 'There were errors on the form, please correct and try again.', 'error')
 
     # expose the form/message to the template.
-    controller.context['form'] = modelform
+    controller.context['form'] = parser.container
 
 
 def edit(controller, key):
@@ -162,18 +171,18 @@ def edit(controller, key):
     if not item:
         return 404
 
-    modelform = controller.scaffold.ModelForm()
-    controller.parse_request(container=modelform, fallback=item)
+    controller.events.scaffold_before_parse(controller=controller)
+    parser = controller.parse_request(fallback=item)
 
     if controller.request.method in ('PUT', 'POST', 'PATCH'):
-        if modelform.validate():
+        if parser.validate():
 
-            controller.events.scaffold_before_apply(controller=controller, container=modelform, item=None)
-            modelform.populate_obj(item)
+            controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=None)
+            parser.update(item)
 
-            controller.events.scaffold_before_save(controller=controller, container=modelform, item=item)
+            controller.events.scaffold_before_save(controller=controller, container=parser.container, item=item)
             item.put()
-            controller.events.scaffold_after_save(controller=controller, container=modelform, item=item)
+            controller.events.scaffold_after_save(controller=controller, container=parser.container, item=item)
 
             controller.context.set(**{
                 controller.scaffold.singular: item})
@@ -187,7 +196,7 @@ def edit(controller, key):
             _flash(controller, 'There were errors on the form, please correct and try again.', 'error')
 
     controller.context.set(**{
-        'form': modelform,
+        'form': parser.container,
         controller.scaffold.singular: item})
 
 
