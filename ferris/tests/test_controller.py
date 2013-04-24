@@ -79,6 +79,10 @@ class TestController(Controller):
         return 401
 
     @route
+    def content_string(self):
+        return ContentString('oh, yes!', 'application/x-test-string')
+
+    @route
     def self_response(self):
         self.response.status_int = 401
         self.response.body = 'lolidk'

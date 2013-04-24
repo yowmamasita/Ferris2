@@ -1,6 +1,5 @@
 import webapp2
-from settings import app_config
-from webapp2 import Response, cached_property
+from webapp2 import cached_property
 from webapp2_extras import sessions
 from google.appengine.api import users
 from ferris.core import inflector, auth
@@ -10,9 +9,9 @@ from ferris.core import events
 from ferris.core.json_util import parse as json_parse, stringify as json_stringify
 from ferris.core.view import View, TemplateView
 from ferris.core.request_parsers import RequestParser
+from ferris.core.response_handlers import ResponseHandler
 import ferris.core.routing as routing
 from bunch import Bunch
-import logging
 
 
 def route(f):
@@ -208,6 +207,11 @@ class Controller(webapp2.RequestHandler, Uri):
                 self.response.content = auth_result[1]
             return self.response
 
+    def _clear_redirect(self):
+        if self.response.status_int in [300, 301, 302]:
+            self.response.status = 200
+            del self.response.headers['Location']
+
     def dispatch(self):
         """
         Calls startup and then the controller method. Will also make sure that the user
@@ -238,33 +242,23 @@ class Controller(webapp2.RequestHandler, Uri):
 
         # Dispatch to the method
         self.events.before_dispatch(controller=self)
-        response = super(Controller, self).dispatch()
-        self.events.after_dispatch(response=response, controller=self)
+        result = super(Controller, self).dispatch()
+        self.events.after_dispatch(response=result, controller=self)
 
         # Return value handlers.
         # Response has highest precendence, the view class has lowest.
-        if isinstance(response, Response):
-            self.response = response
-        if isinstance(response, basestring):
-            # Clear redirect
-            if self.response.status_int in [300, 301, 302]:
-                self.response.status = 200
-                del self.response.headers['Location']
+        response_handler = ResponseHandler.factory(type(result))
 
-            self.response.charset = 'utf8'
-            self.response.unicode_body = unicode(response)
-        elif isinstance(response, tuple):
-            self.response = Response(response)
-        elif isinstance(response, int):
-            self.response.status = response
+        if response_handler:
+            self.response = response_handler(self, result)
 
         # View rendering works similar to the string mode above.
-        elif response is None and self.meta.view.auto_render:
-            if self.response.status_int in [300, 301, 302]:
-                self.response.status = 200
-                del self.response.headers['Location']
-
+        elif self.meta.view.auto_render:
+            self._clear_redirect()
             self.response = self.meta.view.render()
+
+        else:
+            self.abort(500, 'Nothing was able to handle the response %s (%s)' % (result, type(result)))
 
         self.events.dispatch_complete(controller=self)
 
