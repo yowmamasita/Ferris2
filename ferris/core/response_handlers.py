@@ -1,4 +1,5 @@
 from webapp2 import Response
+from .messages import Message
 
 
 class ResponseHandler(object):
@@ -60,3 +61,13 @@ class IntResponseHandler(ResponseHandler):
         handler._clear_redirect()
         handler.response.status = result
         return handler.response
+
+
+class MessageHandler(ResponseHandler):
+    type = Message
+
+    def process(self, handler, result):
+        handler._clear_redirect()
+        handler.meta.change_view('message')
+        handler.context['data'] = result
+        return handler.meta.view.render()
