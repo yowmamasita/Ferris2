@@ -57,7 +57,7 @@ def message_to_entity(message, model, converters=None):
 
         converter = converters[property.__class__]
 
-        if converter:
+        if value and converter:
             value = converter.to_model(message, field, value)
             values[field] = value
 

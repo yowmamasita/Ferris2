@@ -12,7 +12,7 @@ class TinyMce(object):
 
     def before_render(self, controller, *args, **kwargs):
         form = controller.context.get('form', None)
-        if form:
+        if form and isinstance(form, (wtforms.Form)):
             for field in form:
                 if isinstance(field, wtforms.fields.simple.TextAreaField):
                     field.flags.tinymce = True

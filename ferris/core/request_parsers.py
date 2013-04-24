@@ -1,7 +1,10 @@
+import inspect
 
 
 class RequestParser(object):
     _parsers = {}
+
+    container_name = None
 
     class __metaclass__(type):
         def __new__(meta, name, bases, dict):
@@ -17,6 +20,8 @@ class RequestParser(object):
 
     @classmethod
     def factory(cls, name):
+        if inspect.isclass(name):
+            return name
         return cls._parsers.get(name.lower(), cls._parsers.get(name.lower() + 'parser'))()
 
     def process(self, request, container, fallback):
@@ -33,6 +38,7 @@ from .json_util import parse as parse_json
 
 
 class FormParser(RequestParser):
+    container_name = 'Form'
 
     def process(self, request, container, fallback=None):
         from wtforms_json import MultiDict, flatten_json
@@ -41,6 +47,9 @@ class FormParser(RequestParser):
             request_data = MultiDict(flatten_json(parse_json(request.body)))
         else:
             request_data = request.params
+
+        if inspect.isclass(container):
+            container = container()
 
         container.process(formdata=request_data, obj=fallback, **container.data)
 
@@ -67,8 +76,18 @@ class FormParser(RequestParser):
 
 
 class MessageParser(RequestParser):
+    container_name = 'Message'
 
     def process(self, request, container, fallback=None):
         from protorpc import protojson
         result = protojson.decode_message(container, request.body)
-        return result
+        self.container = result
+        self.fallback = fallback
+        return self
+
+    def validate(self):
+        return self.container.is_initialized() if self.container else False
+
+    def update(self, obj):
+        from .messages import message_to_entity
+        return message_to_entity(self.container, obj)

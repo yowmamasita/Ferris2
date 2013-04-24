@@ -99,6 +99,9 @@ class Controller(webapp2.RequestHandler, Uri):
         #: Which view class to use by default.
         View = TemplateView
 
+        #: Which requestparser class to use by default
+        Parser = 'Form'
+
         def __init__(self, controller):
             self._controller = controller
             self.view = None
@@ -272,7 +275,7 @@ class Controller(webapp2.RequestHandler, Uri):
         """
         return self.session_store.get_session(backend='memcache')
 
-    def parse_request(self, container=None, fallback=None, mode='form', parser=None):
+    def parse_request(self, container=None, fallback=None, parser=None):
         """
         Parses request data (like GET, POST, JSON, XML) into a container (like a Form or Message)
         instance using a RequestParser. By default, it assumes you want to process GET/POST data
@@ -282,16 +285,13 @@ class Controller(webapp2.RequestHandler, Uri):
 
         provided you've set the From attribute of the Meta class.
         """
+        parser_name = parser if parser else self.meta.Parser
+        parser = RequestParser.factory(parser_name)
+
         if not container:
-            container_name = inflector.camelize(mode)
+            container_name = parser.container_name
             if not hasattr(self.meta, container_name):
                 raise AttributeError('Meta has no %s class, can not parse request' % container_name)
-            container = getattr(self.meta, container_name)()
-
-        if not parser:
-            if hasattr(self.meta, 'Parser'):
-                parser = self.meta.Parser
-            else:
-                parser = RequestParser.factory(mode)
+            container = getattr(self.meta, container_name)
 
         return parser.process(self.request, container, fallback)
