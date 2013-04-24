@@ -9,3 +9,10 @@ from settings import app_config
 
 # Entry point
 app = WSGIApp(debug=True, config=app_config)
+
+from ferris.controllers import errors
+app.error_handlers[400] = errors.handle_400
+app.error_handlers[401] = errors.handle_401
+app.error_handlers[403] = errors.handle_403
+app.error_handlers[404] = errors.handle_404
+app.error_handlers[500] = errors.handle_500

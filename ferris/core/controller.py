@@ -204,11 +204,10 @@ class Controller(webapp2.RequestHandler, Uri):
                 break
 
         if auth_result is not True:
-            self.response.status = 401
-            self.response.content = u"Authorization chain rejected request"
+            message = u"Authorization chain rejected request"
             if isinstance(auth_result, tuple):
-                self.response.content = auth_result[1]
-            return self.response
+                message = auth_result[1]
+            self.abort(403, message)
 
     def _clear_redirect(self):
         if self.response.status_int in [300, 301, 302]:
@@ -239,9 +238,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self.events.after_startup(controller=self)
 
         # Authorization
-        auth_result = self._is_authorized()
-        if auth_result:
-            return auth_result
+        self._is_authorized()
 
         # Dispatch to the method
         self.events.before_dispatch(controller=self)

@@ -59,8 +59,7 @@ class IntResponseHandler(ResponseHandler):
 
     def process(self, handler, result):
         handler._clear_redirect()
-        handler.response.status = result
-        return handler.response
+        handler.abort(result)
 
 
 class MessageHandler(ResponseHandler):
