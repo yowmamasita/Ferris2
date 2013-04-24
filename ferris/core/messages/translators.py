@@ -1,11 +1,18 @@
 from protorpc import messages
-from .converters import converters
+from .converters import converters as default_converters
 
 
-def entity_to_message(entity, message_type):
-    message_fields = [x.name for x in message_type.all_fields()]
+def _common_fields(entity, message):
+    message_fields = [x.name for x in message.all_fields()]
     entity_properties = [k for k, v in entity._properties.iteritems()]
     fields = set(message_fields) & set(entity_properties)
+    return message_fields, entity_properties, fields
+
+
+def entity_to_message(entity, message_type, converters=None):
+    message_fields, entity_properties, fields = _common_fields(entity, message_type)
+
+    converters = dict(default_converters.items() + converters.items()) if converters else default_converters
 
     values = {}
     for field in fields:
@@ -21,10 +28,10 @@ def entity_to_message(entity, message_type):
     return message_type(**values)
 
 
-def message_to_entity(message, model_type):
-    message_fields = [x.name for x in message.all_fields()]
-    entity_properties = [k for k, v in model_type._properties.iteritems()]
-    fields = set(message_fields) & set(entity_properties)
+def message_to_entity(message, model_type, converters=None):
+    message_fields, entity_properties, fields = _common_fields(model_type, message)
+
+    converters = dict(default_converters.items() + converters.items()) if converters else default_converters
 
     values = {}
     for field in fields:
@@ -40,17 +47,25 @@ def message_to_entity(message, model_type):
     return model_type(**values)
 
 
-def model_message(Model):
+def model_message(Model, only=None, exclude=None, converters=None):
     name = Model.__name__ + 'Message'
 
     props = Model._properties
     sorted_props = sorted(props.iteritems(), key=lambda prop: prop[1]._creation_counter)
-    field_names = list(x[0] for x in sorted_props)
+    field_names = [x[0] for x in sorted_props if x[0]]
+
+    if exclude:
+        field_names = [x for x in field_names if x not in exclude]
+
+    if only:
+        field_names = [x for x in field_names if x in only]
+
+    converters = dict(default_converters.items() + converters.items()) if converters else default_converters
 
     field_dict = {}
     for count, name in enumerate(field_names, start=1):
         prop = props[name]
-        converter = converters.get(prop.__class__, None)
+        converter = default_converters.get(prop.__class__, None)
 
         if converter:
             field_dict[name] = converter.to_field(Model, prop, count)
