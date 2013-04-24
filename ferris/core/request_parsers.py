@@ -7,12 +7,12 @@ class RequestParser(object):
         def __new__(meta, name, bases, dict):
             cls = type.__new__(meta, name, bases, dict)
             if name != 'RequestParser':
-                RequestParser._parsers[name] = cls
+                RequestParser._parsers[name.lower()] = cls
             return cls
 
     @classmethod
     def factory(cls, name):
-        return cls._parsers[name]()
+        return cls._parsers.get(name.lower(), cls._parsers.get(name.lower() + 'parser'))()
 
     def process(self, request, container, fallback):
         raise NotImplementedError()

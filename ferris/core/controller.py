@@ -292,7 +292,6 @@ class Controller(webapp2.RequestHandler, Uri):
             if hasattr(self.meta, 'Parser'):
                 parser = self.meta.Parser
             else:
-                parser_name = inflector.camelize(mode) + 'Parser'
-                parser = RequestParser.factory(parser_name)
+                parser = RequestParser.factory(mode)
 
         return parser.process(self.request, container, fallback)

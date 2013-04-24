@@ -28,12 +28,12 @@ class View(object):
         def __new__(meta, name, bases, dict):
             cls = type.__new__(meta, name, bases, dict)
             if name != 'View':
-                View._views[name] = cls
+                View._views[name.lower()] = cls
             return cls
 
     @classmethod
     def factory(cls, name):
-        return cls._views.get(name, cls._views.get(name+'View'))
+        return cls._views.get(name.lower(), cls._views.get((name+'View').lower()))
 
     def __init__(self, controller, context=None):
         self.controller = controller
