@@ -1,7 +1,7 @@
 from protorpc import messages, message_types
 from google.appengine.api import users
 from google.appengine.ext import ndb
-from .types import UserMessage
+from .types import UserMessage, KeyMessage
 
 
 class Converter(object):
@@ -54,9 +54,32 @@ class UserConverter(Converter):
         return messages.MessageField(UserMessage, count)
 
 
+class KeyConverter(Converter):
+    @staticmethod
+    def to_message(Model, property, value):
+        if value:
+            return KeyMessage(
+                urlsafe=value.urlsafe(),
+                id=u'%s' % value.id(),
+                kind=value.kind())
+
+    @staticmethod
+    def to_model(Message, field, value):
+        if isinstance(value, basestring):
+            return ndb.Key(urlsafe=value)
+        elif isinstance(value, KeyMessage):
+            return ndb.Key(urlsafe=value.urlsafe)
+
+    @staticmethod
+    def to_field(Model, property, count):
+        return messages.MessageField(KeyMessage, count)
+
+
 converters = {
+    'Key': KeyConverter,
     ndb.StringProperty: StringConverter,
     ndb.TextProperty: StringConverter,
     ndb.DateTimeProperty: DateTimeConverter,
-    ndb.UserProperty: UserConverter
+    ndb.UserProperty: UserConverter,
+    ndb.KeyProperty: KeyConverter,
 }

@@ -15,7 +15,12 @@ def entity_to_message(entity, message, converters=None):
 
     converters = dict(default_converters.items() + converters.items()) if converters else default_converters
 
-    values = {}
+    # Key first
+    values = {
+        'key': converters['Key'].to_message(entity, 'key', entity.key)
+    }
+
+    # Other fields
     for field in fields:
         property = entity._properties[field]
         value = getattr(entity, field)
@@ -40,6 +45,12 @@ def message_to_entity(message, model, converters=None):
     converters = dict(default_converters.items() + converters.items()) if converters else default_converters
 
     values = {}
+
+    # Key first, if it's there
+    if hasattr(message, 'key') and message.key:
+        values['key'] = converters['Key'].to_model(messages, 'key', message.key)
+
+    # Other fields
     for field in fields:
         property = model._properties[field]
         value = getattr(message, field)
@@ -72,10 +83,15 @@ def model_message(Model, only=None, exclude=None, converters=None):
 
     converters = dict(default_converters.items() + converters.items()) if converters else default_converters
 
-    field_dict = {}
-    for count, name in enumerate(field_names, start=1):
+    # Add in the key field.
+    field_dict = {
+        'key': converters['Key'].to_field(Model, 'key', 1)
+    }
+
+    # Add all other fields.
+    for count, name in enumerate(field_names, start=2):
         prop = props[name]
-        converter = default_converters.get(prop.__class__, None)
+        converter = converters.get(prop.__class__, None)
 
         if converter:
             field_dict[name] = converter.to_field(Model, prop, count)
