@@ -139,7 +139,7 @@ class JsonView(View):
             self.variable_name += (self.controller.scaffold.singular, self.controller.scaffold.plural)
 
         for v in self.variable_name:
-            data = self.controller.context.get(v, None)
+            data = self.context.get(v, None)
             if data:
                 return data
 
