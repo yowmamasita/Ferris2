@@ -10,6 +10,7 @@ import ferris
 from ferris.core import inflector
 from webapp2 import Route
 from webapp2_extras import routes
+from ferris.core.wsgi import DefaultArgsRoute
 
 # Used to detect :key or 123 in urls
 id_regex = "\:?(\d+|(?<=\:)[A-Za-z0-9\-\_]+)"
@@ -159,7 +160,11 @@ def build_routes_for_handler(handlercls):
         if isinstance(method_args, tuple):
             kwargs.update(method_args[1])
 
-        routes_list.append(Route(**kwargs))
+        route_cls = DefaultArgsRoute \
+                    if getattr(inspect.getargspec(method), 'defaults', None) \
+                    else Route
+
+        routes_list.append(route_cls(**kwargs))
 
     return routes_list
 
