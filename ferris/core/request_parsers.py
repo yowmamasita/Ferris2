@@ -17,6 +17,7 @@ class RequestParser(object):
         self.container = None
         self.fallback = None
         self.data = None
+        self.errors = None
 
     @classmethod
     def factory(cls, name):
@@ -74,19 +75,32 @@ class FormParser(RequestParser):
 
     data = property(_get_data, _set_data)
 
+    def _get_errors(self):
+        return self.container.errors if self.container else None
+
+    errors = property(_get_errors, lambda s, v: None)
+
 
 class MessageParser(RequestParser):
     container_name = 'Message'
 
     def process(self, request, container, fallback=None):
-        from protorpc import protojson
-        result = protojson.decode_message(container, request.body)
+        from protorpc import protojson, messages
+
+        try:
+            result = protojson.decode_message(container, request.body)
+            self.errors = None
+
+        except messages.ValidationError as e:
+            result = container()
+            self.errors = [e.message]
+
         self.container = result
         self.fallback = fallback
         return self
 
     def validate(self):
-        return self.container.is_initialized() if self.container else False
+        return not self.errors and self.container.is_initialized() if self.container else False
 
     def update(self, obj):
         from .messages import message_to_entity

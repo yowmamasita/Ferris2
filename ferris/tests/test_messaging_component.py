@@ -107,3 +107,8 @@ class MessagingTest(FerrisTestCase):
         assert new_item.key == item.key
         assert new_item.content == item.content
         assert new_item.title == 'Captain Jack'
+
+    def testErrors(self):
+        data = json.dumps({'title': 'Dalek', 'content': 12346})
+
+        self.testapp.post('/api/people', data, status=400, content_type='application/json')
