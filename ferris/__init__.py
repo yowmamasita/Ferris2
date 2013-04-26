@@ -1,6 +1,6 @@
 version = "2.0 Alpha"
 
-from . import tests, core, components, behaviors
+import tests, core, components, behaviors
 from core import scaffold, events, routing, oauth2, forms, messages
 from core.event import Event
 from core.bunch import Bunch

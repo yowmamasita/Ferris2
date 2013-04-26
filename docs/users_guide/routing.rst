@@ -3,7 +3,7 @@ Routing
 
 Ferris will automatically create a route name and url for every action in every handler in your application. You can also specify additional routes using the file ``app/routes.py``.
 
-.. currentmodule:: ferris.core.handler
+.. currentmodule:: ferris.core.controller
 
 Parts
 -----
@@ -16,6 +16,8 @@ Actions in your application are referenced using four parts:
 * The parameters of the action, if any
 
 These are called the *route parts* and are used to build both the route name and the url for a particular action.
+
+.. _routing-url-and-name-generation:
 
 URL and Name Generation
 -----------------------
@@ -80,11 +82,11 @@ Take the following methods for example::
 
 The methods ``list`` and ``test`` will be accessible via HTTP, but the method ``run`` is only accessible from code.
 
-.. autofunction:: ferris.core.handler.route
+    .. autofunction:: route
 
 To set a custom url for an action, use ``@route_with``
 
-.. autofunction:: ferris.core.handler.route_with
+    .. autofunction:: route_with
 
 For example::
 
@@ -116,7 +118,7 @@ Generating URLs to Actions
 
 There is a standard way to generate URLs to actions across the application:
 
-.. automethod:: ferris.core.handler.Handler.uri(route_name = None, prefix = <sentinel>, handler = <sentinel>, action = <sentinel>, _pass_all = False, _full = False, *args, **kwargs)
+    .. automethod:: Controller.uri(route_name = None, prefix = <sentinel>, handler = <sentinel>, action = <sentinel>, _pass_all = False, _full = False, *args, **kwargs)
 
 Attempting to generate a URL to an action that doesn't exist will result in an exception.
 
@@ -126,11 +128,11 @@ Checking if an action exists
 
 You can check for the existence of an action before attempting to generate a URL to it:
 
-.. automethod:: ferris.core.handler.Handler.uri_exists
+    .. automethod:: Controller.uri_exists
 
 You can see if you're on a particular action. While this may seem like a superfluous feature, it's very useful in templates:
 
-.. automethod:: ferris.core.handler.Handler.on_uri
+    .. automethod:: Controller.on_uri
 
 Static Files
 ------------

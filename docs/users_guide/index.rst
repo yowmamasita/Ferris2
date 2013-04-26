@@ -7,7 +7,7 @@ User's Guide
   folder_structure
   mvc
   models
-  handlers
+  controllers
   routing
   templates
   scaffolding

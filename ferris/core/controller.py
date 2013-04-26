@@ -16,8 +16,9 @@ from bunch import Bunch
 
 def route(f):
     """
-    Marks a class method to enable it to be automatically routed and accessible via HTTP. This
-    decorator should always be the outermost decorator.
+    Marks a method for automatically routing and accessible via HTTP.
+    See :mod:`~ferris.core.routing` for more details on how methods are auto-routed.
+    This decorator should always be the outermost decorator.
     """
     setattr(f, 'route', True)
     return f
@@ -50,8 +51,8 @@ def add_authorizations(*args):
 class Controller(webapp2.RequestHandler, Uri):
     """
     Controllers allows grouping of common actions and provides them with
-    automatic routing, reusable components, and automatic template
-    discovery and rendering.
+    automatic routing, reusable components, request data parsering, and
+    automatic view rendering.
     """
 
     _controllers = []
@@ -185,7 +186,10 @@ class Controller(webapp2.RequestHandler, Uri):
         events.fire('controller_build_routes', cls=cls, router=router)
 
     def startup(self):
-        """Called when a new request is received before authorization and dispatching."""
+        """
+        Called when a new request is received and before authorization and dispatching.
+        This is the main point in which to listen for events or change dynamic configuration.
+        """
         pass
 
     def _is_authorized(self):

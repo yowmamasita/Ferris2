@@ -13,4 +13,5 @@ ferris_app.router.add(Route('/', Root, handler_method='root'))
 # Plugins
 enable_plugin('tiny_mce')
 enable_plugin('oauth_manager')
+enable_plugin('posts')
 #enable_plugin('template_tester')

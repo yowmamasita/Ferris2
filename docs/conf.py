@@ -27,6 +27,10 @@ reload(google)  # Remove wrong module
 import dev_appserver
 dev_appserver.fix_sys_path()
 
+from google.appengine.ext import testbed
+testbed = testbed.Testbed()
+testbed.activate()
+testbed.init_memcache_stub()
 
 # -- General configuration -----------------------------------------------------
 
@@ -74,7 +78,7 @@ release = '1.0alpha'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', '_*']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
