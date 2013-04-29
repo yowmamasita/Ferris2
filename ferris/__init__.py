@@ -1,7 +1,7 @@
 version = "2.0 Alpha"
 
 import tests, core, components, behaviors
-from core import scaffold, events, routing, oauth2, forms, messages
+from core import scaffold, events, routing, oauth2, forms, messages, inflector
 from core.event import Event
 from core.bunch import Bunch
 from core.json_util import stringify as json_stringify, parse as json_parse
@@ -18,6 +18,7 @@ from core.messages import model_message
 
 __all__ = (
     ndb,
+    inflector,
     tests,
     core,
     auth,

@@ -103,7 +103,7 @@ class Uri(object):
             return route_matches
 
         for name, value in kwargs.items():
-            if not self.request.params.get(name, None) == value:
+            if not self.request.params.get(name, None) == value and not self.request.route_kwargs.get(name, None) == value:
                 return False
 
         return True
