@@ -1,3 +1,3 @@
-from ferris.core.plugins import register_plugin
+from ferris.core.plugins import register
 
-register_plugin('template_tester')
+register('template_tester')

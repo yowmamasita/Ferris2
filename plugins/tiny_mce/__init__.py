@@ -1,3 +1,3 @@
-from ferris.core.plugins import register_plugin
+from ferris.core.plugins import register
 
-register_plugin('tiny_mce')
+register('tiny_mce')

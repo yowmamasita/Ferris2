@@ -1,16 +1,17 @@
-from ferris.core.routing import auto_route
-from ferris.core.plugins import enable_plugin
-from ferris.app import app as ferris_app
+from ferris.core import routing, plugins
 
 # Routes all App handlers
-auto_route()
+routing.auto_route()
 
 # Default root route
+from ferris.app import app as ferris_app
 from webapp2 import Route
 from ferris.controllers.root import Root
 ferris_app.router.add(Route('/', Root, handler_method='root'))
 
+
 # Plugins
-enable_plugin('tiny_mce')
-enable_plugin('oauth_manager')
-#enable_plugin('template_tester')
+plugins.enable('tiny_mce')
+plugins.enable('settings')
+plugins.enable('oauth_manager')
+plugins.enable('template_tester')

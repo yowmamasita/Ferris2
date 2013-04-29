@@ -5,14 +5,14 @@ import os
 _plugins = []
 
 
-def has_plugin(name):
+def exists(name):
     """
     Checks to see if a particular plugin is enabled
     """
     return name in _plugins
 
 
-def register_plugin(name):
+def register(name):
     """
     Adds a plugin's template path to the templating engine
     """
@@ -24,7 +24,7 @@ def register_plugin(name):
     template.add_search_path(path)
 
 
-def enable_plugin(name):
+def enable(name):
     """
     Routes all of the controllers inside of a plugin
     """
@@ -36,5 +36,5 @@ def enable_plugin(name):
         raise
 
 
-def list_plugins():
+def list():
     return _plugins

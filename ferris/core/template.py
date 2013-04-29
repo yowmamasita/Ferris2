@@ -106,8 +106,8 @@ class TemplateEngine(object):
                 'users': users,
                 'theme': self.theme,
                 'settings': settings(),
-                'has_plugin': plugins.has_plugin,
-                'plugins': plugins.list_plugins,
+                'has_plugin': plugins.exists,
+                'plugins': plugins.list,
                 'version': ferris.version
             },
             'json': _json_filter,
