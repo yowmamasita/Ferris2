@@ -160,9 +160,10 @@ def build_routes_for_handler(handlercls):
         if isinstance(method_args, tuple):
             kwargs.update(method_args[1])
 
-        route_cls = DefaultArgsRoute \
-                    if getattr(inspect.getargspec(method), 'defaults', None) \
-                    else Route
+        route_cls = (DefaultArgsRoute
+                    if not isinstance(method_args, tuple) and
+                    getattr(inspect.getargspec(method), 'defaults', None)
+                    else Route)
 
         routes_list.append(route_cls(**kwargs))
 
