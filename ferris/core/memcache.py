@@ -1,8 +1,5 @@
 from google.appengine.api import memcache
 from decorator import decorator
-import inspect
-import pickle
-import logging
 
 
 def cached(key, ttl=0):

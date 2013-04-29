@@ -2,7 +2,7 @@
 Ferris' templating engine.
 """
 
-from settings import app_config
+from settings import settings
 import logging
 import os
 import math
@@ -105,7 +105,7 @@ class TemplateEngine(object):
                 'is_current_user_admin': users.is_current_user_admin,
                 'users': users,
                 'theme': self.theme,
-                'app_config': app_config,
+                'settings': settings(),
                 'has_plugin': plugins.has_plugin,
                 'plugins': plugins.list_plugins,
                 'version': ferris.version
@@ -141,7 +141,7 @@ def render_template(name, context=None, theme=None):
     Renders the template given by name with the given context (variables).
     Uses the global context.
     """
-    if context == None:
+    if context is None:
         context = {}
 
     return _get_engine(theme=theme).render(name, context)

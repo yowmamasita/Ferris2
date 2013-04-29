@@ -1,4 +1,4 @@
-from settings import app_config
+from ferris.core import settings
 from ferris.core.view import TemplateView
 from google.appengine.api import mail
 
@@ -13,7 +13,7 @@ class Email(object):
 
     def test(self):
         self.send(
-            'jonathan.parrott+appengine@cloudshepas.com',
+            settings.get('email')['sender'],
             'Test',
             'App Engine Email Test')
 
@@ -26,7 +26,7 @@ class Email(object):
         Any additionally arguments are passed to ``mail.send_mail``, such as headers.
         """
         mail.send_mail(
-            sender=app_config['email']['sender'],
+            sender=settings.get('email')['sender'],
             to=recipient,
             subject=subject,
             body=body,

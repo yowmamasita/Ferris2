@@ -9,7 +9,6 @@ import base64
 import ferris
 
 from ferris.core.wsgi import WSGIApp
-from settings import app_config
 
 
 class TestbedWithFiles(testbed.Testbed):
@@ -85,5 +84,7 @@ class AppTestCase(WithTestBed):
 class FerrisTestCase(WithTestBed):
     def setUp(self):
         super(FerrisTestCase, self).setUp()
-        app = WSGIApp(debug=True, config=app_config)
+        app = WSGIApp(debug=True, config={
+            'webapp2_extras.sessions': {'secret_key': 'notasecret'}
+        })
         self.testapp = webtest.TestApp(app)

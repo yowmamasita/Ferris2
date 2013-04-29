@@ -5,10 +5,10 @@ to configure routing
 """
 
 from ferris.core.wsgi import WSGIApp
-from settings import app_config
+from ferris.core import settings
 
 # Entry point
-app = WSGIApp(debug=True, config=app_config)
+app = WSGIApp(debug=True, config=settings.get('app_config'))
 
 from ferris.controllers import errors
 app.error_handlers[400] = errors.handle_400

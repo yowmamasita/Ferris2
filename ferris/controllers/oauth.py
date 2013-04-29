@@ -3,23 +3,21 @@ from google.appengine.ext import ndb
 from ferris.core.controller import Controller, route, route_with
 from oauth2client.client import OAuth2WebServerFlow
 from ferris.core.oauth2.user_credentials import UserCredentials as OAuth2UserCredentials
-from settings import app_config
+from ferris.core import settings
 
 
 class Oauth(Controller):
 
     @route
     def start(self, session):
-        if not app_config['oauth2']['client_id'] or not app_config['oauth2']['client_secret']:
-            self.response.write("OAuth2 has not been configured in settings.py")
-            return 500
+        config = settings.get('oauth2')
 
         session = ndb.Key(urlsafe=session).get()
         callback_uri = self.uri(action='callback', _full=True)
 
         flow = OAuth2WebServerFlow(
-            client_id=app_config['oauth2']['client_id'],
-            client_secret=app_config['oauth2']['client_secret'],
+            client_id=config['client_id'],
+            client_secret=config['client_secret'],
             scope=session.scopes,
             redirect_uri=callback_uri)
 
