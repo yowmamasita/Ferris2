@@ -6,7 +6,6 @@ import unittest
 import webtest
 import os
 import base64
-import ferris
 
 from ferris.core.wsgi import WSGIApp
 
@@ -27,6 +26,8 @@ class WithTestBed(unittest.TestCase):
     Provides a complete App Engine test environment.
     """
     def setUp(self):
+        import ferris
+
         self.testbed = TestbedWithFiles()
 
         self.testbed.setup_env(

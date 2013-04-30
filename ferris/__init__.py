@@ -1,7 +1,7 @@
 version = "2.0 Alpha"
 
 from . import tests, core, components, behaviors
-from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins
+from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins, views
 from core.event import Event
 from core.bunch import Bunch
 from core.json_util import stringify as json_stringify, parse as json_parse
@@ -10,7 +10,7 @@ from core.memcache import cached, arg_cached, chunked_cache
 from core.request_parsers import RequestParser, FormParser
 from core.template import render_template
 from core.time_util import localize
-from core.view import View, ViewContext, TemplateView
+from core.views import ViewContext
 from core.ndb import Model, BasicModel, Behavior, decode_key, encode_key, ndb
 from core.forms import model_form
 from core.messages import model_message
@@ -47,9 +47,8 @@ __all__ = (
     RequestParser,
     FormParser,
     render_template,
-    View,
+    views,
     ViewContext,
-    TemplateView,
     Model,
     BasicModel,
     Behavior,
