@@ -2,15 +2,10 @@ import webapp2
 from webapp2 import cached_property
 from webapp2_extras import sessions
 from google.appengine.api import users
-from ferris.core import inflector, auth
 from ferris.core.ndb import encode_key, decode_key
 from ferris.core.uri import Uri
-from ferris.core import events
+from ferris.core import inflector, auth, events, views, request_parsers, response_handlers, routing
 from ferris.core.json_util import parse as json_parse, stringify as json_stringify
-from ferris.core.view import View, TemplateView
-from ferris.core.request_parsers import RequestParser
-from ferris.core.response_handlers import ResponseHandler
-import ferris.core.routing as routing
 from bunch import Bunch
 
 
@@ -98,7 +93,7 @@ class Controller(webapp2.RequestHandler, Uri):
         authorizations = (auth.require_admin_for_prefix(prefix=('admin',)),)
 
         #: Which view class to use by default.
-        View = TemplateView
+        View = views.TemplateView
 
         #: Which requestparser class to use by default
         Parser = 'Form'
@@ -110,7 +105,7 @@ class Controller(webapp2.RequestHandler, Uri):
 
         def change_view(self, view, persist_context=True):
             context = self.view.context if self.view else None
-            self.View = view if not isinstance(view, basestring) else View.factory(view)
+            self.View = view if not isinstance(view, basestring) else views.factory(view)
             self.view = self.View(self._controller, context)
 
     class Util(object):
@@ -251,7 +246,7 @@ class Controller(webapp2.RequestHandler, Uri):
 
         # Return value handlers.
         # Response has highest precendence, the view class has lowest.
-        response_handler = ResponseHandler.factory(type(result))
+        response_handler = response_handlers.factory(type(result))
 
         if response_handler:
             self.response = response_handler(self, result)
@@ -287,7 +282,7 @@ class Controller(webapp2.RequestHandler, Uri):
         provided you've set the From attribute of the Meta class.
         """
         parser_name = parser if parser else self.meta.Parser
-        parser = RequestParser.factory(parser_name)
+        parser = request_parsers.factory(parser_name)
 
         if not container:
             container_name = parser.container_name

@@ -1,16 +1,28 @@
 import inspect
 
 
-class RequestParser(object):
-    _parsers = {}
+_parsers = {}
 
+
+def factory(name):
+    """
+    Returns a constructed request parser instance by name
+    """
+    global _parsers
+    if inspect.isclass(name):
+        return name
+    return _parsers.get(name.lower(), _parsers.get(name.lower() + 'parser'))()
+
+
+class RequestParser(object):
     container_name = None
 
     class __metaclass__(type):
         def __new__(meta, name, bases, dict):
+            global _parsers
             cls = type.__new__(meta, name, bases, dict)
             if name != 'RequestParser':
-                RequestParser._parsers[name.lower()] = cls
+                _parsers[name.lower()] = cls
             return cls
 
     def __init__(self):
@@ -18,12 +30,6 @@ class RequestParser(object):
         self.fallback = None
         self.data = None
         self.errors = None
-
-    @classmethod
-    def factory(cls, name):
-        if inspect.isclass(name):
-            return name
-        return cls._parsers.get(name.lower(), cls._parsers.get(name.lower() + 'parser'))()
 
     def process(self, request, container, fallback):
         raise NotImplementedError()

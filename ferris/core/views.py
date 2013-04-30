@@ -2,6 +2,16 @@ import template
 import json_util
 from protorpc import protojson
 
+_views = {}
+
+
+def factory(name):
+    """
+    Creates a view instance by name
+    """
+    global _views
+    return _views.get(name.lower(), _views.get((name+'View').lower()))
+
 
 class ViewContext(dict):
     def get_dotted(self, name, default=None):
@@ -22,18 +32,13 @@ class ViewContext(dict):
 
 class View(object):
 
-    _views = {}
-
     class __metaclass__(type):
         def __new__(meta, name, bases, dict):
+            global _views
             cls = type.__new__(meta, name, bases, dict)
             if name != 'View':
-                View._views[name.lower()] = cls
+                _views[name.lower()] = cls
             return cls
-
-    @classmethod
-    def factory(cls, name):
-        return cls._views.get(name.lower(), cls._views.get((name+'View').lower()))
 
     def __init__(self, controller, context=None):
         self.controller = controller
