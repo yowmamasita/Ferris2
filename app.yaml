@@ -14,7 +14,13 @@ libraries:
   version: latest
 - name: lxml
   version: latest
+- name: webapp2
+  version: latest
 - name: webob
+  version: latest
+- name: ssl
+  version: latest
+- name: pycrypto
   version: latest
 
 skip_files:
