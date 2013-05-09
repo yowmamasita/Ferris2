@@ -126,51 +126,7 @@ def view(controller, key):
         controller.scaffold.singular: item})
 
 
-def add(controller):
-    # Get the form/message and data
-    controller.events.scaffold_before_parse(controller=controller)
-    parser = controller.parse_request()
-
-    # If the form was submitted
-    if controller.request.method in ('PUT', 'POST', 'PATCH'):
-        if parser.validate():  # validate the container
-
-            # construct the item
-            item = controller.meta.Model()
-
-            controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=None)
-
-            # update the properties
-            parser.update(item)
-
-            controller.events.scaffold_before_save(controller=controller, container=parser.container, item=item)
-            # save the item
-            item.put()
-            controller.events.scaffold_after_save(controller=controller, container=parser.container, item=item)
-
-            # set the item in the context to allow other things to access it.
-            controller.context.set(**{
-                controller.scaffold.singular: item})
-
-            # Flash Message
-            _flash(controller, 'The item was created successfully', 'success')
-
-            # redirect
-            if controller.scaffold.redirect:
-                return controller.redirect(controller.scaffold.redirect)
-
-        else:
-            _flash(controller, 'There were errors on the form, please correct and try again.', 'error')
-
-    # expose the form/message to the template.
-    controller.context['form'] = parser.container
-
-
-def edit(controller, key):
-    item = controller.util.decode_key(key).get()
-    if not item:
-        return 404
-
+def _parser_action(controller, item):
     controller.events.scaffold_before_parse(controller=controller)
     parser = controller.parse_request(fallback=item)
 
@@ -198,6 +154,18 @@ def edit(controller, key):
     controller.context.set(**{
         'form': parser.container,
         controller.scaffold.singular: item})
+
+
+def add(controller):
+    item = controller.meta.Model()
+    return _parser_action(controller, item)
+
+
+def edit(controller, key):
+    item = controller.util.decode_key(key).get()
+    if not item:
+        return 404
+    return _parser_action(controller, item)
 
 
 def delete(controller, key):
