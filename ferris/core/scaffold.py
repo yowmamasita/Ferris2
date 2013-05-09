@@ -133,7 +133,7 @@ def _parser_action(controller, item):
     if controller.request.method in ('PUT', 'POST', 'PATCH'):
         if parser.validate():
 
-            controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=None)
+            controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=item)
             parser.update(item)
 
             controller.events.scaffold_before_save(controller=controller, container=parser.container, item=item)
