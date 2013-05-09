@@ -34,7 +34,8 @@ class ModelMeta(ndb.model.MetaModel):
                     return cls.find_all_by_properties(**args)
                 return types.MethodType(find_all, cls)
 
-            setattr(cls, find_all_name, bind_all(prop_name))
+            if not hasattr(cls, find_all_name):
+                setattr(cls, find_all_name, bind_all(prop_name))
 
             find_one_name = 'find_by_' + prop_name
 
@@ -45,7 +46,8 @@ class ModelMeta(ndb.model.MetaModel):
                     return cls.find_by_properties(**args)
                 return types.MethodType(find_one, cls)
 
-            setattr(cls, find_one_name, bind_one(prop_name))
+            if not hasattr(cls, find_one_name):
+                setattr(cls, find_one_name, bind_one(prop_name))
 
 
 class Model(ndb.Model):
