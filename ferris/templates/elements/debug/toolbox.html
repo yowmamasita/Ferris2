@@ -1,4 +1,4 @@
-{% if 'Development' in this.request.environ['SERVER_SOFTWARE'] or (ferris.app_config.ed_rooney.enabled and ferris.app_config.ed_rooney.required_domain in ferris.users.get_current_user().email() )  %}
+{% if 'Development' in this.request.environ['SERVER_SOFTWARE'] or (ferris.settings.ed_rooney.enabled and ferris.settings.ed_rooney.required_domain in ferris.users.get_current_user().email() )  %}
 
 <script type='text/javascript' src='/ferris/js/prettify/prettify.js'></script>
 <link rel='stylesheet' type='text/css' href='/ferris/js/prettify/prettify.css' />
