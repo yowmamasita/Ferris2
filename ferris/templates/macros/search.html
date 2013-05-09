@@ -41,7 +41,7 @@
         </div>
     {% endif %}
 
-    {% if not search_results %}
+    {% if search_query and not search_results %}
         <div class="alert alert-info">
             <a class="close" data-dismiss="alert">×</a>
             <h4 class="alert-heading">No results found</h4>
