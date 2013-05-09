@@ -354,6 +354,7 @@ class ModelConverter(object):
             'label': prop._name.replace('_', ' ').title(),
             'default': prop._default,
             'validators': [],
+            'description': prop._verbose_name
         }
         if field_args:
             kwargs.update(field_args)
