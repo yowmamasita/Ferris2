@@ -21,7 +21,7 @@ class Converter(object):
 class StringConverter(Converter):
     @staticmethod
     def to_field(Model, property, count):
-        return messages.StringField(count)
+        return messages.StringField(count, repeated=property._repeated)
 
 
 class DateTimeConverter(Converter):
