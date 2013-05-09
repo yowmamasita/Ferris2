@@ -57,7 +57,7 @@ def main(sdk_path, package, coverage=False):
     if coverage:
         argv += [
             '--with-coverage',
-            '--cover-package=%s' % package,
+            '--cover-package=%s' % package.replace(os.sep, '.'),
         ]
 
     nose.main(argv=argv)
