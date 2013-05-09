@@ -21,6 +21,10 @@ class Setting(ferris.Model):
         return cls._settings[ferris.inflector.underscore(name)]
 
     @classmethod
+    def _get_kind(cls):
+        return '__ferris__' + cls.__name__
+
+    @classmethod
     def get_instance(cls):
         result = cls.get_instance_async().get_result()
         if not result:
