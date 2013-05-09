@@ -1,4 +1,8 @@
-{% macro form_control(field, container_element='div') -%}
+{% macro form_control(form, field, container_element='div') -%}
+    {% if field.short_name in form.disabled_fields %}
+        {% set _ = kwargs.setdefault('readonly', true) %}
+    {% endif %}
+
     {% if field.type == 'HiddenField' or field.widget.input_type == 'hidden' %}
         {{ field(**kwargs) }}
     {% else %}
@@ -10,7 +14,7 @@
             {% if flag_value %}
                 {% set _ = css_classes.append(' flag_' + flag_name + '_true') %}
             {% else %}
-                {% set _ =css_classes.append(' flag_' + flag_name + '_false') %}
+                {% set _ = css_classes.append(' flag_' + flag_name + '_false') %}
             {% endif %}
         {% endfor %}
 
