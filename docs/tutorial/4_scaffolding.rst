@@ -26,7 +26,7 @@ Create ``app/handlers/posts.py``::
     from ferris Controller, scaffold
 
 
-    class Posts(EasyHandler):
+    class Posts(Controller):
         class Meta:
             prefixes = ('admin',)
             components = (scaffold.Scaffolding,)
