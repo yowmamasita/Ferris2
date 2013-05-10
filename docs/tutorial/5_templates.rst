@@ -9,12 +9,13 @@ are many situations where you'd like to create your own.
 Layouts
 -------
 
-Most templates will use a layout. Layouts are stored in ``app/templates/layouts``. Ferris provides
-two layouts for you: A simple `Twitter Bootstrap <http://twitter.github.com/bootstrap/>`_ (``default.html``) and a layout that's used for the
-admin scaffold (``admin.html``).
+Most templates will use a layout. Layouts provide the HTML skeleton for templates. You can think of them as a wrapper of sorts. 
+
+Layouts are stored in ``app/templates/layouts``. Ferris provides two layouts for you: A simple `Twitter Bootstrap <http://twitter.github.com/bootstrap/>`_ layour named ``default.html`` and one layout that's used for the
+admin scaffolding named ``admin.html``.
 
 .. note::
-    If you're using the scaffold templates, Ferris will choose which one to use based on the prefix. Ferris uses ``admin.html`` for the ``admin`` prefix, and ``default.html`` for everything else.
+    If you're using the scaffold templates, Ferris will choose which layout to use based on the prefix. Ferris uses ``admin.html`` for the ``admin`` prefix, and ``default.html`` for everything else.
 
 You can override Ferris' ``default.html`` by creating your own. We're going to add some navigation at the top
 of our application.
