@@ -2,7 +2,7 @@ Functional Testing
 ==================
 
 We can add functional tests to our application to verify all of the functionality that we claim to have.
-Ferris provides you with the ability to test our application's handlers in the same way that we tested
+Ferris provides you with the ability to test our application's controllers in the same way that we tested
 our data model.
 
 Before we get started testing, we need to add a root route so that http://localhost:8080/ goes to
@@ -44,11 +44,10 @@ Here's the code for that test::
 
 Let's walk through this:
 
-* We create a test class by inheriting from ``AppTestCase``. ``AppTestCase`` handles loading and registering all of your handlers. It also gives you a test environment that is very similar to your full application.
+* We create a test class by inheriting from ``AppTestCase``. ``AppTestCase`` handles loading and registering all of our controllers. It also gives you a test environment that is very similar to your full application.
 * We start our test method by logging in a user. We can specify an email and whether or not the user is an admin, or we can use the default setup of test@example.com and no admin.
-* Our test then makes a GET request to '/', our root url. If this fails to return a ``200`` response, our test will fail.
-* Our test logs in an admin user.
-* Now, we do a GET request to '/admin' and make sure that "Ferris" is somewhere in the body of the response.
+* Our test then makes a GET request to '/', our root url. If this fails to return a 200 OK response, our test will fail.
+* Then we log in as an admin user and do a GET request to '/admin' and make sure that "Ferris" is somewhere in the body of the response.
 
 We're going build on this example and create tests to verify:
 
