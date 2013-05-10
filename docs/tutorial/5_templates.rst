@@ -55,21 +55,19 @@ Add this inside of ``<div class="container">``::
         <div class="navbar-inner">
             <a class="brand" href="#">Blog</a>
             <ul class="nav">
-                <li><a href="{{handler.uri('posts-list')}}">All</a></li>
-                <li><a href="{{handler.uri('posts-list', mine=True)}}">Mine</a></li>
-                <li><a href="{{handler.uri('posts-add')}}">New</a></li>
+                <li><a href="{{uri('posts:list')}}">All</a></li>
+                <li><a href="{{uri('posts:list', mine=True)}}">Mine</a></li>
+                <li><a href="{{uri('posts:add')}}">New</a></li>
             </ul>
         </div>
     </div>
 
-In this example we're using ``handler.uri`` to generate urls for particular actions.  ``handler.uri`` is a very powerful function
-that generates an url to any action in your application.  When possible, use this method for generating urls; this method only generates urls
-to valid actions and accepts custom urls created with ``@route_with``.
+In this example we're using ``uri`` to generate urls for particular actions.  ``uri`` is a very powerful function that generates a url to any action in your application.  When possible, use this method for generating urls; this method only generates urls to valid actions and also works custom urls created with ``@route_with``.
 
-Notice that the first link (``<li><a href="{{handler.uri('posts-list')}}">All</a></li>``) generates a url to ``Posts.list`` using the canonical name ``posts-list``, while
-the second link (``<li><a href="{{handler.uri('posts-list', mine=True)}}">Mine</a></li>``) adds the query parameter ``mine``. This also works with named parameters.
+Notice that the first link (``<li><a href="{{handler.uri('posts:list')}}">All</a></li>``) generates a url to ``Posts.list`` using the canonical name ``posts:list``, while the second link (``<li><a href="{{uri('posts:list', mine=True)}}">Mine</a></li>``) adds the query parameter ``mine``. This also works with named parameters such as ``key```.
 
-Canonical route names follow the simple convention ``prefix-handler-action``: ``TimeMachines.admin_list`` becomes ``admin-time_machines-list``.
+.. note::
+    Canonical route names follow the simple convention ``prefix:handler:action``, for example ``TimeMachines.admin_list`` becomes ``admin:time_machines:list``.
 
 If we open up http://localhost:8080/posts, we'll see that we have a nice top-level navigation bar.
 
@@ -108,11 +106,9 @@ Opening up http://localhost:8080/posts shows our much nicer list of posts.
 
 It would be nice to have an edit link as well. Add this before the closing tag of ``<div class="media">``::
 
-    {% if handler.user == post.created_by %}
-        <a href="{{handler.uri('posts-edit', id=handler.url_id_for(post))}}">Edit</a>
+    {% if self.user == post.created_by %}
+        <a href="{{uri('posts:edit', key=post.key.urlsafe())}}">Edit</a>
     {% endif %}
-
-Here we use the ``handler.url_id_for`` function to pass the proper id argument to ``Posts.edit``.
 
 Now http://localhost:8080/posts shows an edit link for posts that the currently logged in user has created.
 
