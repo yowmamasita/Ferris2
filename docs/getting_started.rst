@@ -35,7 +35,7 @@ A little bit of configuration has to be done. Open up ``./app.yaml`` and set the
 
 You'll want to pick a unique application name in case you want to actually deploy this. For more information, check out the App Engine documentation.
 
-If you wish to use OAuth2 or Email, you'll also need to change some settings in ``./settings.py``.
+If you wish to use OAuth2 or Email, you'll also need to change some settings in ``./settings.py`` or use the Settings plugin.
 
 Running with the App Engine development server
 ----------------------------------------------

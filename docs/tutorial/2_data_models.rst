@@ -1,13 +1,12 @@
 Modeling Data
 =============
 
-First and foremost we need a way to store our data. Ferris uses the native Google App Engine
-Datastore and the `ndb module <https://developers.google.com/appengine/docs/python/ndb/>`_. This section will walk you through creating a Model and how to
-interact with it.
+First and foremost we need a way to store our data. Ferris extends the native Google App Engine
+Datastore and the `ndb module <https://developers.google.com/appengine/docs/python/ndb/>`_. This section will walk you through creating a Model and how to interact with it.
 
 Models reside inside of `app/models`, let's create our Post model at `app/models/post.py`::
 
-    from ferris.core.ndb import BasicModel
+    from ferris import BasicModel
     from google.appengine.ext import ndb
 
 
@@ -15,7 +14,7 @@ Models reside inside of `app/models`, let's create our Post model at `app/models
         title = ndb.StringProperty()
         content = ndb.TextProperty()
 
-This is a very simple model with only two fields: the title of the post, and the post's content. You may say, "wait, we also need to know who created that post and when!" You would be right, which is why we used ``BasicModel``. BasicModel extends from ``ferris.core.ndb.Model`` and provides us with four automatic fields::
+This is a very simple model with only two fields: the title of the post, and the post's content. You may say, "wait, we also need to know who created that post and when!" You would be right, which is why we used ``BasicModel``. BasicModel extends from the ordinary ``ferris.Model`` and provides us with four automatic fields::
 
     created = ndb.DateTimeProperty(auto_now_add=True)
     created_by = ndb.UserProperty(auto_current_user_add=True)
@@ -25,14 +24,15 @@ This is a very simple model with only two fields: the title of the post, and the
 Since these fields are often necessary they're provided as part of the core framework.
 
 .. note::
-    Models are by convention singular nouns.
+    Models are by convention singular nouns. Examples include ``Bear``, ``Dalek``, ``BlogPost``, ``InfoPage``.
+
 
 Experimenting with your model
 -----------------------------
 
 At this point we have a model, so let's get a feel for how to interact with it.
 
-The App Engine Development Server has an excellent feature: the Interactive Console. Open http://localhost:8080/_ah/admin in your browser and click on 'Interactive Console' in the sidebar.
+The App Engine Development Server has an excellent feature: the Interactive Console. Open http://localhost:8000/ in your browser and click on 'Interactive Console' in the sidebar.
 
 Enter this into the Interactive Console::
 
@@ -63,7 +63,7 @@ Enter this into the Interactive Console::
 This snippet walks you through the basics of interacting with a model: creating, reading, updating, and deleting.
 
 .. note::
-    Most of the examples below should be entered into the interactive console unless otherwise stated.
+    Most of the examples below should be entered into the interactive console unless otherwise stated. Be sure to restart the interactive console instance after making modifications.
 
 
 Required fields
@@ -92,7 +92,7 @@ Ferris will recognize required fields when building forms.  If a required field 
 Querying
 --------
 
-Ferris models are ``google.appengine.ext.ndb.Model`` subclasses, so you can use any and all methods of `querying <https://developers.google.com/appengine/docs/python/ndb/queries>`_ ordinary models.
+Ferris models are ``ndb.Model`` subclasses, so you can use any and all methods of `querying <https://developers.google.com/appengine/docs/python/ndb/queries>`_ ordinary models.
 
 However, Ferris does provide you with some shortcuts::
 
@@ -119,7 +119,7 @@ Create these queries as methods on the Posts class.  Any and all consumers of Po
 
 Here's our modified Post model with these query methods::
 
-    from ferris.core.ndb import BasicModel
+    from ferris import BasicModel
     from google.appengine.ext import ndb
     from google.appengine.api import users
 
@@ -151,7 +151,7 @@ Now you can use ``Post.all_posts()`` and ``Post.all_posts_by_user()`` to execute
 Testing your model
 ------------------
 
-All of the tests for your application reside inside of `app/tests/backend`. We're going to create a
+All of the tests for your application reside inside of `app/tests` and its subfolders. We're going to create a
 test to ensure that our model's query methods do exactly as we expect.
 
 Create the following file in `app/tests/backend/test_post.py`::
