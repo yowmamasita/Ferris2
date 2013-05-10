@@ -24,7 +24,7 @@ This is a very simple model with only two fields: the title of the post, and the
 Since these fields are often necessary they're provided as part of the core framework.
 
 .. note::
-    Models are by convention singular nouns. Examples include ``Bear``, ``Dalek``, ``BlogPost``, ``InfoPage``.
+    Models are by convention UpperCamelCase singular nouns. Examples include ``Bear``, ``Dalek``, ``BlogPost``, ``InfoPage``.
 
 
 Experimenting with your model

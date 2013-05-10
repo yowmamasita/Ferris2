@@ -1,30 +1,27 @@
-Handling Requests
-=================
+Handling Requests With Controllers
+==================================
 
 Now that we can store data we're going to need a way to serve it to our users.
 
-First, we'll take a short detour to discuss one of the core parts of Ferris: Handlers.
+First, we'll take a short detour to discuss one of the core parts of Ferris: Controller.
 
-Ferris handles HTTP requests with the cleverly named Handlers. Handlers are
-Python classes that contain a collection of *actions*. Actions are Python
-methods that can be invoked via HTTP. Handlers can also render template files
-and serve content such as JSON or blobs.
+Ferris handles HTTP requests with Controllers. Controllers are classes that contain a collection of *actions*. Actions are methods that can be invoked via HTTP. Controllers invoke views that can render template files or serve content such as JSON, ProtoRPC Message, and Blobstore Blobs.
 
 .. note::
-    Handlers are usually plural nouns and are tied to a particular model (i.e. Posts handler for the Post model, Daleks handler for the Dalek model). However, there are cases where you'll make exceptions, such as handlers that don't have a model or those that have multiple models.
+    Controllers are usually UpperCamelCase plural nouns and are tied to a particular model (i.e. Posts controller for the Post model, Daleks controller for the Dalek model). However, there are cases where you'll make exceptions, such as handlers that don't have a model or those that have multiple models.
 
 
 Saying Hello
 ------------
 
-Here's a rather simple handler to get your feet wet. We'll just say hello.
+Here's a rather simple controller to get your feet wet. We'll just say hello.
 
-Create ``app/handlers/hello.py``::
+Create ``app/conrollers/hello.py``::
 
-    from ferris.core.handler import Handler
+    from ferris import Controller
 
 
-    class Hello(Handler):
+    class Hello(Controller):
 
         def list(self):
             return "Hello, is it me you're looking for?"
@@ -33,7 +30,7 @@ Create ``app/handlers/hello.py``::
 If you open http://localhost:8080/hello, you should see a friendly welcome.
 
 .. note::
-    A dev server restart might be required at this point.
+    A dev server restart might be required at this point. If examples do not work immediately for you, it's recommended to try a server restart first.
 
 You can also accept input from GET or POST, if you'd like.
 
@@ -44,16 +41,13 @@ Modify our list action::
 
 Now try to open http://localhost:8080/hello?name=Doctor
 
-You may have noticed that ``Hello.list`` gets automatically routed to `/hello`.
-Ferris will automatically route the actions ``list``, ``add``, ``edit``, ``view``, and ``delete``.
-The other actions will be discussed in the Routing and Scaffolding sections.
+You may have noticed that ``Hello.list`` gets automatically routed to `/hello`. Ferris will automatically route the actions ``list``, ``add``, ``edit``, ``view``, and ``delete``. These actions, as well as other action names, will be discussed in the Routing and Scaffolding sections.
 
 
-Templates
----------
+Views & Templates
+-----------------
 
-You're not limited to returning simple strings from your handler. Ferris
-also provides you the fantastic `Jinja2 template engine <http://jinja.pocoo.org/>`_.
+You're not limited to returning simple strings from your controller. Ferris has a flexible view infrastructure. The default view provides the fantastic `Jinja2 template engine <http://jinja.pocoo.org/>`_.
 
 Let's create a template for our action at ``app/templates/hello/list.html``::
 
@@ -63,23 +57,19 @@ Let's create a template for our action at ``app/templates/hello/list.html``::
         <h1>Hello, {{who}}</h1>
     {% endblock %}
 
-The syntax for Jinja2 can be a bit much to take in at once; I highly recommend checking out their
-most excellent `documentation <http://jinja.pocoo.org/docs/templates/>`_. The gist of this is that we are going to use the default layout
-and add some content that says hello.
+The syntax for Jinja2 can be a bit much to take in at once; I highly recommend checking out their excellent `documentation <http://jinja.pocoo.org/docs/templates/>`_. The gist of this is that we are going to use the default layout and add some content that says hello.
 
 Now we just need to modify our list action::
 
     def list(self):
-        self.set(who=self.request.params['name'])
+        self.context['who'] = self.request.params['name']
 
-Notice here that we have to explictly set the ``who`` variable in the template using ``self.set``.
+Notice here that we have to explicitly set the ``who`` variable in the template using ``self.context``. This our view context and everything in this dictionary is made available inside of the template.
 
-If you load up http://localhost:8080/hello?name=Doctor, you should see a slighly prettier greeting.
+If you load up http://localhost:8080/hello?name=Doctor, you should see a slightly prettier greeting.
 
 .. note::
-    Ferris expects the template to be located at ``app/templates/handler/action.html``. So the template
-    for this action is at ``app/templates/hello/list.html``. You can manually specify the template location
-    by setting ``self.template_name`` in your action.
+    Ferris expects the template to be located at ``app/templates/controller/action.html``. So the template for this action is at ``app/templates/hello/list.html``. You can manually specify the template location by setting ``self.meta.view.template_name`` in your action.
 
 Routing
 -------
@@ -87,29 +77,29 @@ Routing
 You've already seen how ``Hello.list`` gets automatically routed to `/hello`.
 Ferris will implicitly route the following actions to these urls:
 
-+---------+----------------------+
-|Action   | URL                  |
-+=========+======================+
-|list     |  /handler            |
-+---------+----------------------+
-|add      |  /handler/add        |
-+---------+----------------------+
-|view     |  /handler/<id>       |
-+---------+----------------------+
-|edit     |  /handler/<id>/edit  |
-+---------+----------------------+
-|delete   |  /handler/<id>/delete|
-+---------+----------------------+
++---------+---------------------------+
+|Action   | URL                       |
++=========+===========================+
+|list     |  /controller              |
++---------+---------------------------+
+|add      |  /controller/add          |
++---------+---------------------------+
+|view     |  /controller/<key>        |
++---------+---------------------------+
+|edit     |  /controller/<key>/edit   |
++---------+---------------------------+
+|delete   |  /controller/<key>/delete |
++---------+---------------------------+
 
-Notice the `handler` section of the url.  The handler's name is passed to ``inflector.underscore``. For example, `Posts` becomes `posts` and `FlyingMonsters` becomes `flying_monsters`.
+Notice the `controller` section of the url.  The controller's name is passed to ``inflector.underscore``. For example, `Posts` becomes `posts` and `FlyingMonsters` becomes `flying_monsters`.
 
-But what about actions that are not part of this list? You have to explictly route them using the ``route`` decorator.
+But what about actions that are not part of this list? You have to explicitly route them using the ``route`` decorator.
 
 Modify our imports in the Hello handler::
 
-    from ferris.core.handler import Handler, route
+    from ferris import Controller, route
 
-Add the following action to our Hello handler::
+Add the following action to our Hello controller::
 
     @route
     def custom(self):
@@ -138,7 +128,7 @@ You may have multiple mapped arguments::
 Try with http://localhost:8080/hello/custom/Yes/sir
 
 .. note::
-    You can set your own URLs for methods using the route_with decorator.
+    You can set your own URLs for methods using the ``route_with`` decorator.
 
 
 Next
