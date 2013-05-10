@@ -5,6 +5,8 @@ Controller
 
 Controllers are responsible for processing and responding to HTTP requests. Controllers are typically lightweight classes that glue the :doc:`models` to the :doc:`templates`. Controllers can be extended with :doc:`components` and :doc:`scaffolded <scaffold>`.
 
+    .. autoclass:: Controller()
+
 Conventions
 -----------
 
@@ -12,16 +14,25 @@ Controllers are named plural nouns in upper camel case (UpperCamelCase) from the
 
 Each controller class should be in its own file under ``/app/controllers`` and the name of the file should be the underscored class name. For example, to create a controlller to act on fuzzy bears, you would create the file ``/app/controller/fuzzy_bears.py`` and inside of that define a class named ``FuzzyBears``.
 
-Anatomy of a Controller
-----------------------
+This section mostly focuses on actions and how to process and respond to requests. Other features are tied into controllers in various ways. Controller actions are exposed via the :doc:`routing` system. Controllers can automatically discover and determine which :doc:`template <templating>` to use and render it. Controllers can process POST and JSON data and attach it to :doc:`forms`. Controllers also allow you to break out common functionality using :doc:`components`.
 
-    .. autoclass:: Controller() 
 
-A controller is a class that inherits from :class:`~ferris.core.controller.Controller` and contains special methods called *actions*.
+Meta
+----
+
+    .. autoclass:: ferris.core.controller::Controller.Meta()
+        :members:
+
+Util
+----
+
+    .. autoclass:: ferris.core.controller::Controller.Util()
+        :members:
+
+Actions
+-------
 
 Actions are normal instance methods that can be invoked via HTTP. Ferris takes care of :doc:`automatically routing <routing>` actions and generating URLS.
-
-This section mostly focuses on actions and how to process and respond to requests. Other features are tied into controllers in various ways. Controller actions are exposed via the :doc:`routing` system. Controllers can automatically discover and determine which :doc:`template <templating>` to use and render it. Controllers can process POST and JSON data and attach it to :doc:`forms`. Controllers also allow you to break out common functionality using :doc:`components`.
 
 
 Requests

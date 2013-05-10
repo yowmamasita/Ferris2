@@ -47,7 +47,7 @@ class Controller(webapp2.RequestHandler, Uri):
     """
     Controllers allows grouping of common actions and provides them with
     automatic routing, reusable components, request data parsering, and
-    automatic view rendering.
+    view rendering.
     """
 
     _controllers = []
@@ -62,9 +62,6 @@ class Controller(webapp2.RequestHandler, Uri):
                     cls.Meta = type('Meta', (cls.Meta, Controller.Meta), {})
             return cls
 
-    #: If set to true, the controller will attempt to render the template determined by :meth:`_get_template_name` if an action returns ``None``.
-    auto_render = True
-
     # The name of this class, lowercase (automatically determined)
     name = 'controller'
 
@@ -75,27 +72,42 @@ class Controller(webapp2.RequestHandler, Uri):
     context = property(lambda self: self.meta.view.context)
 
     class Meta(object):
+        """
+        The Meta class stores configuration information for a Controller. This class is constructed
+        into an instance and made available at ``self.meta``. This class is optional, Controllers that
+        do not specify it will receive the default configuration. Additionally, you need not inherit from
+        this class as Controller's metaclass will ensure it.
+
+        For example::
+
+            def Posts(Controller):
+                class Meta:  # no inheritance
+                    prefixes = ('admin', )
+                    #  all other properties inherited from default.
+        """
+
         #: List of components.
-        #: When declaring a controller, this must be a list of classes.
-        #: When the controller is constructed, this will be transformed into a Bunch of instances.
+        #: When declaring a controller, this must be a list or tuple of classes.
+        #: When the controller is constructed, ``controller.components`` will
+        #: be populated with instances of these classes.
         components = tuple()
 
         #: Prefixes are added in from of controller (like admin_list) and will cause routing
-        #: to produce a url such as '/admin/name/list' and a name such as 'admin-name-list'
+        #: to produce a url such as '/admin/name/list' and a name such as 'admin:name:list'
         prefixes = tuple()
 
         #: Authorizations control access to the controller. Each authorization is a callable.
         #: Authorizations are called in order and all must return True for the request to be
         #: processed. If they return False or a tuple like (False, 'message'), the request will
         #: be rejected.
-        #: You should **always** have auth.require_admin_for_prefix(prefix=('admin',)) in your
+        #: You should **always** have ``auth.require_admin_for_prefix(prefix=('admin',))`` in your
         #: authorization chain.
         authorizations = (auth.require_admin_for_prefix(prefix=('admin',)),)
 
-        #: Which view class to use by default.
+        #: Which :class:`~ferris.core.views.View` class to use by default. use :meth:`change_view` to switch views.
         View = views.TemplateView
 
-        #: Which requestparser class to use by default
+        #: Which :class:`RequestParser` class to use by default. See :meth:`Controller.parse_request`.
         Parser = 'Form'
 
         def __init__(self, controller):
@@ -104,17 +116,34 @@ class Controller(webapp2.RequestHandler, Uri):
             self.change_view(self.View)
 
         def change_view(self, view, persist_context=True):
+            """
+            Swaps the view, and by default keeps context between the two views.
+
+            :param view: View class or name.
+            """
             context = self.view.context if self.view else None
             self.View = view if not isinstance(view, basestring) else views.factory(view)
             self.view = self.View(self._controller, context)
 
     class Util(object):
+        """
+        Provides some basic utility functions. This class is constructed into an instance
+        and made available at ``controller.util``.
+        """
+
         def __init__(self, controller):
             self._controller = controller
 
+        #: Decodes a urlsafe ``ndb.Key``.
         decode_key = staticmethod(decode_key)
+
+        #: Encode an ``ndb.Key`` (or ``ndb.Model`` instance) into an urlsafe string.
         encode_key = staticmethod(encode_key)
+
+        #: Decodes a json string.
         parse_json = staticmethod(json_parse)
+
+        #: Encodes a json string.
         stringify_json = staticmethod(json_stringify)
 
     def __init__(self, *args, **kwargs):
@@ -215,15 +244,13 @@ class Controller(webapp2.RequestHandler, Uri):
 
     def dispatch(self):
         """
-        Calls startup and then the controller method. Will also make sure that the user
-        is an administrator is the current prefix is 'admin'.
+        Calls startup, checks authorization, and then the controller method.
 
-        If self.auto_render is True, then we will try to automatically render the template
-        at templates/{name}/{prefix}_{action}.{extension}. The automatic name can be overriden
-        by setting self.template_name.
+        If a view is set and auto rendering is enabled, then it will try to automatically
+        render the view if the action doesn't return anything.
 
         If the controller method returns anything other than None, auto-rendering is skipped
-        and the result (return value) is returned to the dispatcher.
+        and the result is transformed into a response using the :mod:`~ferris.core.response_handlers`.
         """
 
         # Setup everything, the session, etc.
@@ -267,19 +294,22 @@ class Controller(webapp2.RequestHandler, Uri):
     @cached_property
     def session(self):
         """
-        Session object backed by an encrypted cookie and memcache.
+        Sessions are a simple dictionary of data that's persisted across requests for particular
+        browser session. 
+
+        Sessions are backed by an encrypted cookie and memcache.
         """
         return self.session_store.get_session(backend='memcache')
 
     def parse_request(self, container=None, fallback=None, parser=None):
         """
         Parses request data (like GET, POST, JSON, XML) into a container (like a Form or Message)
-        instance using a RequestParser. By default, it assumes you want to process GET/POST data
-        into a Form instance, for that simple case you can use::
+        instance using a :class:`~ferris.core.request_parsers.RequestParser`. By default, it assumes 
+        you want to process GET/POST data into a Form instance, for that simple case you can use::
 
             data = self.parse_request()
 
-        provided you've set the From attribute of the Meta class.
+        provided you've set the Form attribute of the Meta class.
         """
         parser_name = parser if parser else self.meta.Parser
         parser = request_parsers.factory(parser_name)
