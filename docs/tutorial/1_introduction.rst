@@ -18,7 +18,7 @@ Start with :doc:`2_data_models`
    :hidden:
 
    2_data_models
-   3_handlers
+   3_controllers
    4_scaffolding
    5_templates
    6_functional_testing
