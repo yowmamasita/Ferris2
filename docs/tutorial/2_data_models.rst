@@ -219,4 +219,4 @@ Your output should resemble this::
 Next
 ----
 
-Continue with :doc:`3_handlers`
+Continue with :doc:`3_controllers`
