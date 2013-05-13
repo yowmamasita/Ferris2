@@ -12,10 +12,41 @@ from webapp2 import Route
 from webapp2_extras import routes
 
 
-def auto_route(app_router=None, plugin=None):
+def router():
+    return ferris.app.app.router
+
+
+def add(route, app_router=None):
+    """
+    Adds a webapp2.Route class to the router
+    """
     if not app_router:
-        app_router = ferris.app.app.router
+        app_router = router()
+    app_router.add(route)
+
+
+def auto_route(app_router=None, plugin=None):
+    """
+    Automatically routes all controllers in main app or the given plugin
+    """
+    if not app_router:
+        app_router = router()
     route_all_controllers(app_router, plugin=None)
+
+
+def redirect(url, to, app_router=None):
+    """
+    Adds a redirect route with the given url templates.
+    """
+    add(routes.RedirectRoute(url, redirect_to=to), app_router)
+
+
+def default_root(app_router=None):
+    """
+    Adds the default Ferris root route
+    """
+    from ferris.controllers.root import Root
+    add(Route('/', Root, handler_method='root'), app_router)
 
 
 def route_all_controllers(app_router, plugin=None):
@@ -51,13 +82,21 @@ def route_all_controllers(app_router, plugin=None):
                 module = __import__('%s.%s' % (root_module, name), fromlist=['*'])
                 cls = getattr(module, inflector.camelize(name))
 
-                if hasattr(cls, '_build_routes'):
-                    cls._build_routes(app_router)
-                else:
-                    cls.build_routes(app_router)
+                route_controller(cls, app_router)
+
             except AttributeError, e:
                 logging.error('Thought %s was a controller, but was wrong (or ran into some weird error): %s' % (file, e))
                 raise
+
+
+def route_controller(controller_cls, app_router=None):
+    """
+    Adds all of the routes for the given controller
+    """
+    if not app_router:
+        app_router = router()
+
+    return controller_cls._build_routes(app_router)
 
 
 def route_name_exists(name, *args, **kwargs):

@@ -13,15 +13,14 @@
 
     <pre class='prettyprint'>
   # Default root route
-  from webapp2 import Route
-  from ferris.controllers.root import Root
-  ferris_app.router.add(Route('/', Root, handler_method='root'))</pre>
+  routing.default_root()</pre>
 
+    <br/>
     With <br><br>
 
     <pre class='prettyprint'>
-  from webapp2_extras.routes import RedirectRoute
-  ferris_app.router.add(RedirectRoute('/', redirect_to='/posts'))</pre>
+  # Default root route
+  routing.redirect('/', to='/pages')</pre>
 
   </p>
   <small class='beige'>Ferris {{ferris.version}}</small>
