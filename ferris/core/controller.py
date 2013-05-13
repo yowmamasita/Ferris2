@@ -14,6 +14,12 @@ def route(f):
     Marks a method for automatically routing and accessible via HTTP.
     See :mod:`~ferris.core.routing` for more details on how methods are auto-routed.
     This decorator should always be the outermost decorator.
+
+    For example::
+
+        @route
+        def exterminate(self):
+            return 'EXTERMINAAATE!'
     """
     setattr(f, 'route', True)
     return f
@@ -21,10 +27,17 @@ def route(f):
 
 def route_with(*args, **kwargs):
     """
-    Marks a class method to be routed and passes and additional arguments to the webapp2.Route
+    Marks a class method to be routed similar to :func:`route` and passes and additional arguments to the webapp2.Route
     constructor.
 
     :param template: Sets the URL template for this action
+
+
+    For example::
+
+        @route_with(template='/posts/archive/<year>')
+        def archive_by_year(self, year):
+            pass
     """
     def inner(f):
         setattr(f, 'route', (args, kwargs))
@@ -181,7 +194,9 @@ class Controller(webapp2.RequestHandler, Uri):
             prefix=prefix,
             controller=self.name,
             action=action,
-            name=self.request.route.name)
+            name=self.request.route.name,
+            args=self.request.route_args,
+            kwargs=self.request.route_kwargs)
 
     def _init_meta(self):
         self.user = users.get_current_user()

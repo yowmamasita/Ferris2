@@ -49,7 +49,8 @@ class StringResponseHandler(ResponseHandler):
         handler._clear_redirect()
         handler.response.charset = 'utf8'
         handler.response.unicode_body = unicode(result)
-        handler.response.content_type = result.content_type if hasattr(result, 'content_type') else 'text/plain'
+        if not handler.response.content_type:
+            handler.response.content_type = result.content_type if hasattr(result, 'content_type') else 'text/html'
         return handler.response
 
 

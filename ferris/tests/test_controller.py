@@ -79,6 +79,11 @@ class TestController(Controller):
         return 401
 
     @route
+    def custom_content(self):
+        self.response.content_type = 'application/json'
+        return '[1, 2, 3]'
+
+    @route
     def self_response(self):
         self.response.status_int = 401
         self.response.body = 'lolidk'
@@ -160,7 +165,14 @@ class ControllerTest(FerrisTestCase):
         self.assertEqual(response.body, 'si')
 
     def testReturnValues(self):
+        response = self.testapp.get('/test_controller')
+        assert 'text/html' in response.headers['Content-Type']
+        self.assertEqual(response.body, 'list')
+
         response = self.testapp.get('/test_controller/numeric', status=401)
+
+        response = self.testapp.get('/test_controller/custom_content', status=200)
+        assert 'application/json' in response.headers['Content-Type']
 
         response = self.testapp.get('/test_controller/self_response', status=401)
         self.assertEqual(response.body, 'lolidk')
