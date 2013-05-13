@@ -1,7 +1,7 @@
 Events
 ======
 
-Ferris has a very simple global pubsub-style event system. Beyond the events emitted by :doc:`handlers`, there's also a way to globally emit and respond to events.
+Ferris has a very simple global pubsub-style event system. Beyond the events emitted by :doc:`controllers`, there's also a way to globally emit and respond to events.
 
 .. module:: ferris.core.events
 
@@ -12,14 +12,14 @@ Inside of the ``app`` directory lives ``listeners.py``. This is where you can re
 
 .. autofunction:: on
 
-For example, to make sure a user is in a particular domain::
+For example, to switch the default template::
 
-    @on('handler_is_authorized')
-    def is_authorized(handler, *args, **kwargs):
-        if not 'example.com' in handler.user.email():
-            raise Exception('Unauthorized')
+    @on('handler_before_startup')
+    def before_startup(controller, *args, **kwargs):
+        controller.meta.view.theme = 'corny'
 
-All handler events are prefixed with ``handler_`` when broadcast globally.
+
+All controller events are prefixed with ``controller_`` when broadcast globally.
 
 Emitting Events
 ---------------

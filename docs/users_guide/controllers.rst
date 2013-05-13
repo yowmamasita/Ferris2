@@ -3,7 +3,7 @@ Controller
 
 .. module:: ferris.core.controller
 
-Controllers are responsible for processing and responding to HTTP requests. Controllers are typically lightweight classes that glue the :doc:`models` to the :doc:`templates`. Controllers can be extended with :doc:`components` and :doc:`scaffolded <scaffold>`.
+Controllers are responsible for processing and responding to HTTP requests. Controllers are typically lightweight classes that glue the :doc:`models` to the :doc:`templates`. Controllers can be extended with :doc:`components` and :doc:`scaffolded <scaffolding>`.
 
     .. autoclass:: Controller()
 

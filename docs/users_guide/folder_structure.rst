@@ -20,8 +20,8 @@ Application Directory Structure
 The app folder contains the following items:
 
  * models - Contains :doc:`model <models>` modules.
- * handlers - Contains :doc:`handler <handlers>` modules.
- * templates - Contains :doc:`template <template>` files and macros.
+ * handlers - Contains :doc:`controller <controllers>` modules.
+ * templates - Contains template files and macros used by :doc:`views`.
  * static - Contains static resources such as javascript, css, and images.
  * tests - Contains any :doc:`test specs <testing>`.
  * routes.py - Contains :doc:`route <routing>` and :doc:`plugin <plugins>` configuration. You can enable plugins and change routing rules here. As most routing happens automatically, you'll use this primarily to enable plugins.
