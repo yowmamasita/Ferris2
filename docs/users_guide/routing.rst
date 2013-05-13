@@ -143,3 +143,37 @@ Static files live in ``app/static`` and can be accessed via ``/static``.
 The folders ``css``, ``js``, and ``img`` are aliased and can be accessed via ``/css``, ``/js``, and ``/img`` respectively.
 
 Plugin assets live in ``plugins/<plugin_name>/static`` and are available at ``/plugins/<plugin_name>/``.
+
+
+Setting Up Routes
+-----------------
+
+Your application's route configuration is located in ``app/routes.py``. Here, you can configure custom routes such the root and additional redirects.
+
+
+Root
+~~~~
+
+By default, Ferris shows a helpful landing page when you pull up ``/``. However, in your complete application you will want this to go to one of your handlers. The easiest way to do this is to remove this::
+
+    # Default root route
+    routing.default_root()
+
+And add this (or similar)::
+
+    # Default root route
+    routing.redirect('/', to='/posts')
+
+
+Controllers
+~~~~~~~~~~~
+
+The default ``routes.py`` automatically routes all of the controllers in the app using ``auto_route``::
+
+    # Routes all App handlers
+    routing.auto_route()
+
+You can remove this and route manually using ``route_controller``::
+
+    from app.controllers.posts import Posts
+    routing.route_controller(Posts)
