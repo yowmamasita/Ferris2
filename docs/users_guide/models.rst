@@ -1,14 +1,30 @@
 Models
 ======
 
-Models are responsible for persisting data and containing application logic.
+Models are responsible for persisting data and containing application logic. Models can be extended via :doc:`behaviors`.
+
+An example model for posts might look like this::
+
+    from ferris import BasicModel, ndb
+    from ferris.behaviors import searchable
+
+
+    class Post(BasicModel):
+        class Meta:
+            behaviors = (searchable.Searchable,)
+            search_index = ('global',)
+
+        title = ndb.StringProperty()
+        idk = ndb.BlobProperty()
+        content = ndb.TextProperty()
+
 
 Conventions
 -----------
 
 Models are named with singular nouns (for example: Page, User, Image, Bear, etc.). Breaking convention is okay, but scaffolding will not work properly without some help.
 
-Each model class should be in it's own file under ``/app/models`` and the name of the file should be the underscored class name. For example, to create a model to represent furry bears, you would create the file ``/app/models/furry_bear.py`` and inside of that define a class named ``FurryBear``.
+Each model class should be in its own file under ``/app/models`` and the name of the file should be the underscored class name. For example, to create a model to represent furry bears, you would create the file ``/app/models/furry_bear.py`` and inside of that define a class named ``FurryBear``.
 
 Ferris' Model Class
 -------------------
