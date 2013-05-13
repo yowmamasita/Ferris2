@@ -22,7 +22,7 @@ These are called the *route parts* and are used to build both the route name and
 URL and Name Generation
 -----------------------
 
-For the route name, it follows the convention ``[prefix-]handler-action`` with handler being underscored.
+For the route name, it follows the convention ``[prefix:]handler:action`` with handler being underscored.
 
 For the url, it follows the convention ``[/prefix]/handler/action[/param_1, etc.]`` with handler being underscored.
 
@@ -31,15 +31,15 @@ The following table demonstrates various mappings:
 +-------------------------------+-------------------------------+-------------------------------+
 |Action                         | URL                           | name                          |
 +===============================+===============================+===============================+
-| Time.stop()                   | /time/stop                    | time-stop                     |
+| Time.stop()                   | /time/stop                    | time:stop                     |
 +-------------------------------+-------------------------------+-------------------------------+
-| Daleks.exterminate(who)       | /daleks/exterminate/<who>     | daleks-exterminate            |
+| Daleks.exterminate(who)       | /daleks/exterminate/<who>     | daleks:exterminate            |
 +-------------------------------+-------------------------------+-------------------------------+
-| Numbers.range(min, max)       | /numbers/range/<min>/<max>    | numbers-range                 |
+| Numbers.range(min, max)       | /numbers/range/<min>/<max>    | numbers:range                 |
 +-------------------------------+-------------------------------+-------------------------------+
-| Spaceships.xml_specs()        | /xml/spaceships/specs         | xml-spaceships-specs          |
+| Spaceships.xml_specs()        | /xml/spaceships/specs         | xml:spaceships:specs          |
 +-------------------------------+-------------------------------+-------------------------------+
-| UserComments.json_stats       | /json/user_comments/stats     | json-user_comments-stats      |
+| UserComments.json_stats       | /json/user_comments/stats     | json:user_comments:stats      |
 +-------------------------------+-------------------------------+-------------------------------+
 
 CRUD Actions
@@ -97,10 +97,11 @@ For example::
 Prefixes
 --------
 
-Prefixes must be explicitly listed in the ``prefix`` class property in a handler, for example::
+Prefixes must be explicitly listed in the ``prefixes`` property in the Meta configuration for a Controller, for example::
 
-    class Posts(Handler):
-        prefixes = ['json']
+    class Posts(Controller):
+        class Meta:
+            prefixes = ('json', 'admin')
 
         @route
         def json_stats(self):
@@ -110,7 +111,7 @@ Prefixes must be explicitly listed in the ``prefix`` class property in a handler
         def xml_stats(self):
             pass
 
-``json_stats`` will have the url ``/json/posts/stats`` but ``xml_stats`` will be at ``/posts/xml_stats``.
+``json_stats`` will have the url ``/json/posts/stats`` but ``xml_stats`` will be at ``/posts/xml_stats`` because there isn't a prefix setup for 'xml'. 
 
 
 Generating URLs to Actions
@@ -128,17 +129,17 @@ Checking if an action exists
 
 You can check for the existence of an action before attempting to generate a URL to it:
 
-    .. automethod:: Controller.uri_exists
+    .. automethod:: Controller.uri_exists(route_name = None, prefix = <sentinel>, handler = <sentinel>, action = <sentinel>, *args, **kwargs)
 
 You can see if you're on a particular action. While this may seem like a superfluous feature, it's very useful in templates:
 
-    .. automethod:: Controller.on_uri
+    .. automethod:: Controller.on_uri(route_name = None, prefix = <sentinel>, handler = <sentinel>, action = <sentinel>, *args, **kwargs)
 
 Static Files
 ------------
 
-Static files live in ``app/static`` and can be accessed via http://localhost:8080/static.
+Static files live in ``app/static`` and can be accessed via ``/static``.
 
-The folders ``css``, ``js``, and ``img`` are aliased and can be accessed via http://localhost:8080/css, http://localhost:8080/js, and http://localhost:8080/img respectively.
+The folders ``css``, ``js``, and ``img`` are aliased and can be accessed via ``/css``, ``/js``, and ``/img`` respectively.
 
-Plugin assets are available via http://localhost:8080/plugins/plugin_name/.
+Plugin assets live in ``plugins/<plugin_name>/static`` and are available at ``/plugins/<plugin_name>/``.
