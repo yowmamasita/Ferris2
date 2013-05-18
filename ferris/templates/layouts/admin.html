@@ -29,11 +29,11 @@
 {% block layout_body %}
     {% block layout_before_content %}{% endblock %}
 
-    <div class="container">
-        {% block layout_nav_bar %}
-            {% include 'elements/admin/navbar.html' %}
-        {% endblock %}
+    {% block layout_nav_bar %}
+        {% include 'elements/admin/navbar.html' %}
+    {% endblock %}
 
+    <div class="container-fluid">
         {% block layout_wrapper %}
             <div>
                 {% block layout_header %}
@@ -41,7 +41,7 @@
                 {% endblock %}
             </div>
 
-            <div class='row'>
+            <div class='row-fluid'>
                 <div class='span2'>
                     {% block layout_sidebar %}
                         {{ s.override_include('nav.html') }}
