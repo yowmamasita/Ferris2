@@ -1,3 +1,4 @@
+
 from webapp2 import get_request
 from . import events
 
@@ -8,12 +9,17 @@ class ConfigurationError(Exception):
     pass
 
 
-def defaults(dict):
+def defaults(dict=None):
     """
     Adds a set of default values to the settings registry. These can and will be updated
-    by any settings modules in effect, such as the Settings Manager
+    by any settings modules in effect, such as the Settings Manager.
+
+    If dict is None, it'll return the current defaults.
     """
-    _defaults.update(dict)
+    if dict:
+        _defaults.update(dict)
+    else:
+        return _defaults
 
 
 def settings():
@@ -43,11 +49,15 @@ def settings():
     return settings
 
 
-def get(key):
+def get(key, default=None):
     """
-    Returns the setting at key, if available, raises an ConfigurationError otherwise
+    Returns the setting at key, if available, raises an ConfigurationError if default is none, otherwise
+    returns the default
     """
     _settings = settings()
     if not key in _settings:
-        raise ConfigurationError("Missing setting %s" % key)
+        if default is None:
+            raise ConfigurationError("Missing setting %s" % key)
+        else:
+            return default
     return _settings[key]

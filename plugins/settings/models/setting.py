@@ -33,7 +33,10 @@ class Setting(ferris.Model):
 
     @classmethod
     def get_default(cls, wait=True):
-        result = cls(parent=cls._parent, **cls._defaults)
+        defaults = ferris.settings.defaults().get(cls._settings_key, {})
+        defaults.update(cls._defaults)
+
+        result = cls(parent=cls._parent, **defaults)
         f = result.put_async()
         if wait:
             f.get_result()
