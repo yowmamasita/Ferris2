@@ -1,6 +1,7 @@
 import inspect
 from protorpc import messages
 from .converters import converters as default_converters
+from ..bunch import Bunch
 
 
 def _common_fields(entity, message):
@@ -17,7 +18,7 @@ def entity_to_message(entity, message, converters=None):
 
     # Key first
     values = {
-        'key': converters['Key'].to_message(entity, 'key', entity.key)
+        'key': converters['Key'].to_message(entity, 'key', entity.key) if entity.key else None
     }
 
     # Other fields
@@ -28,7 +29,11 @@ def entity_to_message(entity, message, converters=None):
         converter = converters[property.__class__]
 
         if converter:
-            value = converter.to_message(entity, property, value)
+            if value:  # only try to convert if the value is meaningful, otherwise leave it as Falsy.
+                if property._repeated:
+                    value = [converter.to_message(entity, property, x) if x else x for x in value]
+                else:
+                    value = converter.to_message(entity, property, value)
             values[field] = value
 
     if inspect.isclass(message):
@@ -48,7 +53,7 @@ def message_to_entity(message, model, converters=None):
 
     # Key first, if it's there
     if hasattr(message, 'key') and message.key:
-        values['key'] = converters['Key'].to_model(messages, 'key', message.key)
+        values['key'] = converters['Key'].to_model(messages, 'key', message.key) if message.key else None
 
     # Other fields
     for field in fields:
@@ -58,7 +63,10 @@ def message_to_entity(message, model, converters=None):
         converter = converters[property.__class__]
 
         if value and converter:
-            value = converter.to_model(message, field, value)
+            if property._repeated:
+                value = [converter.to_model(message, field, x) if x else x for x in value]
+            else:
+                value = converter.to_model(message, field, value)
             values[field] = value
 
     if inspect.isclass(model):
@@ -85,7 +93,7 @@ def model_message(Model, only=None, exclude=None, converters=None):
 
     # Add in the key field.
     field_dict = {
-        'key': converters['Key'].to_field(Model, 'key', 1)
+        'key': converters['Key'].to_field(Model, Bunch(name='key', _repeated=False), 1)
     }
 
     # Add all other fields.

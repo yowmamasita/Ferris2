@@ -1,50 +1,129 @@
 from lib import WithTestBed
 from ferris import Model, ndb, messages
+import datetime
 
 
-class Widget(Model):
-    title = ndb.StringProperty(required=True)
-    content = ndb.TextProperty()
+class MessageModelTest(Model):
+    string = ndb.StringProperty()
+    repeated_string = ndb.StringProperty(repeated=True)
+    text = ndb.TextProperty()
+    repeated_text = ndb.TextProperty(repeated=True)
+    blob = ndb.BlobProperty()
+    repeated_blob = ndb.BlobProperty(repeated=True)
+    key = ndb.KeyProperty()
+    repeated_key = ndb.KeyProperty(repeated=True)
+    boolean = ndb.BooleanProperty()
+    repeated_boolean = ndb.BooleanProperty(repeated=True)
+    integer = ndb.IntegerProperty()
+    repeated_integer = ndb.IntegerProperty(repeated=True)
+    float = ndb.FloatProperty()
+    repeated_float = ndb.FloatProperty(repeated=True)
+    datetime = ndb.DateTimeProperty()
+    repeated_datetime = ndb.DateTimeProperty(repeated=True)
+    geopt = ndb.GeoPtProperty()
+    repeated_geopt = ndb.GeoPtProperty(repeated=True)
+    blobkey = ndb.BlobKeyProperty()
+    repeated_blobkey = ndb.BlobKeyProperty(repeated=True)
 
 
 class TestMessageModelTranslators(WithTestBed):
 
     def testModelMessage(self):
-        WidgetMessage = messages.model_message(Widget)
+        WidgetMessage = messages.model_message(MessageModelTest)
 
-        properties = Widget._properties.keys()
+        properties = MessageModelTest._properties.keys()
         fields = dir(WidgetMessage)
 
         for prop in properties:
             assert prop in fields
 
-    def testModelToMessage(self):
-        WidgetMessage = messages.model_message(Widget)
+    def make_test_model(self):
+        WidgetMessage = messages.model_message(MessageModelTest)
 
-        widget = Widget(title='The Doctor', content='Time-traveling binary vascular alien from Gallifrey')
+        widget = MessageModelTest(
+            string='a',
+            repeated_string=['a', 'b', 'c'],
+            key=ndb.Key('Moew', 'Test'),
+            repeated_key=[ndb.Key('One', 'Cat'), ndb.Key('Two', 'Cat')],
+            text='a',
+            repeated_text=['a', 'b', 'c'],
+            blob='abc',
+            repeated_blob=['abc', 'abc', '123'],
+            boolean=True,
+            repeated_boolean=[False, True, False],
+            integer=5,
+            repeated_integer=[1, 2, 3, 4, 5],
+            float=3.14,
+            repeated_float=[3.14, 1.23, 10.4],
+            datetime=datetime.datetime.utcnow(),
+            repeated_datetime=[datetime.datetime.utcnow(), datetime.datetime.now()],
+            geopt=ndb.GeoPt(5, 5),
+            repeated_geopt=[ndb.GeoPt(5, 7), ndb.GeoPt(7, 8)],
+            blobkey=ndb.BlobKey('oEFRyChdYLJbRk6cKXuniZfFtHct1wzDcnvVSgay91N7SoOCWTAWbDU8YcwQQbdn'),
+            repeated_blobkey=[ndb.BlobKey('oEFRyChdYLJbRk6cKXuniZfFtHct1wzDcnvVSgay91N7SoOCWTAWbDU8YcwQQbdn'), ndb.BlobKey('vQHMoSU5zK2zBxMA_fcP7A==')])
+
+        return WidgetMessage, widget
+
+    def testModelToMessage(self):
+        WidgetMessage, widget = self.make_test_model()
+
         message = messages.entity_to_message(widget, WidgetMessage)
 
-        assert message.title == widget.title
-        assert message.content == widget.content
+        assert message.string == widget.string
+        assert message.repeated_string == widget.repeated_string
+        assert message.text == widget.text
+        assert message.repeated_text == widget.repeated_text
+        assert message.blob == widget.blob
+        assert message.repeated_blob == widget.repeated_blob
+        assert message.boolean == widget.boolean
+        assert message.repeated_boolean == widget.repeated_boolean
+        assert message.integer == widget.integer
+        assert message.repeated_integer == widget.repeated_integer
+        assert message.float == widget.float
+        assert message.repeated_float == widget.repeated_float
+        assert message.key.urlsafe == widget.key.urlsafe()
+        assert len(message.repeated_key) == 2
+        assert message.repeated_key[0].urlsafe == widget.repeated_key[0].urlsafe()
+        assert message.datetime.year == widget.datetime.year
+        assert message.datetime.month == widget.datetime.month
+        assert message.datetime.day == widget.datetime.day
+        assert message.datetime.hour == widget.datetime.hour
+        assert message.datetime.minute == widget.datetime.minute
+        assert len(message.repeated_datetime) == 2
+        assert message.repeated_datetime[0].year == widget.repeated_datetime[0].year
+        assert message.geopt.lat == widget.geopt.lat
+        assert message.geopt.lon == widget.geopt.lon
+        assert len(message.repeated_geopt) == 2
+        assert message.repeated_geopt[0].lat == widget.repeated_geopt[0].lat
+        assert message.blobkey == str(widget.blobkey)
+        assert message.repeated_blobkey[1] == str(widget.repeated_blobkey[1])
 
         # Updating an existing instance
-        message = messages.entity_to_message(widget, WidgetMessage(title='Meow'))
+        message = messages.entity_to_message(widget, WidgetMessage(string='Meow'))
 
-        assert message.title == widget.title
-        assert message.content == widget.content
+        assert message.string == widget.string
+        assert message.integer == widget.integer
 
     def testMessageToModel(self):
-        WidgetMessage = messages.model_message(Widget)
+        WidgetMessage, widget = self.make_test_model()
 
-        message = WidgetMessage(title='Dalek', content='Exterminate!')
+        # Simple test
+        message = WidgetMessage(string='Dalek', integer=1)
 
-        widget = messages.message_to_entity(message, Widget)
+        simple_widget = messages.message_to_entity(message, MessageModelTest)
 
-        assert message.title == widget.title
-        assert message.content == widget.content
+        assert message.string == simple_widget.string
+        assert message.integer == simple_widget.integer
 
         # Updating an existing instance
-        widget = messages.message_to_entity(message, Widget(title='Meow'))
+        simple_widget = messages.message_to_entity(message, MessageModelTest(string='Meow'))
 
-        assert message.title == widget.title
-        assert message.content == widget.content
+        assert message.string == simple_widget.string
+        assert message.integer == simple_widget.integer
+
+        # Full serialization/deserialization comparion test.
+        message = messages.entity_to_message(widget, WidgetMessage)
+        deserialized = messages.message_to_entity(message, MessageModelTest)
+
+        for prop in MessageModelTest._properties.keys():
+            assert getattr(deserialized, prop) == getattr(widget, prop)
