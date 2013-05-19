@@ -3,6 +3,11 @@ from ferris import Model, ndb, messages
 import datetime
 
 
+class InnerModel(Model):
+    one = ndb.StringProperty()
+    two = ndb.IntegerProperty()
+
+
 class MessageModelTest(Model):
     string = ndb.StringProperty()
     repeated_string = ndb.StringProperty(repeated=True)
@@ -24,6 +29,8 @@ class MessageModelTest(Model):
     repeated_geopt = ndb.GeoPtProperty(repeated=True)
     blobkey = ndb.BlobKeyProperty()
     repeated_blobkey = ndb.BlobKeyProperty(repeated=True)
+    structured = ndb.StructuredProperty(InnerModel)
+    repeated_structured = ndb.StructuredProperty(InnerModel, repeated=True)
 
 
 class TestMessageModelTranslators(WithTestBed):
@@ -60,7 +67,10 @@ class TestMessageModelTranslators(WithTestBed):
             geopt=ndb.GeoPt(5, 5),
             repeated_geopt=[ndb.GeoPt(5, 7), ndb.GeoPt(7, 8)],
             blobkey=ndb.BlobKey('oEFRyChdYLJbRk6cKXuniZfFtHct1wzDcnvVSgay91N7SoOCWTAWbDU8YcwQQbdn'),
-            repeated_blobkey=[ndb.BlobKey('oEFRyChdYLJbRk6cKXuniZfFtHct1wzDcnvVSgay91N7SoOCWTAWbDU8YcwQQbdn'), ndb.BlobKey('vQHMoSU5zK2zBxMA_fcP7A==')])
+            repeated_blobkey=[ndb.BlobKey('oEFRyChdYLJbRk6cKXuniZfFtHct1wzDcnvVSgay91N7SoOCWTAWbDU8YcwQQbdn'), ndb.BlobKey('vQHMoSU5zK2zBxMA_fcP7A==')],
+            structured=InnerModel(one='One', two=2),
+            repeated_structured=[InnerModel(one='One', two=2), InnerModel(one='Name', two=1)]
+            )
 
         return WidgetMessage, widget
 
@@ -97,6 +107,9 @@ class TestMessageModelTranslators(WithTestBed):
         assert message.repeated_geopt[0].lat == widget.repeated_geopt[0].lat
         assert message.blobkey == str(widget.blobkey)
         assert message.repeated_blobkey[1] == str(widget.repeated_blobkey[1])
+        assert message.structured.one == widget.structured.one
+        assert message.structured.two == widget.structured.two
+        assert message.repeated_structured[0].one == widget.repeated_structured[0].one
 
         # Updating an existing instance
         message = messages.entity_to_message(widget, WidgetMessage(string='Meow'))
@@ -127,3 +140,18 @@ class TestMessageModelTranslators(WithTestBed):
 
         for prop in MessageModelTest._properties.keys():
             assert getattr(deserialized, prop) == getattr(widget, prop)
+
+    def testEmptyValues(self):
+        WidgetMessage, widget = self.make_test_model()
+
+        empty_widget = MessageModelTest()
+        message = messages.entity_to_message(empty_widget, WidgetMessage)
+
+        for prop in MessageModelTest._properties.keys():
+            assert not getattr(message, prop)
+
+        empty_message = WidgetMessage()
+        widget = messages.message_to_entity(empty_message, MessageModelTest)
+
+        for field in WidgetMessage.all_fields():
+            assert not getattr(widget, prop)

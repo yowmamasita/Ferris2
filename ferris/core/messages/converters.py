@@ -6,11 +6,11 @@ from .types import UserMessage, KeyMessage, GeoPtMessage
 
 class Converter(object):
     @staticmethod
-    def to_message(Model, property, value):
+    def to_message(Mode, property, field, value):
         return value
 
     @staticmethod
-    def to_model(Message, field, value):
+    def to_model(Message, property, field, value):
         return value
 
     @staticmethod
@@ -56,14 +56,14 @@ class DateTimeConverter(Converter):
 
 class UserConverter(Converter):
     @staticmethod
-    def to_message(Model, property, value):
+    def to_message(Mode, property, field, value):
         return UserMessage(
             email=value.email(),
             user_id=value.user_id(),
             nickname=value.nickname())
 
     @staticmethod
-    def to_model(Message, field, value):
+    def to_model(Message, property, field, value):
         if isinstance(value, basestring):
             return users.User(email=value)
         elif isinstance(value, UserMessage):
@@ -79,11 +79,11 @@ class UserConverter(Converter):
 
 class BlobKeyConverter(Converter):
     @staticmethod
-    def to_message(Model, property, value):
+    def to_message(Mode, property, field, value):
         return str(value)
 
     @staticmethod
-    def to_model(Message, field, value):
+    def to_model(Message, property, field, value):
         return ndb.BlobKey(value)
 
     @staticmethod
@@ -93,14 +93,14 @@ class BlobKeyConverter(Converter):
 
 class KeyConverter(Converter):
     @staticmethod
-    def to_message(Model, property, value):
+    def to_message(Mode, property, field, value):
         return KeyMessage(
             urlsafe=value.urlsafe(),
             id=u'%s' % value.id(),
             kind=value.kind())
 
     @staticmethod
-    def to_model(Message, field, value):
+    def to_model(Message, property, field, value):
         if isinstance(value, basestring):
             return ndb.Key(urlsafe=value)
         elif isinstance(value, KeyMessage):
@@ -113,11 +113,11 @@ class KeyConverter(Converter):
 
 class GeoPtConverter(Converter):
     @staticmethod
-    def to_message(Model, property, value):
+    def to_message(Mode, property, field, value):
         return GeoPtMessage(lat=value.lat, lon=value.lon)
 
     @staticmethod
-    def to_model(Message, field, value):
+    def to_model(Message, property, field, value):
         if value:
             return ndb.GeoPt(value.lat, value.lon)
 
@@ -125,6 +125,25 @@ class GeoPtConverter(Converter):
     def to_field(Model, property, count):
         return messages.MessageField(GeoPtMessage, count, repeated=property._repeated)
 
+
+class StructuredConverter(Converter):
+    @staticmethod
+    def to_message(Model, property, field, value):
+        from .translators import entity_to_message
+        return entity_to_message(value, field.type)
+
+    @staticmethod
+    def to_model(Message, property, field, value):
+        from .translators import message_to_entity
+        if value:
+            return message_to_entity(value, property._modelclass)
+
+    @staticmethod
+    def to_field(Model, property, count):
+        from .translators import model_message
+
+        message_class = model_message(property._modelclass)
+        return messages.MessageField(message_class, count, repeated=property._repeated)
 
 converters = {
     'Key': KeyConverter,
@@ -138,5 +157,7 @@ converters = {
     ndb.UserProperty: UserConverter,
     ndb.GeoPtProperty: GeoPtConverter,
     ndb.KeyProperty: KeyConverter,
-    ndb.BlobKeyProperty: BlobKeyConverter
+    ndb.BlobKeyProperty: BlobKeyConverter,
+    ndb.StructuredProperty: StructuredConverter,
+    ndb.LocalStructuredProperty: StructuredConverter
 }

@@ -18,12 +18,13 @@ def entity_to_message(entity, message, converters=None):
 
     # Key first
     values = {
-        'key': converters['Key'].to_message(entity, 'key', entity.key) if entity.key else None
+        'key': converters['Key'].to_message(entity, 'key', 'key', entity.key) if entity.key else None
     }
 
     # Other fields
     for field in fields:
         property = entity._properties[field]
+        message_field = message.field_by_name(field)
         value = getattr(entity, field)
 
         converter = converters[property.__class__]
@@ -31,9 +32,9 @@ def entity_to_message(entity, message, converters=None):
         if converter:
             if value:  # only try to convert if the value is meaningful, otherwise leave it as Falsy.
                 if property._repeated:
-                    value = [converter.to_message(entity, property, x) if x else x for x in value]
+                    value = [converter.to_message(entity, property, message_field, x) if x else x for x in value]
                 else:
-                    value = converter.to_message(entity, property, value)
+                    value = converter.to_message(entity, property, message_field, value)
             values[field] = value
 
     if inspect.isclass(message):
@@ -53,20 +54,21 @@ def message_to_entity(message, model, converters=None):
 
     # Key first, if it's there
     if hasattr(message, 'key') and message.key:
-        values['key'] = converters['Key'].to_model(messages, 'key', message.key) if message.key else None
+        values['key'] = converters['Key'].to_model(messages, 'key', 'key', message.key) if message.key else None
 
     # Other fields
     for field in fields:
         property = model._properties[field]
+        message_field = message.field_by_name(field)
         value = getattr(message, field)
 
         converter = converters[property.__class__]
 
         if value and converter:
             if property._repeated:
-                value = [converter.to_model(message, field, x) if x else x for x in value]
+                value = [converter.to_model(message, property, message_field, x) if x else x for x in value]
             else:
-                value = converter.to_model(message, field, value)
+                value = converter.to_model(message, property, message_field, value)
             values[field] = value
 
     if inspect.isclass(model):
