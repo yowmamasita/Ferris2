@@ -70,7 +70,7 @@ class FormParser(RequestParser):
         return obj
 
     def validate(self):
-        return self.container.validate if self.container else False
+        return self.container.validate() if self.container else False
 
     def _get_data(self):
         return self.container.data if self.container else None
