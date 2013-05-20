@@ -159,3 +159,29 @@ class TestMessageModelTranslators(WithTestBed):
 
         for field in WidgetMessage.all_fields():
             assert not getattr(widget, prop)
+
+    def testComposition(self):
+        from protorpc.messages import Message, IntegerField, StringField
+
+        class MessageOne(Message):
+            one = IntegerField(1)
+            two = IntegerField(2)
+
+        class MessageTwo(Message):
+            three = StringField(1)
+            four = StringField(2)
+
+        ComposedMessage = messages.compose(MessageOne, MessageTwo)
+
+        assert hasattr(ComposedMessage, 'one')
+        assert hasattr(ComposedMessage, 'two')
+        assert hasattr(ComposedMessage, 'three')
+        assert hasattr(ComposedMessage, 'four')
+
+        instance = ComposedMessage(
+            one=1,
+            two=2,
+            three='three',
+            four='four')
+
+        assert instance
