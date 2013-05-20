@@ -25,6 +25,8 @@ class MessageModelTest(Model):
     repeated_float = ndb.FloatProperty(repeated=True)
     datetime = ndb.DateTimeProperty()
     repeated_datetime = ndb.DateTimeProperty(repeated=True)
+    time = ndb.TimeProperty()
+    date = ndb.DateProperty()
     geopt = ndb.GeoPtProperty()
     repeated_geopt = ndb.GeoPtProperty(repeated=True)
     blobkey = ndb.BlobKeyProperty()
@@ -63,6 +65,8 @@ class TestMessageModelTranslators(WithTestBed):
             float=3.14,
             repeated_float=[3.14, 1.23, 10.4],
             datetime=datetime.datetime.utcnow(),
+            date=datetime.date.today(),
+            time=datetime.datetime.utcnow().time(),
             repeated_datetime=[datetime.datetime.utcnow(), datetime.datetime.now()],
             geopt=ndb.GeoPt(5, 5),
             repeated_geopt=[ndb.GeoPt(5, 7), ndb.GeoPt(7, 8)],
@@ -70,7 +74,7 @@ class TestMessageModelTranslators(WithTestBed):
             repeated_blobkey=[ndb.BlobKey('oEFRyChdYLJbRk6cKXuniZfFtHct1wzDcnvVSgay91N7SoOCWTAWbDU8YcwQQbdn'), ndb.BlobKey('vQHMoSU5zK2zBxMA_fcP7A==')],
             structured=InnerModel(one='One', two=2),
             repeated_structured=[InnerModel(one='One', two=2), InnerModel(one='Name', two=1)]
-            )
+        )
 
         return WidgetMessage, widget
 
