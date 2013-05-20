@@ -93,7 +93,7 @@ class:
 """
 from wtforms import Form, validators, widgets, fields as f
 from wtforms.ext.appengine.fields import GeoPtPropertyField, ReferencePropertyField, StringListPropertyField
-from .fields import KeyPropertyField, MultipleReferenceField
+from .fields import KeyPropertyField, MultipleReferenceField, BlobKeyField
 
 
 def get_TextField(kwargs):
@@ -196,6 +196,11 @@ def convert_UserProperty(model, prop, kwargs):
 def convert_BlobProperty(model, prop, kwargs):
     """Returns a form field for a ``db.BlobProperty``."""
     return f.FileField(**kwargs)
+
+
+def convert_BlobKeyProperty(model, prop, kwargs):
+    """Returns a form field for a ``db.BlobKeyProperty``."""
+    return BlobKeyField(**kwargs)
 
 
 def convert_TextProperty(model, prop, kwargs):
@@ -319,7 +324,7 @@ class ModelConverter(object):
         'TimeProperty':          convert_TimeProperty,
         'KeyProperty':           convert_KeyProperty,
         'UserProperty':          convert_UserProperty,
-        'BlobKeyProperty':       convert_BlobProperty,
+        'BlobKeyProperty':       convert_BlobKeyProperty,
         'TextProperty':          convert_TextProperty,
         'EmailProperty':         convert_EmailProperty,
         'GeoPtProperty':         convert_GeoPtProperty,

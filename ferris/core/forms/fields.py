@@ -1,4 +1,4 @@
-from google.appengine.ext import db, ndb
+from google.appengine.ext import db, ndb, blobstore
 from google.appengine.api.users import User
 import wtforms
 from wtforms.compat import text_type, string_types
@@ -188,3 +188,43 @@ class MultipleReferenceField(wtforms.SelectMultipleField):
                 self.data = [db.Key(x) for x in valuelist]
         else:
             self.data = []
+
+
+class BlobKeyField(wtforms.FileField):
+    """
+    Manages uploading blobs and cleaning up blob entries if validation fails
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(BlobKeyField, self).__init__(*args, **kwargs)
+
+        # Wrap the original validate method on the form to get a true post-all-validators callback.
+        if '_form' in kwargs:
+            form = kwargs['_form']
+            original_validate = form.validate
+
+            def validate_wrapper():
+                res = original_validate()
+                self.post_form_validate(form)
+                return res
+
+            form.validate = validate_wrapper
+
+    def post_form_validate(self, form):
+        if form.errors:
+            self.delete_blob()
+
+    def get_blob_info(self):
+        import cgi
+        if self.data is None or not isinstance(self.data, cgi.FieldStorage) or not 'blob-key' in self.data.type_options:
+            return None
+
+        info = blobstore.parse_blob_info(self.data)
+        if not info:
+            return None
+        return info
+
+    def delete_blob(self):
+        info = self.get_blob_info()
+        if info:
+            blobstore.delete(info.key())
