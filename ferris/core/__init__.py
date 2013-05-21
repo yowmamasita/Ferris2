@@ -1,3 +1,3 @@
 import fix_imports
-import inflection.inflection
-inflector = inflection.inflection
+import inflection
+inflector = inflection
