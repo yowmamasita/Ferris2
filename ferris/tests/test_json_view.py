@@ -3,7 +3,7 @@ from lib import FerrisTestCase
 from ferris.core import scaffold
 from ferris.core.controller import Controller
 from ferris.core.ndb import Model, ndb
-from ferris.core.view import JsonView
+from ferris.core.views import JsonView
 from ferris.core.json_util import parse
 
 

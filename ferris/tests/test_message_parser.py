@@ -2,7 +2,7 @@ from lib import WithTestBed
 from ferris import Model, ndb, messages
 from ferris.core.bunch import Bunch
 from ferris.core.request_parsers import MessageParser
-from ferris.core.view import MessageView
+from ferris.core.views import MessageView
 from ferris.core.event import NamedEvents
 from protorpc import protojson
 import json
