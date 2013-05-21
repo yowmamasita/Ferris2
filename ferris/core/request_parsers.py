@@ -109,5 +109,5 @@ class MessageParser(RequestParser):
         return not self.errors and self.container.is_initialized() if self.container else False
 
     def update(self, obj):
-        from .messages import message_to_entity
-        return message_to_entity(self.container, obj)
+        from .messages import to_entity
+        return to_entity(self.container, obj)

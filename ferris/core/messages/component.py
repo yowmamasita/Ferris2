@@ -1,5 +1,5 @@
 from ferris.core.ndb import ndb
-from ferris.core.messages import Message, model_message, list_message, entity_to_message
+from protopigeon import Message, model_message, list_message, to_message
 
 
 class Messaging(object):
@@ -64,7 +64,7 @@ class Messaging(object):
         return ListMessage(items=items)
 
     def _transform_entity(self, entity):
-        return entity_to_message(entity, self.controller.meta.Message)
+        return to_message(entity, self.controller.meta.Message)
 
     def _on_after_dispatch(self, *args, **kwargs):
         if self.transform:

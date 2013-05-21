@@ -14,7 +14,7 @@ echo $packages
 echo ' --> Cleaning'
 
 rm -rf "$packages/pytz" 2>/dev/null
-rm $packages/gdata.zip $packages/atom.zip $packages/apiclient.zip $packages/wtforms.zip $packages/utils.zip 2>/dev/null
+rm $packages/gdata.zip $packages/atom.zip $packages/apiclient.zip $packages/wtforms.zip $packages/utils.zip $packages/protopigeon.zip 2>/dev/null
 
 echo ' --> Starting Packaging'
 
@@ -63,7 +63,7 @@ cd ../
 
 cp wtforms.zip $packages
 
-echo ' --> Pacakging utils'
+echo ' --> Packaging utils'
 cd /tmp
 mkdir utils
 cd utils
@@ -73,3 +73,14 @@ wget https://raw.github.com/jpvanhal/inflection/master/inflection.py
 zip ../utils.zip decorator.py retries.py inflection.py
 cd ../
 cp utils.zip $packages
+
+
+echo ' --> Packaging protopigeon'
+cd /tmp
+rm -rf protopigeon.zip protopigeon 2>/dev/null
+
+git clone git@bitbucket.org:jonparrott/protopigeon.git protopigeon
+cd protopigeon
+zip ../protopigeon.zip -rq protopigeon license.txt
+cd ../
+cp protopigeon.zip $packages
