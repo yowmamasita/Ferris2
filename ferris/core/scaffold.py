@@ -126,7 +126,15 @@ def view(controller, key):
         controller.scaffold.singular: item})
 
 
-def _parser_action(controller, item):
+def save_callback(controller, item, parser):
+    parser.update(item)
+
+    controller.events.scaffold_before_save(controller=controller, container=parser.container, item=item)
+    item.put()
+    controller.events.scaffold_after_save(controller=controller, container=parser.container, item=item)
+
+
+def parser_action(controller, item, callback=save_callback):
     controller.events.scaffold_before_parse(controller=controller)
     parser = controller.parse_request(fallback=item)
 
@@ -134,11 +142,8 @@ def _parser_action(controller, item):
         if parser.validate():
 
             controller.events.scaffold_before_apply(controller=controller, container=parser.container, item=item)
-            parser.update(item)
-
-            controller.events.scaffold_before_save(controller=controller, container=parser.container, item=item)
-            item.put()
-            controller.events.scaffold_after_save(controller=controller, container=parser.container, item=item)
+            callback(controller, item, parser)
+            controller.events.scaffold_after_apply(controller=controller, container=parser.container, item=item)
 
             controller.context.set(**{
                 controller.scaffold.singular: item})
@@ -158,14 +163,14 @@ def _parser_action(controller, item):
 
 def add(controller):
     item = controller.meta.Model()
-    return _parser_action(controller, item)
+    return parser_action(controller, item)
 
 
 def edit(controller, key):
     item = controller.util.decode_key(key).get()
     if not item:
         return 404
-    return _parser_action(controller, item)
+    return parser_action(controller, item)
 
 
 def delete(controller, key):
