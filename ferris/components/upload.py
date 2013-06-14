@@ -34,7 +34,7 @@ class Upload(object):
             self.process_uploads = True
 
     def on_scaffold_before_apply(self, controller, container, item):
-        if self.process_uploads:
+        if self.process_uploads and isinstance(container, wtforms.Form):
             self.process(container)
 
     def on_after_dispatch(self, controller, response):
