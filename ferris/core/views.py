@@ -1,6 +1,7 @@
 import template
 import json_util
 from protorpc import protojson
+from protorpc.message_types import VoidMessage
 
 _views = {}
 
@@ -137,7 +138,7 @@ class JsonView(View):
         super(JsonView, self).__init__(controller, context)
         self.variable_name = ('data',)
 
-    def _get_data(self):
+    def _get_data(self, default=None):
         self.variable_name = self.variable_name if isinstance(self.variable_name, (list, tuple)) else (self.variable_name,)
 
         if hasattr(self.controller, 'scaffold'):
@@ -147,6 +148,7 @@ class JsonView(View):
             data = self.context.get(v, None)
             if data:
                 return data
+        return default
 
     def render(self, *args, **kwargs):
         self.controller.events.before_render(controller=self.controller)
@@ -165,7 +167,7 @@ class MessageView(JsonView):
     def render(self, *args, **kwargs):
         self.controller.events.before_render(controller=self.controller)
 
-        data = self._get_data()
+        data = self._get_data(default=VoidMessage())
         result = unicode(protojson.encode_message(data))
         self.controller.response.content_type = 'application/json'
         self.controller.response.charset = 'utf8'
