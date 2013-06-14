@@ -1,6 +1,7 @@
 from google.appengine.ext import testbed, deferred
 from google.appengine.api.blobstore import blobstore_stub, file_blob_storage
 from google.appengine.api.files import file_service_stub
+from google.appengine.datastore import datastore_stub_util
 from google.appengine.api.search.simple_search_stub import SearchServiceStub
 import unittest
 import webtest
@@ -36,7 +37,9 @@ class WithTestBed(unittest.TestCase):
 
         self.testbed.activate()
         self.testbed.init_memcache_stub()
-        self.testbed.init_datastore_v3_stub()
+
+        policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
+        self.testbed.init_datastore_v3_stub(consistency_policy=policy)
         self.testbed.init_taskqueue_stub(root_path=os.path.join(os.path.abspath(os.path.dirname(ferris.__file__)), '..'))
         self.testbed.init_blobstore_stub()
         self.testbed.init_images_stub()
