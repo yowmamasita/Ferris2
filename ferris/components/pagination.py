@@ -25,7 +25,7 @@ class Pagination(object):
             name = self.controller.scaffold.plural
 
         if isinstance(name, basestring):
-            query = self.controller.context[name]
+            query = self.controller.context.get(name, None)
         else:
             query = name
 
