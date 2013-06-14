@@ -80,9 +80,13 @@ def route_all_controllers(app_router, plugin=None):
                 if plugin:
                     root_module = 'plugins.%s.controllers' % plugin
                 module = __import__('%s.%s' % (root_module, name), fromlist=['*'])
-                cls = getattr(module, inflector.camelize(name))
 
-                route_controller(cls, app_router)
+                try:
+                    cls = getattr(module, inflector.camelize(name))
+                    route_controller(cls, app_router)
+
+                except AttributeError:
+                    logging.debug("Controller %s not found, skipping" % inflector.camelize(name))
 
             except AttributeError, e:
                 logging.error('Thought %s was a controller, but was wrong (or ran into some weird error): %s' % (file, e))
