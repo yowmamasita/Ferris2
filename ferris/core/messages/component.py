@@ -22,7 +22,7 @@ class Messaging(object):
             setattr(self.controller.meta, 'messaging_variable_names', ('data',))
 
         if hasattr(self.controller, 'scaffold'):
-            self.controller.meta.messaging_variable_names += (self.controller.scaffold.singular, self.controller.scaffold.plural)
+            self.controller.meta.messaging_variable_names += (self.controller.scaffold.plural, self.controller.scaffold.singular)
 
         # Events
         self.controller.events.before_startup += self._on_before_startup
