@@ -12,16 +12,19 @@ def exists(name):
     return name in _plugins
 
 
-def register(name):
+def register(name, templating=True):
     """
     Adds a plugin's template path to the templating engine
     """
     import template
     _plugins.append(name)
-    path = os.path.normpath(os.path.join(
-        os.path.dirname(ferris.__file__),
-        '../plugins/%s/templates' % name))
-    template.add_search_path(path)
+
+    if templating:
+        path = os.path.normpath(os.path.join(
+            os.path.dirname(ferris.__file__),
+            '../plugins/%s/templates' % name))
+        template.add_template_path(path)
+        template.add_template_path(path, prefix=name)
 
 
 def enable(name):

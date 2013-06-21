@@ -24,29 +24,48 @@ class TemplateEngine(object):
     def __init__(self, theme=None, extra_globals=None, extra_paths=None):
         self.theme = theme
         self.environment = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(
-                self._determine_paths(extra_paths=extra_paths)))
+            loader=self._build_loader(extra_paths=extra_paths))
         self._update_globals(extra_globals)
 
-    def _determine_paths(self, extra_paths=None):
+    def _build_loader(self, extra_paths=None):
         # Paths for resolving template file locations
-        template_paths = [
+        non_prefix_template_paths = [
             os.path.normpath(os.path.join(os.path.dirname(ferris.__file__), '../app/templates')),
             os.path.normpath(os.path.join(os.path.dirname(ferris.__file__), './templates'))
         ]
+        prefix_paths = {
+            'app': os.path.join(os.path.dirname(ferris.__file__), '../app/templates'),
+            'ferris': os.path.join(os.path.dirname(ferris.__file__), './templates')
+        }
 
         # Extra (plugin) paths
         if extra_paths:
-            template_paths += extra_paths
+            for x in extra_paths:
+                if not x[1]:  # non prefixed
+                    non_prefix_template_paths += x[0]
+
+            prefix_paths.update({
+                x[1]: x[0] for x in extra_paths if x[1]
+            })
 
         # Theme Paths
         if self.theme:
-            template_paths = [
+            non_prefix_template_paths = [
                 os.path.normpath(os.path.join(x, './themes/%s/' % self.theme))
-                for x in template_paths
-            ] + template_paths
+                for x in non_prefix_template_paths
+            ] + non_prefix_template_paths
 
-        return template_paths
+        import logging
+        logging.info(prefix_paths)
+        logging.info(non_prefix_template_paths)
+
+        loader = jinja2.ChoiceLoader([
+            jinja2.PrefixLoader({
+                k: jinja2.FileSystemLoader(v)
+                for k, v in prefix_paths.iteritems()}),
+            jinja2.FileSystemLoader(non_prefix_template_paths)
+        ])
+        return loader
 
     def render(self, name, context=None):
         template = self.find(name)
@@ -132,7 +151,7 @@ engines = {}
 # before render callback.
 global_context = {}
 
-# Extra search paths, use add_search_path function for this.
+# Extra search paths, use add_template_path function for this.
 extra_paths = []
 
 
@@ -147,7 +166,7 @@ def render_template(name, context=None, theme=None):
     return _get_engine(theme=theme).render(name, context)
 
 
-def add_search_path(path_or_paths):
+def add_template_path(path_or_paths, prefix=None):
     """
     Used to add search paths to the template engine. Can only be called during application
     startup before any templates are rendered
@@ -155,7 +174,8 @@ def add_search_path(path_or_paths):
     global extra_paths
     if not isinstance(path_or_paths, list):
         path_or_paths = [path_or_paths]
-    extra_paths = path_or_paths + extra_paths
+
+    extra_paths.append((path_or_paths, prefix))
 
 
 def _get_engine(theme=None):
