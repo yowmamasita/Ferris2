@@ -92,3 +92,6 @@ class FerrisTestCase(WithTestBed):
             'webapp2_extras.sessions': {'secret_key': 'notasecret'}
         })
         self.testapp = webtest.TestApp(app)
+
+    def addController(self, c):
+        c._build_routes(self.testapp.app.router)
