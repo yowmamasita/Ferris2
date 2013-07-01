@@ -53,6 +53,8 @@ class BroadcastEvent(Event):
         super(BroadcastEvent, self).fire(*args, **kwargs)
         fire(self.prefix + self.name, *args, **kwargs)
 
+    __call__ = fire
+
 
 class NamedBroadcastEvents(NamedEvents):
     def __init__(self, prefix=None):
@@ -63,3 +65,5 @@ class NamedBroadcastEvents(NamedEvents):
         if not name in self._events:
             self._events[name] = BroadcastEvent(name=name, prefix=self.prefix)
         return self._events[name]
+
+    __getattr__ = getEventNoAttr
