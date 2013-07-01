@@ -55,10 +55,6 @@ class TemplateEngine(object):
                 for x in non_prefix_template_paths
             ] + non_prefix_template_paths
 
-        import logging
-        logging.info(prefix_paths)
-        logging.info(non_prefix_template_paths)
-
         loader = jinja2.ChoiceLoader([
             jinja2.PrefixLoader({
                 k: jinja2.FileSystemLoader(v)
