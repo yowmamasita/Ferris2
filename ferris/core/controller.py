@@ -239,6 +239,10 @@ class Controller(webapp2.RequestHandler, Uri):
         if hasattr(method, 'authorizations'):
             authorizations = authorizations + method.authorizations
 
+        authorizations = list(authorizations)  # convert to list so listeners can modify
+
+        self.events.before_authorization(controller=self, authorizations=authorizations)
+
         auth_result = True
 
         for chain in authorizations:
@@ -250,7 +254,11 @@ class Controller(webapp2.RequestHandler, Uri):
             message = u"Authorization chain rejected request"
             if isinstance(auth_result, tuple):
                 message = auth_result[1]
+
+            self.events.authorization_failed(controller=self, message=message)
             self.abort(403, message)
+
+        self.events.after_authorization(controller=self)
 
     def _clear_redirect(self):
         if self.response.status_int in [300, 301, 302]:
@@ -310,7 +318,7 @@ class Controller(webapp2.RequestHandler, Uri):
     def session(self):
         """
         Sessions are a simple dictionary of data that's persisted across requests for particular
-        browser session. 
+        browser session.
 
         Sessions are backed by an encrypted cookie and memcache.
         """
@@ -319,7 +327,7 @@ class Controller(webapp2.RequestHandler, Uri):
     def parse_request(self, container=None, fallback=None, parser=None):
         """
         Parses request data (like GET, POST, JSON, XML) into a container (like a Form or Message)
-        instance using a :class:`~ferris.core.request_parsers.RequestParser`. By default, it assumes 
+        instance using a :class:`~ferris.core.request_parsers.RequestParser`. By default, it assumes
         you want to process GET/POST data into a Form instance, for that simple case you can use::
 
             data = self.parse_request()
