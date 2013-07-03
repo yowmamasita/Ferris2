@@ -165,6 +165,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self.name = inflector.underscore(self.__class__.__name__)
         self.proper_name = self.__class__.__name__
         self.util = self.Util(self)
+        self.route = None
 
     def _build_components(self):
         self.events.before_build_components(controller=self)

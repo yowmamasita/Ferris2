@@ -24,9 +24,6 @@ class Uri(object):
         controller = controller if controller != route_sentinel else self.route.controller
         action = action if action != route_sentinel else self.route.action
 
-        if self.route.prefix:
-            action = action.replace(self.route.prefix + '_', '')
-
         return routing.name_from_canonical_parts(prefix, controller, action)
 
     def uri(self, route_name=None,

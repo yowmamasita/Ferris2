@@ -1,9 +1,12 @@
 import unittest
+from lib import FerrisTestCase
 from ferris.core import routing
+from ferris.core.controller import Controller, route
 
 
-class TestClass(object):
-    prefixes = ['pre']
+class TestClass(Controller):
+    class Meta:
+        prefixes = ('pre',)
 
     def method1(self):
         pass
@@ -16,6 +19,17 @@ class TestClass(object):
 
     def pre_method2(self, arg1, arg2):
         pass
+
+    @route
+    def yuri(self):
+        assert self.on_uri(action='yuri')
+        assert not self.on_uri(action='list')
+
+        if 'meow' in self.request.params:
+            assert self.on_uri(meow='kitty')
+            assert not self.on_uri(meow='dog')
+
+        return 'success'
 
 
 class RoutingTest(unittest.TestCase):
@@ -105,3 +119,13 @@ class RoutingTest(unittest.TestCase):
             routing.name_from_canonical_parts('pre', 'one', 'two', ['x', 'y']),
             'pre:one:two'
         )
+
+
+class TestOnUri(FerrisTestCase):
+    def setUp(self):
+        super(TestOnUri, self).setUp()
+        self.addController(TestClass)
+
+    def testOnUri(self):
+        self.testapp.get('/test_class/yuri')
+        self.testapp.get('/test_class/yuri?meow=kitty')
