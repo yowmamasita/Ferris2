@@ -3,12 +3,11 @@ from google.appengine.api.blobstore import blobstore_stub, file_blob_storage
 from google.appengine.api.files import file_service_stub
 from google.appengine.datastore import datastore_stub_util
 from google.appengine.api.search.simple_search_stub import SearchServiceStub
+from webapp2 import WSGIApplication
 import unittest
 import webtest
 import os
 import base64
-
-from ferris.core.wsgi import WSGIApp
 
 
 class TestbedWithFiles(testbed.Testbed):
@@ -88,7 +87,7 @@ class AppTestCase(WithTestBed):
 class FerrisTestCase(WithTestBed):
     def setUp(self):
         super(FerrisTestCase, self).setUp()
-        app = WSGIApp(debug=True, config={
+        app = WSGIApplication(debug=True, config={
             'webapp2_extras.sessions': {'secret_key': 'notasecret'}
         })
         self.testapp = webtest.TestApp(app)
