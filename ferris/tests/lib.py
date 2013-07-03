@@ -60,7 +60,7 @@ class WithTestBed(unittest.TestCase):
             USER_EMAIL=email,
             USER_ID='123',
             USER_IS_ADMIN='1' if admin else '0',
-            AUTH_DOMAIN='example.com',
+            AUTH_DOMAIN='gmail.com',
             overwrite=True)
 
     def runDeferredTasks(self, queue='default'):
