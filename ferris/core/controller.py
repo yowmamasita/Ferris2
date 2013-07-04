@@ -9,6 +9,9 @@ from ferris.core.json_util import parse as json_parse, stringify as json_stringi
 from bunch import Bunch
 
 
+_temporary_route_storage = []
+
+
 def route(f):
     """
     Marks a method for automatically routing and accessible via HTTP.
@@ -21,7 +24,8 @@ def route(f):
         def exterminate(self):
             return 'EXTERMINAAATE!'
     """
-    setattr(f, 'route', True)
+    global _temporary_route_storage
+    _temporary_route_storage.append((f, (), {}))
     return f
 
 
@@ -40,7 +44,7 @@ def route_with(*args, **kwargs):
             pass
     """
     def inner(f):
-        setattr(f, 'route', (args, kwargs))
+        _temporary_route_storage.append((f, args, kwargs))
         return f
     return inner
 
@@ -67,12 +71,21 @@ class Controller(webapp2.RequestHandler, Uri):
 
     class __metaclass__(type):
         def __new__(meta, name, bases, dict):
+            global _temporary_route_storage
+
             cls = type.__new__(meta, name, bases, dict)
             if name != 'Controller':
+                # Add to the controller registry
                 if not cls in Controller._controllers:
                     Controller._controllers.append(cls)
+
+                # Make sure the metaclass as a proper inheritence chain
                 if not issubclass(cls.Meta, Controller.Meta):
                     cls.Meta = type('Meta', (cls.Meta, Controller.Meta), {})
+
+                cls._route_list = _temporary_route_storage
+                _temporary_route_storage = []
+
             return cls
 
     # The name of this class, lowercase (automatically determined)
@@ -184,6 +197,9 @@ class Controller(webapp2.RequestHandler, Uri):
 
     def _init_route(self):
         action = self.request.route.handler_method
+        print action
+        print self.request.route
+
         prefix = None
         for possible_prefix in self.Meta.prefixes:
             if action.startswith(possible_prefix):

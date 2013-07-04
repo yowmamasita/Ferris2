@@ -12,6 +12,25 @@ from webapp2 import Route
 from webapp2_extras import routes
 
 
+def get_true_name_and_argspec(method):
+    """
+    Drills through layers of decorators attempting to locate
+    the actual argspec for the method.
+    """
+
+    argspec = inspect.getargspec(method)
+    args = argspec[0]
+    if args and args[0] == 'self':
+        return method.__name__, argspec
+    if hasattr(method, '__func__'):
+        method = method.__func__
+    if not hasattr(method, 'func_closure') or method.func_closure is None:
+        raise Exception("No closure for method.")
+
+    method = method.func_closure[0].cell_contents
+    return get_true_name_and_argspec(method)
+
+
 def router():
     return ferris.app.app.router
 
@@ -88,7 +107,7 @@ def route_all_controllers(app_router, plugin=None):
                 except AttributeError:
                     logging.debug("Controller %s not found, skipping" % inflector.camelize(name))
 
-            except AttributeError, e:
+            except AttributeError as e:
                 logging.error('Thought %s was a controller, but was wrong (or ran into some weird error): %s' % (file, e))
                 raise
 
@@ -119,13 +138,13 @@ def current_route_name():
     return name
 
 
-def canonical_parts_from_method(method):
+def canonical_parts_from_method(controller, method):
     """
     Returns the canonical parts (prefix, controller, action, named arguments)
     from a controller's method
     """
-    method_name = method.__name__
-    method_class = method.im_class
+    method_name, method_args = get_true_name_and_argspec(method)
+    method_class = controller
     method_class_name = inflector.underscore(method_class.__name__)
     prefix = None
 
@@ -139,13 +158,11 @@ def canonical_parts_from_method(method):
             prefix = tprefix
             method_name = method_name.replace(prefix + '_', '')
 
-    args = inspect.getargspec(method).args[1:]
-
     return {
         'prefix': prefix,
         'controller': method_class_name,
         'action': method_name,
-        'args': args
+        'args': method_args.args[1:]  # exclude self
     }
 
 
@@ -188,25 +205,40 @@ def build_routes_for_controller(controllercls):
     /controller/some_method/<arg1>/<arg2>/<arg3>
     """
     routes_list = []
-    methods = inspect.getmembers(controllercls, predicate=inspect.ismethod)
-    methods = [x[1] for x in methods if hasattr(x[1], 'route')]
 
-    for method in methods:
-        parts = canonical_parts_from_method(method)
+    for entry in controllercls._route_list:
+        method = entry[0]
+        args = entry[1]
+        kwargs = entry[2]
+
+        parts = canonical_parts_from_method(controllercls, method)
         route_path = path_from_canonical_parts(**parts)
         route_name = name_from_canonical_parts(**parts)
 
-        kwargs = dict(
+        # not the most elegant way to determine the
+        # correct member name, but it works. Alternatively,
+        # i could use get_real_name_and_argspect, but
+        # cononical_parts_from_method already does that.
+        method = parts['action']
+        if parts['prefix']:
+            method = '%s_%s' % (parts['prefix'], parts['action'])
+
+        tkwargs = dict(
             template=route_path,
             handler=controllercls,
             name=route_name,
-            handler_method=method.__name__
+            handler_method=method
         )
-        method_args = method.route
-        if isinstance(method_args, tuple):
-            kwargs.update(method_args[1])
 
-        routes_list.append(Route(**kwargs))
+        tkwargs.update(kwargs)
+
+        # ingest args[0] if its the only thing set
+        if len(args) == 1:
+            tkwargs['template'] = args[0]
+        if len(args) > 1:
+            raise ValueError("Only one positional argument may be passed to route_with")
+
+        routes_list.append(Route(**tkwargs))
 
     return routes_list
 

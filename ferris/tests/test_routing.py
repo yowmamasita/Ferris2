@@ -4,6 +4,12 @@ from ferris.core import routing
 from ferris.core.controller import Controller, route
 
 
+def std_decorator(f):
+    def std_wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return std_wrapper
+
+
 class TestClass(Controller):
     class Meta:
         prefixes = ('pre',)
@@ -31,13 +37,18 @@ class TestClass(Controller):
 
         return 'success'
 
+    @route
+    @std_decorator
+    def broken(self, meow, kitty):
+        return 'success'
+
 
 class RoutingTest(unittest.TestCase):
 
     def testPartsFromMethod(self):
 
         self.assertEquals(
-            routing.canonical_parts_from_method(TestClass.method1),
+            routing.canonical_parts_from_method(TestClass, TestClass.method1),
             {
                 'prefix': None,
                 'controller': 'test_class',
@@ -47,7 +58,7 @@ class RoutingTest(unittest.TestCase):
         )
 
         self.assertEquals(
-            routing.canonical_parts_from_method(TestClass.method2),
+            routing.canonical_parts_from_method(TestClass, TestClass.method2),
             {
                 'prefix': None,
                 'controller': 'test_class',
@@ -57,7 +68,7 @@ class RoutingTest(unittest.TestCase):
         )
 
         self.assertEquals(
-            routing.canonical_parts_from_method(TestClass.pre_method1),
+            routing.canonical_parts_from_method(TestClass, TestClass.pre_method1),
             {
                 'prefix': 'pre',
                 'controller': 'test_class',
@@ -67,12 +78,22 @@ class RoutingTest(unittest.TestCase):
         )
 
         self.assertEquals(
-            routing.canonical_parts_from_method(TestClass.pre_method2),
+            routing.canonical_parts_from_method(TestClass, TestClass.pre_method2),
             {
                 'prefix': 'pre',
                 'controller': 'test_class',
                 'action': 'method2',
                 'args': ['arg1', 'arg2']
+            }
+        )
+
+        self.assertEquals(
+            routing.canonical_parts_from_method(TestClass, TestClass.broken),
+            {
+                'prefix': None,
+                'controller': 'test_class',
+                'action': 'broken',
+                'args': ['meow', 'kitty']
             }
         )
 

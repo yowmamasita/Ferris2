@@ -6,6 +6,22 @@ from ferris.core.json_util import DatastoreEncoder
 from google.appengine.ext import ndb
 
 
+# Decorators that make sure @route works correctly even for decorated functions
+def std_decorator(f):
+    def std_wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return std_wrapper
+
+
+def wraps_decorator(f):
+    from functools import wraps
+
+    @wraps(f)
+    def wraps_wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wraps_wrapper
+
+
 class TestModel(ndb.Model):
     field1 = ndb.StringProperty()
     field2 = ndb.StringProperty()
@@ -48,14 +64,16 @@ class TestController(Controller):
         return 'monster_list'
 
     @route
+    @wraps_decorator
     def monkey(self, key):
         return 'monkey-%s' % key
 
     @route
+    @std_decorator
     def monster_monkey(self, key):
         return 'monster_monkey-%s' % key
 
-    @route_with(template='/test_controller/monet')
+    @route_with('/test_controller/monet')
     def degas(self):
         return 'degas'
 
