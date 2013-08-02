@@ -48,7 +48,7 @@ cp apiclient.zip $packages
 
 echo ' --> Packaging wtforms & wtforms-json'
 cd /tmp
-rm -rf wtforms.zip wtforms wtforms-json 2>/dev/null
+rm -rf wtforms.zip wtforms wtforms-json six 2>/dev/null
 
 hg clone ssh://hg@bitbucket.org/simplecodes/wtforms wtforms
 cd wtforms
@@ -59,6 +59,11 @@ cd ../
 git clone https://github.com/kvesteri/wtforms-json.git wtforms-json
 cd wtforms-json
 zip -r ../wtforms.zip wtforms_json LICENSE
+cd ../
+
+hg clone https://bitbucket.org/gutworth/six six
+cd six
+zip -r ../wtforms.zip six.py
 cd ../
 
 cp wtforms.zip $packages
