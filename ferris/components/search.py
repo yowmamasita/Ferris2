@@ -1,7 +1,8 @@
 import logging
 import datetime
+import calendar
 from ferris.core import inflector
-from google.appengine.api import search, users
+from google.appengine.api import search, users, memcache
 from google.appengine.ext import ndb
 
 
@@ -26,6 +27,8 @@ class Search(object):
     def _get_limit(self):
         if hasattr(self.controller.meta, 'paginate_limit'):
             return self.controller.meta.paginate_limit
+        if hasattr(self.controller.meta, 'pagination_limit'):
+            return self.controller.meta.pagination_limit
         return 100
 
     def _get_cursor(self):
@@ -64,10 +67,8 @@ class Search(object):
             results = [x for x in results if x]
 
             self.controller.context.set_dotted('paging.limit', limit)
-            self.controller.context.set_dotted('paging.cursor', cursor)
             self.controller.context.set_dotted('paging.count', len(results))
-            if index_results.cursor:
-                self.controller.context.set_dotted('paging.cursor', str(index_results.cursor.web_safe_string))
+            self.set_cursors(cursor, index_results.cursor, True if results else False)
 
         except (search.Error, search.query_parser.QueryException) as e:
             results = []
@@ -80,6 +81,32 @@ class Search(object):
             self.controller.context[self.controller.scaffold.plural] = results
 
         return results
+
+    def set_cursors(self, current, next, more):
+        ctx = self.controller.context
+        current_ws = current.web_safe_string if current else 'none'
+        next_ws = next.web_safe_string if next else 'none'
+
+        previous_tuple = memcache.get('paging.cursor.previous.%s' % current_ws)
+
+        if previous_tuple:
+            page, previous = previous_tuple
+        else:
+            page, previous = 1, None
+
+        previous_ws = previous.web_safe_string if previous else 'none'
+
+        memcache.set('paging.cursor.previous.%s' % next_ws, (page+1, current))
+
+        logging.info("Page: %s, Previous: %s, Current: %s, Next: %s" % (page, previous, current, next))
+
+        ctx.set_dotted('paging.page', page)
+
+        if previous:
+            ctx.set_dotted('paging.previous_cursor', previous_ws)
+
+        if next and more:
+            ctx.set_dotted('paging.next_cursor', next.web_safe_string)
 
     __call__ = search
 
