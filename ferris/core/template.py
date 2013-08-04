@@ -111,6 +111,7 @@ class TemplateEngine(object):
             'round': round,
             'list': list,
             'str': str,
+            'unicode': unicode,
             'datetime': datetime,
             'localize': time_util.localize,
             'ferris': {
