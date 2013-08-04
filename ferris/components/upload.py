@@ -103,13 +103,16 @@ class Upload(object):
                         info = blobstore.parse_blob_info(value)
                         self.__uploads.setdefault(key, []).append(info)
 
+        results = []
+
         if field_name:
             try:
-                return list(self.__uploads[field_name])
+                results = list(self.__uploads[field_name])
             except KeyError:
-                return []
+                pass
         else:
-            results = []
             for uploads in self.__uploads.itervalues():
                 results += uploads
-            return results
+
+        # Workaround for mangled filenames
+        return blobstore.BlobInfo.get([x.key() for x in results])
