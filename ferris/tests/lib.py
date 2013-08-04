@@ -58,7 +58,7 @@ class WithTestBed(unittest.TestCase):
     def loginUser(self, email='test@example.com', admin=False):
         self.testbed.setup_env(
             USER_EMAIL=email,
-            USER_ID='123',
+            USER_ID=email,
             USER_IS_ADMIN='1' if admin else '0',
             AUTH_DOMAIN='gmail.com',
             overwrite=True)
