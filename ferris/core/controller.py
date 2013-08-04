@@ -197,9 +197,6 @@ class Controller(webapp2.RequestHandler, Uri):
 
     def _init_route(self):
         action = self.request.route.handler_method
-        print action
-        print self.request.route
-
         prefix = None
         for possible_prefix in self.Meta.prefixes:
             if action.startswith(possible_prefix):
