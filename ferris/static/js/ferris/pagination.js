@@ -1,5 +1,5 @@
-
 $(function(){
+    "use strict";
 
     // Set-up
 
@@ -15,6 +15,8 @@ $(function(){
     $('.paging-container .pagination').show();
 
     var cursors_list = [];
+    var current_page = 0;
+    var next_page = 0;
 
     //get cursor list
     if(paging_config.cursor){
@@ -28,51 +30,52 @@ $(function(){
             document.location.replace(paging_config.uri);
             return;
         }
+    } else {
+        return;
+    }
+
+    //see if we've already got the cursor for the current page, if not add it.
+    current_page = cursors_list.indexOf(paging_config.cursor);
+
+    if(current_page === -1){
+        cursors_list.push(paging_config.cursor);
+        current_page = cursors_list.length-1;
+    }
+
+    // More less the same thing with the next cursor.
+    if(paging_config.next_cursor){
+        next_page = cursors_list.indexOf(paging_config.next_cursor);
+        if(current_page === -1){
+            cursors_list.push(paging_config.next_cursor);
+            next_page = cursors_list.length-1;
+        }
     }
 
     //configure next link
-    if(!paging_config.next_cursor){
+    if(!next_page){
         $('.pagination .next').addClass('disabled');
     } else {
         $('.paging-next-link').attr('href',
-            add_params(paging_config.uri, {'cursor': paging_config.next_cursor, 'limit': paging_config.limit})
+            add_params(paging_config.uri, {'cursor': cursors_list[next_page], 'limit': paging_config.limit})
         );
     }
-    $('.paging-next-link').click(function(e){
-        if(paging_config.next_cursor){
-            cursors_list.push(paging_config.next_cursor);
-            localStorage.setItem(paging_config.storage_key, cursors_list.join(','));
-        } else {
-            e.stopPropagation();
-            e.preventDefault();
-        }
-    });
 
     //configure prev link
-    if(!cursors_list.length){
+    if(current_page === 0){
         $('.pagination .previous').addClass('disabled');
     } else {
-        var prev_link_params = (cursors_list.length>1) ?
-                {cursor: cursors_list[cursors_list.length-2], limit: paging_config.limit}
-                : {limit: paging_config.limit};
-        var prev_link = add_params(paging_config.uri, prev_link_params);
-        $('.paging-previous-link').attr('href', prev_link );
+        var prev_link_params = {
+            cursor: cursors_list[current_page-1],
+            limit: paging_config.limit
+        };
+        $('.paging-previous-link').attr('href', add_params(paging_config.uri, prev_link_params) );
     }
-    $('.paging-previous-link').click(function(e){
-        if(cursors_list){
-            cursors_list.pop();
-            localStorage.setItem(paging_config.storage_key, cursors_list.join(','));
-        } else {
-            e.stopPropagation();
-            e.preventDefault();
-        }
-    });
 
     //display result count text
     if(paging_config.results > 0){
-        var start_index = cursors_list.length * paging_config.limit;
+        var start_index = current_page * paging_config.limit;
         var end_index = start_index + paging_config.results;
         $('.paging_text').text((start_index+1) + ' to ' + end_index);
     }
-        
+
 });
