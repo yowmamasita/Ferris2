@@ -52,15 +52,15 @@ class Pagination(object):
         Returns the data, and if ``query_or_var_name`` is a string, sets that template variable.
         """
 
-        cursor = cursor if cursor else self.controller.request.params.get('cursor', None)
-        if cursor and not isinstance(cursor, Cursor):
-            cursor = Cursor(urlsafe=cursor)
-
         limit = limit if limit else self.controller.meta.pagination_limit if hasattr(self.controller.meta, 'pagination_limit') else 100
         query = self._get_query(query)
 
         if not query:
             return
+
+        cursor = cursor if cursor else self.controller.request.params.get('cursor', None)
+        if cursor and not isinstance(cursor, Cursor):
+            cursor = Cursor(urlsafe=cursor)
 
         data, next_cursor, more = query.fetch_page(limit, start_cursor=cursor)
 
