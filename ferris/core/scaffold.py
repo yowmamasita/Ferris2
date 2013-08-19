@@ -64,7 +64,8 @@ class Scaffolding(object):
             'singular': controller.scaffold.singular,
             'form_action': controller.scaffold.form_action,
             'form_encoding': controller.scaffold.form_encoding,
-            'display_properties': controller.scaffold.display_properties
+            'display_properties': controller.scaffold.display_properties,
+            'layouts': controller.scaffold.layouts
         }
 
 
@@ -83,7 +84,11 @@ class Scaffold(object):
             redirect=controller.uri(action='list') if controller.uri_exists(action='list') else None,
             form_action=None,
             form_encoding='application/x-www-form-urlencoded',
-            flash_messages=True
+            flash_messages=True,
+            layouts={
+                None: 'layouts/default.html',
+                'admin': 'layouts/admin.html'
+            }
         )
 
         for k, v in defaults.iteritems():

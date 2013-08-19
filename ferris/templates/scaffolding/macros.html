@@ -2,15 +2,10 @@
 
 
 {#
-    Chooses either the admin layout or the default layout depending
-    on the prefix of the this.
+    Chooses the appropriate layout for the current prefix.
 #}
-{% macro admin_or_default() -%}
-    {% if this.route.prefix == 'admin' -%}
-        layouts/admin.html
-    {%- else -%}
-        layouts/default.html
-    {%- endif %}
+{% macro layout() -%}
+    {{ scaffolding.layouts.get(this.route.prefix, scaffolding.layouts[None]) }}
 {%- endmacro %}
 
 
