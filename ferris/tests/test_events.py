@@ -36,7 +36,7 @@ class NamedEventsTest(unittest.TestCase):
         data = NamedEvents()
 
         temp = 'hello world'
-        register(temp)
+        events.register(temp)
 
         called_list = []
 

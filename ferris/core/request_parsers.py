@@ -50,13 +50,13 @@ class FormParser(RequestParser):
     def process(self, request, container, fallback=None):
         from wtforms_json import MultiDict, flatten_json
 
-        if request.content_type == 'application/json':
-            request_data = MultiDict(flatten_json(parse_json(request.body)))
-        else:
-            request_data = request.params
-
         if inspect.isclass(container):
             container = container()
+
+        if request.content_type == 'application/json':
+            request_data = MultiDict(flatten_json(container.__class__, parse_json(request.body)))
+        else:
+            request_data = request.params
 
         container.process(formdata=request_data, obj=fallback, **container.data)
 

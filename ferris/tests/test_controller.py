@@ -211,7 +211,9 @@ class ControllerTest(FerrisTestCase):
         response = self.testapp.post('/test_controller/form', data)
         self.assertNotEqual(response.body, str(data), 'Field3 should not be in data')
 
+        del data['field3']
         data = json.dumps(data, cls=DatastoreEncoder)
+
         response = self.testapp.post('/test_controller/form', data, headers={'Content-Type': 'application/json'})
         self.assertTrue('f1' in response)
         self.assertTrue('f2' in response)
