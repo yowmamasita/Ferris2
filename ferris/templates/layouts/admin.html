@@ -11,7 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="/ferris/css/bootstrap.admin.min.css">
     <script src="//www.google.com/jsapi"></script>
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     {% include 'elements/jquery-ui.html' %}
     <script type="text/javascript" src="/ferris/js/bootstrap.min.js"></script>
     <script type="text/javascript">
@@ -33,7 +33,7 @@
         {% include 'elements/admin/navbar.html' %}
     {% endblock %}
 
-    <div class="container-fluid">
+    <div class="container">
         {% block layout_wrapper %}
             <div>
                 {% block layout_header %}
@@ -41,13 +41,13 @@
                 {% endblock %}
             </div>
 
-            <div class='row-fluid'>
-                <div class='span2'>
+            <div class='row'>
+                <div class='col-lg-2'>
                     {% block layout_sidebar %}
                         {{ s.override_include('nav.html') }}
                     {% endblock %}
                 </div>
-                <div class='span10'>
+                <div class='col-lg-10'>
                     {% include "elements/flash_messages.html" with context %}
                     {%block layout_content %}{% endblock %}
                 </div>

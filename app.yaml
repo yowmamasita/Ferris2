@@ -55,6 +55,9 @@ handlers:
 - url: /ferris/css
   static_dir: ferris/static/css
 
+- url: /ferris/fonts
+  static_dir: ferris/static/fonts
+
 - url: /ferris/js
   static_dir: ferris/static/js
 
