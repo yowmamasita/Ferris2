@@ -27,9 +27,11 @@
                     </td>
                 {% endfor %}
                 <td class="col-2">
+                    <div class='btn-group'>
                     {% block item_action_buttons scoped %}
                         {{s.action_buttons(item)}}
                     {% endblock %}
+                    </div>
                 </td>
             </tr>
         {% endfor %}

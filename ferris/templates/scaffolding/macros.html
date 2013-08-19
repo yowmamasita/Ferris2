@@ -83,12 +83,10 @@
     Generates the standard suite of action buttons for an item (view, edit, delete)
 #}
 {% macro action_buttons(item, class=None) -%}
-<div class='btn-group'>
     {% set class = class or ''%}
     {{action_button(item, 'view', 'glyphicon-search', 'btn-success', class)}}
     {{action_button(item, 'edit', 'glyphicon-pencil', 'btn-primary', class)}}
     {{action_button(item, 'delete', 'glyphicon-trash', 'btn-danger', class, True)}}
-</div>
 {%- endmacro %}
 
 {#
