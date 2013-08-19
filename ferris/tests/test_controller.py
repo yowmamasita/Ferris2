@@ -58,7 +58,7 @@ class TestController(Controller):
         return 'edit'
 
     def delete(self, key):
-        return 'delete'
+        return 204
 
     def monster_list(self):
         return 'monster_list'
@@ -140,8 +140,7 @@ class ControllerTest(FerrisTestCase):
         response = self.testapp.get('/test_controller/:abcd/edit')
         self.assertEqual(response.body, 'edit')
 
-        response = self.testapp.get('/test_controller/:abcd/delete')
-        self.assertEqual(response.body, 'delete')
+        response = self.testapp.get('/test_controller/:abcd/delete', status=204)
 
     def testRestRoutes(self):
         response = self.testapp.get('/test_controller')
@@ -156,8 +155,7 @@ class ControllerTest(FerrisTestCase):
         response = self.testapp.put('/test_controller/:abcd')
         self.assertEqual(response.body, 'edit')
 
-        response = self.testapp.delete('/test_controller/:abcd')
-        self.assertEqual(response.body, 'delete')
+        response = self.testapp.delete('/test_controller/:abcd', status=204)
 
     def testPrefixRoutes(self):
         response = self.testapp.get('/monster/test_controller')
