@@ -80,7 +80,7 @@ class Scaffold(object):
             plural=inflector.underscore(controller.name),
             singular=inflector.underscore(inflector.singularize(controller.name)),
             ModelForm=model_form(controller.meta.Model),
-            display_properties=[name for name, property in controller.meta.Model._properties.items()],
+            display_properties=sorted([name for name, property in controller.meta.Model._properties.items()]),
             redirect=controller.uri(action='list') if controller.uri_exists(action='list') else None,
             form_action=None,
             form_encoding='application/x-www-form-urlencoded',

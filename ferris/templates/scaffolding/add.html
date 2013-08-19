@@ -25,7 +25,7 @@
         {% block form_fields %}
             {% for field in form %}
                 {% if not field.name in scaffolding.excluded_form_fields %}
-                    {{ f.form_control(form, field, class='span6') }}
+                    {{ f.form_control(form, field) }}
                 {% endif %}
             {% endfor %}
         {% endblock %}

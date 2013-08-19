@@ -67,7 +67,7 @@
     {% if this.uri_exists(action=action) %}
         <a
             href='{{ action_uri(action,key=this.encode_key(item)) }}'
-            class='btn {{btn}} {{class}}'
+            class='btn btn-sm {{btn}} {{class}}'
             rel="tooltip"
             title='{{inflector.titleize(action)}}'
             {% if confirm: %}
