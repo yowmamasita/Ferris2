@@ -18,13 +18,17 @@ from ferris.core import plugins
 from ferris.core.routing import route_name_exists, current_route_name
 from ferris.core.json_util import DatastoreEncoder
 
+debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
+
 
 class TemplateEngine(object):
 
     def __init__(self, theme=None, extra_globals=None, extra_paths=None):
         self.theme = theme
         self.environment = jinja2.Environment(
-            loader=self._build_loader(extra_paths=extra_paths))
+            loader=self._build_loader(extra_paths=extra_paths),
+            auto_reload=False,
+            cache_size=0 if debug else 50)
         self._update_globals(extra_globals)
 
     def _build_loader(self, extra_paths=None):
