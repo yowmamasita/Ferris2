@@ -5,10 +5,10 @@
 
     {% block links %}
         {% if item %}
-            {{s.nav_link('View', 'view', 'icon-search', id=scaffolding.url_id_for(item))}}
-            {{s.nav_link('Edit', 'edit', 'icon-pencil', id=scaffolding.url_id_for(item))}}
+            {{s.nav_link('View', 'view', 'glyphicon-search', id=scaffolding.url_id_for(item))}}
+            {{s.nav_link('Edit', 'edit', 'glyphicon-pencil', id=scaffolding.url_id_for(item))}}
         {% endif %}
-        {{s.nav_link('List', 'list', 'icon-list')}}
-        {{s.nav_link('Add', 'add', 'icon-plus')}}
+        {{s.nav_link('List', 'list', 'glyphicon-list')}}
+        {{s.nav_link('Add', 'add', 'glyphicon-plus')}}
     {% endblock %}
 <ul>

@@ -73,7 +73,7 @@
             {% if confirm: %}
             onclick='javascript: return confirm("Are you sure you want to delete this item?");'
             {% endif %}>
-            <i class="{{icon}} icon-white"></i>
+            <i class="glyphicon {{icon}} icon-white"></i>
         </a>
     {% endif %}
 {%- endmacro %}
@@ -85,9 +85,9 @@
 {% macro action_buttons(item, class=None) -%}
 <div class='btn-group'>
     {% set class = class or ''%}
-    {{action_button(item, 'view', 'icon-search', 'btn-success', class)}}
-    {{action_button(item, 'edit', 'icon-pencil', 'btn-primary', class)}}
-    {{action_button(item, 'delete', 'icon-trash', 'btn-danger', class, True)}}
+    {{action_button(item, 'view', 'glyphicon-search', 'btn-success', class)}}
+    {{action_button(item, 'edit', 'glyphicon-pencil', 'btn-primary', class)}}
+    {{action_button(item, 'delete', 'glyphicon-trash', 'btn-danger', class, True)}}
 </div>
 {%- endmacro %}
 
@@ -103,7 +103,7 @@
         {% endif %}
         <li {% if active %}class='active'{% endif %}>
             <a href="{{action_uri(action, **kwargs)}}">
-                <i class="{{icon}}"></i>
+                <i class="glyphicon {{icon}}"></i>
                 {{title}}
             </a>
         </li>
