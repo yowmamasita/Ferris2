@@ -42,13 +42,16 @@
             </div>
 
             <div class='row'>
-                <div class='col-lg-2'>
+                <div class='col-lg-12'>
                     {% block layout_sidebar %}
                         {{ s.override_include('nav.html') }}
                     {% endblock %}
                 </div>
-                <div class='col-lg-10'>
-                    {% include "elements/flash_messages.html" with context %}
+                {% include "elements/flash_messages.html" with context %}
+            </div>
+
+            <div class='row'>
+                <div class='col-lg-12'>
                     {%block layout_content %}{% endblock %}
                 </div>
             </div>

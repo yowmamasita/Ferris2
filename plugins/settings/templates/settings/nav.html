@@ -1,24 +1,15 @@
 {% import 'scaffolding/macros.html' as s with context %}
+{% extends "scaffolding/nav.html" %}
 
-<div>
-    <ul class="nav nav-pills nav-stacked">
-        <li class="nav-header">
-            {% block title %}
-                {{scaffolding.title}}
-            {% endblock %}
+{% block links %}
+    {{s.nav_link('Summary', 'list', 'icon-list')}}
+
+    {% for setting_class in setting_classes.itervalues()|sort(attribute='_name') %}
+        <li {% if on_uri(action='edit', key=setting_class.__name__) %}class='active'{% endif %}>
+            <a href="{{s.action_uri(action='edit', key=setting_class.__name__)}}">
+                <i class="icon-pencil"></i>
+                {{setting_class._name}}
+            </a>
         </li>
-
-        {% block links %}
-            {{s.nav_link('Summary', 'list', 'icon-list')}}
-
-            {% for setting_class in setting_classes.itervalues()|sort(attribute='_name') %}
-                <li {% if on_uri(action='edit', key=setting_class.__name__) %}class='active'{% endif %}>
-                    <a href="{{s.action_uri(action='edit', key=setting_class.__name__)}}">
-                        <i class="icon-pencil"></i>
-                        {{setting_class._name}}
-                    </a>
-                </li>
-            {% endfor %}
-        {% endblock %}
-    <ul>
-</div>
+    {% endfor %}
+{% endblock %}
