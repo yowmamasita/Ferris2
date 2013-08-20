@@ -5,6 +5,8 @@ runtime: python27
 api_version: 1
 threadsafe: yes 
 
+default_expiration: 1h
+
 builtins:
 - deferred: on
 #- appstats: on
@@ -33,6 +35,8 @@ skip_files:
 - ^(.*/)?.*\.py[co]
 - ^(.*/)?.*/RCS/.*
 - ^(.*/)?\..*
+- ^(.*/)?.*\.scss
+- ^(.*/)?.*\.less
 - ^/docs*
 
 handlers:
@@ -51,27 +55,34 @@ handlers:
 
 - url: /ferris/static
   static_dir: ferris/static
+  expiration: 7d
 
 - url: /ferris/css
   static_dir: ferris/static/css
+  expiration: 7d
 
 - url: /ferris/js
   static_dir: ferris/static/js
+  expiration: 7d
 
 - url: /ferris/img
   static_dir: ferris/static/img
+  expiration: 7d
 
 - url: /favicon\.ico
   static_files: app/static/favicon.ico
   upload: app/static/favicon\.ico
+  expiration: 7d
 
 - url: /robots\.txt
   static_files: app/static/robots.txt
   upload: app/static/robots\.txt
+  expiration: 7d
 
 - url: /humans\.txt
   static_files: app/static/humans.txt
   upload: app/static/humans\.txt
+  expiration: 7d
 
 - url: /plugins/(.*?)/(.*)
   static_files: plugins/\1/static/\2
@@ -80,12 +91,6 @@ handlers:
 - url: /cron/.*
   script: main.app
   login: admin
-
-- url: /api/.*
-  script: main.app
-
-- url: /_ah/start
-  script: main.app
 
 - url: .*
   script: main.app
