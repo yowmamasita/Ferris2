@@ -30,10 +30,8 @@ libraries:
   version: latest
 
 skip_files:
-- ^(.*/)?app\.yaml
-- ^(.*/)?app\.yml
-- ^(.*/)?index\.yaml
-- ^(.*/)?index\.yml
+- ^(.*/)?app\.ya?ml
+- ^(.*/)?index\.ya?ml
 - ^(.*/)?#.*#
 - ^(.*/)?.*~
 - ^(.*/)?.*\.py[co]
