@@ -8,7 +8,7 @@ threadsafe: yes
 default_expiration: 1h
 
 builtins:
-- deferred: on
+# Deferred is built in to Ferris. Do not enable it, it may lead to import errors.
 #- appstats: on
 
 libraries:
@@ -41,6 +41,7 @@ skip_files:
 
 handlers:
 
+# Static resources
 - url: /static
   static_dir: app/static
 
@@ -53,6 +54,7 @@ handlers:
 - url: /img
   static_dir: app/static/img
 
+# Ferris static resources
 - url: /ferris/static
   static_dir: ferris/static
   expiration: 7d
@@ -69,6 +71,7 @@ handlers:
   static_dir: ferris/static/img
   expiration: 7d
 
+# Top-level static files
 - url: /favicon\.ico
   static_files: app/static/favicon.ico
   upload: app/static/favicon\.ico
@@ -84,14 +87,22 @@ handlers:
   upload: app/static/humans\.txt
   expiration: 7d
 
+# Maps plugins/{plugin}/static to /plugins/{plugin} 
 - url: /plugins/(.*?)/(.*)
   static_files: plugins/\1/static/\2
   upload: plugins/(.*?)/static/(.*)
 
+# Cron prefix is admin-only.
 - url: /cron/.*
   script: main.app
   login: admin
 
+# Used to fix imports before running deffered tasks.
+- url: /_ah/queue/deferred
+  script: main.deferred_app
+  login: admin
+
+# Main script
 - url: .*
-  script: main.app
+  script: main.main_app
   login: required
