@@ -1,5 +1,6 @@
 from ferris.core import settings, template
 from google.appengine.api import mail
+import logging
 
 
 def send(recipient, subject, body, sender=None, reply_to=None, **kwargs):
@@ -13,7 +14,7 @@ def send(recipient, subject, body, sender=None, reply_to=None, **kwargs):
     sender = sender if sender else settings.get('email')['sender']
     if not sender:
         raise ValueError('No sender configured in settings')
-    return mail.send_mail(
+    res = mail.send_mail(
         sender=sender,
         to=recipient,
         subject=subject,
@@ -21,6 +22,8 @@ def send(recipient, subject, body, sender=None, reply_to=None, **kwargs):
         html=body,
         reply_to=reply_to if reply_to else sender,
         **kwargs)
+    logging.info('Email sent to %s by %s with subject %s and result %s' % (recipient, sender, subject, res))
+    return res
 
 
 def send_template(recipient, subject, template_name, context=None, theme=None, **kwargs):
