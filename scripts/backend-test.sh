@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python ../ferris/scripts/test_runner.py app $@
+nosetests --with-ferris "$@" ../app/tests

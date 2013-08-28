@@ -10,7 +10,7 @@ def local_tz():
     return pytz.timezone(settings.get('timezone')['local'])
 
 
-def localize(dt, tz):
+def localize(dt, tz=None):
     if not dt.tzinfo:
         dt = utc_tz().localize(dt)
     if not tz:
