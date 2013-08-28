@@ -53,7 +53,7 @@ handlers:
 
 # Cron prefix is admin-only.
 - url: /cron/.*
-  script: main.app
+  script: main.main_app
   login: admin
 
 # Used to fix imports before running deffered tasks.
