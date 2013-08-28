@@ -1,5 +1,15 @@
 from ferris.core.ndb import ndb
-from protopigeon import Message, model_message, list_message, to_message
+from protopigeon import Message, model_message, to_message, messages
+import logging
+
+
+def list_message(message_type):
+    name = message_type.__name__ + 'List'
+    fields = {
+        'items': messages.MessageField(message_type, 1, repeated=True),
+        'next_page': messages.StringField(2)
+    }
+    return type(name, (messages.Message,), fields)
 
 
 class Messaging(object):
@@ -61,7 +71,16 @@ class Messaging(object):
     def _transform_query(self, query):
         ListMessage = list_message(self.controller.meta.Message)
         items = [self._transform_entity(x) for x in query]
-        return ListMessage(items=items)
+
+        next_page_cursor = self.controller.context.get_dotted('paging.next_cursor', None)
+        if next_page_cursor:
+            next_page_link = self.controller.uri(_pass_all=True, cursor=next_page_cursor, _full=True)
+        else:
+            next_page_link = None
+
+        return ListMessage(
+            items=items,
+            next_page=next_page_link)
 
     def _transform_entity(self, entity):
         return to_message(entity, self.controller.meta.Message)
