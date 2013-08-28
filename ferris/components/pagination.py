@@ -16,7 +16,7 @@ class Pagination(object):
 
     def __init__(self, controller):
         self.controller = controller
-        if not hasattr(self.controller.meta, 'pagination_action'):
+        if not hasattr(self.controller.meta, 'pagination_actions'):
             setattr(self.controller.meta, 'pagination_actions', ('list',))
         self.controller.events.after_dispatch += self.after_dispatch_callback.__get__(self)
 
@@ -56,6 +56,7 @@ class Pagination(object):
         query = self._get_query(query)
 
         if not query:
+            logging.info('Couldn\'t paginate, no valid query found')
             return
 
         cursor = cursor if cursor else self.controller.request.params.get('cursor', None)
@@ -66,6 +67,8 @@ class Pagination(object):
 
         if hasattr(self.controller, 'scaffold'):
             self.controller.context[self.controller.scaffold.plural] = data
+        else:
+            logging.info('Could not set data')
 
         self.controller.context.set_dotted('paging.cursor', cursor.urlsafe() if cursor else False)
         self.controller.context.set_dotted('paging.next_cursor', next_cursor.urlsafe() if more else False)
@@ -73,6 +76,8 @@ class Pagination(object):
         self.controller.context.set_dotted('paging.count', len(data))
 
         return data, next_cursor if more else False
+
+    __call__ = paginate
 
     def after_dispatch_callback(self, response, *args, **kwargs):
         if self.controller.route.action in self.controller.meta.pagination_actions:  # checks for list and any prefixed lists
