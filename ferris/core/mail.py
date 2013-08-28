@@ -11,6 +11,8 @@ def send(recipient, subject, body, sender=None, reply_to=None, **kwargs):
     Any additionally arguments are passed to ``mail.send_mail``, such as headers.
     """
     sender = sender if sender else settings.get('email')['sender']
+    if not sender:
+        raise ValueError('No sender configured in settings')
     return mail.send_mail(
         sender=sender,
         to=recipient,
