@@ -1,4 +1,4 @@
-{% macro form_control(form, field, container_element='div') -%}
+{% macro form_field(form, field, container_element='div') -%}
     {% if field.short_name in form.disabled_fields %}
         {% set _ = kwargs.setdefault('readonly', true) %}
     {% endif %}
@@ -8,7 +8,10 @@
     {% else %}
 
         {% set css_classes = [kwargs.pop('class','')] %}
+
+        {% if field.widget.__class__.__name__ in ('TextInput', 'Select', 'Text', 'PasswordInput', 'FileInput', 'TextArea'): %}
         {% set _ = css_classes.append('form-control') %}
+        {% endif %}
         {% set _ = css_classes.append('field-type-' + inflector.dasherize(inflector.underscore(field.__class__.__name__))) %}
 
         {% for flag_name, flag_value in field.flags.__dict__.items() %}
