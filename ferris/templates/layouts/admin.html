@@ -9,16 +9,13 @@
         {% endblock %}
     </title>
 
-    <link rel="stylesheet" type="text/css" href="/ferris/css/bootstrap.admin.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" type="text/css" href="/ferris/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/ferris/css/bootstrap-theme.min.css">
+
+    <!-- Initial Scripts -->
     <script src="//www.google.com/jsapi"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-    {% include 'elements/jquery-ui.html' %}
-    <script type="text/javascript" src="/ferris/js/bootstrap.min.js"></script>
-    <script type="text/javascript">
-    $(function(){$('body').tooltip({selector: "a[rel=tooltip], *[data-tooltip]"})});
-    </script>
-
-    {% include 'elements/admin/fancybox.html' %}
 
     {% block layout_head %}
     {% endblock %}
@@ -60,6 +57,14 @@
 
     {% block layout_after_content %}{% endblock %}
 {% endblock %}
-{% include 'elements/debug/toolbox.html' %}
+
+    <!-- Post Body Scripts -->
+    <script type="text/javascript" src="/ferris/js/bootstrap.js"></script>
+    <script type="text/javascript">
+    $(function(){$('body').tooltip({selector: "a[rel=tooltip], *[data-tooltip]"})});
+    </script>
+
+    {% block layout_scripts %}
+    {% endblock %}
 </body>
 </html>

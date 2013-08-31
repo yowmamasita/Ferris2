@@ -30,6 +30,10 @@ handlers:
   static_dir: ferris/static/img
   expiration: 7d
 
+- url: /ferris/fonts
+  static_dir: ferris/static/fonts
+  expiration: 7d
+
 # Top-level static files
 - url: /favicon\.ico
   static_files: app/static/favicon.ico
