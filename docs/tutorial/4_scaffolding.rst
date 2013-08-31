@@ -21,9 +21,9 @@ Admin Scaffolding
 
 To demonstrate the full extent of what scaffolding can do, we're going to use the scaffold to create an admin interface for Posts.
 
-Create ``app/handlers/posts.py``::
+Create ``app/controllers/posts.py``::
 
-    from ferris Controller, scaffold
+    from ferris import Controller, scaffold
 
 
     class Posts(Controller):
