@@ -30,6 +30,11 @@ def convert_BlobKeyProperty(self, model, prop, kwargs):
     """Returns a form field for a ``ndb.BlobKeyProperty``."""
     return fields.BlobKeyField(**kwargs)
 
+def fallback_converter(self, model, prop, kwargs):
+    pass
+
+setattr(wtfndb.ModelConverter, 'fallback_converter', fallback_converter)
+
 # Monkey-patch wtf's converters
 add_convertor('UserProperty', convert_UserProperty)
 add_convertor('KeyProperty', convert_KeyProperty)
