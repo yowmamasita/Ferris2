@@ -38,18 +38,6 @@ class UserField(wtforms.Field):
             self.data = self.__temporary_data
 
 
-def convert_UserProperty(model, prop, kwargs):
-    """Returns a form field for a ``db.UserProperty``."""
-    if isinstance(prop, db.Property) and (prop.auto_current_user or prop.auto_current_user_add):
-        return None
-    elif isinstance(prop, ndb.Property) and (prop._auto_current_user or prop._auto_current_user_add):
-        return None
-
-    kwargs['validators'].append(wtforms.validators.email())
-    kwargs['validators'].append(wtforms.validators.length(max=500))
-    return UserField(**kwargs)
-
-
 class KeyPropertyField(wtforms.fields.SelectFieldBase):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
