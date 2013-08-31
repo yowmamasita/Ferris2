@@ -18,7 +18,7 @@
     <tbody>
         {% for item in list %}
             <tr>
-                <td class="col-1">
+                <td class="col-lg-1">
                     <span class='badge' title='{{item.key.urlsafe()}}'>{{item.key.id()}}</span>
                 </td>
                 {% for property in scaffolding.display_properties %}
@@ -26,7 +26,7 @@
                         {{s.print_value(item[property])}}
                     </td>
                 {% endfor %}
-                <td class="col-2 text-right">
+                <td class="col-lg-2 text-right">
                     <div class='btn-group'>
                     {% block item_action_buttons scoped %}
                         {{s.action_buttons(item)}}
