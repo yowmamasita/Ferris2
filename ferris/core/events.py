@@ -50,20 +50,34 @@ class BroadcastEvent(Event):
         self.prefix = prefix
 
     def fire(self, *args, **kwargs):
-        super(BroadcastEvent, self).fire(*args, **kwargs)
-        fire(self.prefix + self.name, *args, **kwargs)
+        results = super(BroadcastEvent, self).fire(*args, **kwargs)
+        return results + fire(self.prefix + self.name, *args, **kwargs)
 
     __call__ = fire
 
 
 class NamedBroadcastEvents(NamedEvents):
+    _event_class = BroadcastEvent
     def __init__(self, prefix=None):
         super(NamedBroadcastEvents, self).__init__()
         self.prefix = prefix
 
     def getEventNoAttr(self, name):
         if not name in self._events:
-            self._events[name] = BroadcastEvent(name=name, prefix=self.prefix)
+            self._events[name] = self._event_class(name=name, prefix=self.prefix)
         return self._events[name]
 
     __getattr__ = getEventNoAttr
+
+
+class ViewEvent(BroadcastEvent):
+    def fire(self, *args, **kwargs):
+        import logging; logging.info('called')
+        results = super(ViewEvent, self).fire(*args, **kwargs)
+        return ' '.join(results)
+
+    __call__ = fire
+
+
+class ViewEvents(NamedBroadcastEvents):
+    _event_class = ViewEvent

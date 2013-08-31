@@ -1,3 +1,4 @@
+
 {% import 'scaffolding/macros.html' as s with context %}
 {% extends s.layout() %}
 
@@ -5,6 +6,8 @@
 {% block layout_content %}
 
 {% set item = context[scaffolding.singular] %}
+
+{{this.events.test()}}
 
 <table class='table table-striped'>
     <thead>

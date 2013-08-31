@@ -2,6 +2,7 @@ import template
 import json_util
 from protorpc import protojson
 from protorpc.message_types import VoidMessage
+from ferris.core.events import ViewEvents
 
 _views = {}
 
@@ -51,6 +52,8 @@ class View(object):
             context = ViewContext(**context)
         self.context = context
 
+        self.events = ViewEvents(prefix='view')
+
     def render(self, *args, **kwargs):
         raise NotImplementedError("Base view can't render anything")
 
@@ -75,7 +78,8 @@ class TemplateView(View):
             'self': self.controller,
             'encode_key': self.controller.util.encode_key,
             'decode_key': self.controller.util.decode_key,
-            'user': self.controller.user
+            'user': self.controller.user,
+            'events': self.events
         })
         self.context.update({
             'route': self.controller.route,
