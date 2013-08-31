@@ -5,9 +5,15 @@ runtime: python27
 api_version: 1
 threadsafe: yes 
 
+default_expiration: 1h
+
 builtins:
-- deferred: on
+# Deferred is built in to Ferris. Do not enable it, it may lead to import errors.
 #- appstats: on
+
+includes:
+- ferris/include.yaml
+# If plugins require inculdes, put them here.
 
 libraries:
 - name: jinja2
@@ -24,72 +30,20 @@ libraries:
   version: latest
 
 skip_files:
-- ^(.*/)?app\.yaml
-- ^(.*/)?app\.yml
-- ^(.*/)?index\.yaml
-- ^(.*/)?index\.yml
+- ^(.*/)?app\.ya?ml
+- ^(.*/)?index\.ya?ml
 - ^(.*/)?#.*#
 - ^(.*/)?.*~
 - ^(.*/)?.*\.py[co]
 - ^(.*/)?.*/RCS/.*
 - ^(.*/)?\..*
+- ^(.*/)?.*\.scss
+- ^(.*/)?.*\.less
 - ^/docs*
 
 handlers:
 
-- url: /static
-  static_dir: app/static
-
-- url: /css
-  static_dir: app/static/css
-
-- url: /js
-  static_dir: app/static/js
-
-- url: /img
-  static_dir: app/static/img
-
-- url: /ferris/static
-  static_dir: ferris/static
-
-- url: /ferris/css
-  static_dir: ferris/static/css
-
-- url: /ferris/fonts
-  static_dir: ferris/static/fonts
-
-- url: /ferris/js
-  static_dir: ferris/static/js
-
-- url: /ferris/img
-  static_dir: ferris/static/img
-
-- url: /favicon\.ico
-  static_files: app/static/favicon.ico
-  upload: app/static/favicon\.ico
-
-- url: /robots\.txt
-  static_files: app/static/robots.txt
-  upload: app/static/robots\.txt
-
-- url: /humans\.txt
-  static_files: app/static/humans.txt
-  upload: app/static/humans\.txt
-
-- url: /plugins/(.*?)/(.*)
-  static_files: plugins/\1/static/\2
-  upload: plugins/(.*?)/static/(.*)
-
-- url: /cron/.*
-  script: main.app
-  login: admin
-
-- url: /api/.*
-  script: main.app
-
-- url: /_ah/start
-  script: main.app
-
+# Main script
 - url: .*
-  script: main.app
+  script: main.main_app
   login: required

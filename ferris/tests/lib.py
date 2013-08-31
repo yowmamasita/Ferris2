@@ -81,7 +81,7 @@ class AppTestCase(WithTestBed):
 
         import main
         reload(main)
-        self.testapp = webtest.TestApp(main.app)
+        self.testapp = webtest.TestApp(main.main_app)
 
 
 class FerrisTestCase(WithTestBed):
