@@ -2,15 +2,6 @@
 {% import 'macros/form.html' as f with context %}
 {% extends s.layout() %}
 
-{% block layout_head %}
-    {{ super() }}
-
-    {% if ferris.has_plugin('tiny_mce') %}
-        {% import 'macros/tiny_mce.html' as tiny_mce with context %}
-        {{tiny_mce.scripts()}}
-    {% endif %}
-{% endblock %}
-
 {% block layout_content %}
 
 {% block form_tag %}
@@ -31,20 +22,6 @@
                 <button class='btn btn-primary btn-large' type='submit'>
                     {% block submit_text %}Create{% endblock %}
                 </button>
-                {% if this.action != 'add' %}
-                    <button type='button' class="btn btn-primary btn-large dropdown-toggle" data-toggle="dropdown">
-                        <span class="caret"></span>
-                    </button>
-                    {% block form_button_dropdown %}
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a href='#' id='ContinueEditing'>
-                                {{self.submit_text()}} and continue editing
-                            </a>
-                        </li>
-                    </ul>
-                    {% endblock %}
-                {% endif %}
             </div>
         {% endblock %}
     </div>
