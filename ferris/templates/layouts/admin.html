@@ -18,13 +18,15 @@
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
     {% block layout_head %}
+        {{this.events.layout_head()}}
     {% endblock %}
 </head>
 
 <body>
 
 {% block layout_body %}
-    {% block layout_before_content %}{% endblock %}
+    {% block layout_before_content %}
+        {{this.events.layout_before_content()}}{% endblock %}
 
     {% block layout_nav_bar %}
         {% include 'elements/admin/navbar.html' %}
@@ -55,7 +57,8 @@
         {% endblock %}
     </div>
 
-    {% block layout_after_content %}{% endblock %}
+    {% block layout_after_content %}
+        {{this.events.layout_after_content()}}{% endblock %}
 {% endblock %}
 
     <!-- Post Body Scripts -->
@@ -65,6 +68,7 @@
     </script>
 
     {% block layout_scripts %}
+        {{this.events.layout_scripts()}}
     {% endblock %}
 </body>
 </html>

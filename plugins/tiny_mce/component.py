@@ -11,7 +11,8 @@ class TinyMce(object):
 
     def __init__(self, controller):
         self.controller = controller
-        self.controller.events.before_render += self.before_render.__get__(self)
+        self.controller.events.before_render += self.before_render
+        self.controller.meta.view.events.layout_scripts += self.layout_scripts
 
     def get_fields(self):
         if not hasattr(self.controller.meta, 'tinymce_fields'):
@@ -25,3 +26,10 @@ class TinyMce(object):
             for field in fields:
                 if isinstance(field, wtforms.fields.simple.TextAreaField):
                     field.flags.tinymce = True
+
+    def layout_scripts(self):
+        return """
+<script type="text/javascript" src="/plugins/tiny_mce/tinymce/jquery.tinymce.min.js"></script>
+<script type="text/javascript" src="/plugins/tiny_mce/media_picker.js"></script>
+<script type="text/javascript" src="/plugins/tiny_mce/embed.js"></script>
+"""
