@@ -4,10 +4,6 @@
 
 {% block layout_head %}
     {{ super() }}
-    {% include 'elements/admin/datepicker.html' %}
-    {% include 'elements/admin/chosen.html' %}
-    {% include 'elements/admin/formrefresh.html' %}
-    {% include 'elements/admin/continue_editing.html' %}
 
     {% if ferris.has_plugin('tiny_mce') %}
         {% import 'macros/tiny_mce.html' as tiny_mce with context %}
