@@ -28,10 +28,8 @@ defaults['oauth2'] = {
 
 # This enables the template debugger.
 # It is automatically disabled in the live environment as it may leak sensitive data.
-# Users in the 'required_domain' may view the debugger in the live environment.
 defaults['ed_rooney'] = {
-    'enabled': True,
-    'required_domain': 'cloudsherpas.com'
+    'enabled': True
 }
 
 

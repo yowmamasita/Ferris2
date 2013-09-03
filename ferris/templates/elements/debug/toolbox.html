@@ -1,12 +1,6 @@
-{% if 'Development' in this.request.environ['SERVER_SOFTWARE'] or (ferris.settings.ed_rooney.enabled and ferris.settings.ed_rooney.required_domain in ferris.users.get_current_user().email() )  %}
+{% if 'Development' in this.request.environ['SERVER_SOFTWARE'] and ferris.settings.ed_rooney.enabled %}
 
-<script type='text/javascript' src='/ferris/js/prettify/prettify.js'></script>
-<link rel='stylesheet' type='text/css' href='/ferris/js/prettify/prettify.css' />
-<script type='text/javascript'>
-$(function(){prettyPrint();});
-</script>
-
-<div id='EdRooney' class="modal hide fade" style='width: 1170px; margin-left: -585px;'>
+<div id='EdRooney' class="modal fade"><div class="modal-dialog" style="width: 1170px;"><div class="modal-content">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
     <h3>Ed Rooney</h3>
@@ -88,7 +82,7 @@ $(function(){prettyPrint();});
                     <dt>Components</dt>
                     <dd>
                         {% for x in this.self.meta.components %}
-                            {{x}}: {{this.self.meta.components[x].__class__.__name__}}{% if not loop.last %}, {% endif %}
+                            {{x.__name__}}{% if not loop.last %}, {% endif %}
                         {% endfor %}
                     </dd>
 
@@ -106,7 +100,7 @@ $(function(){prettyPrint();});
 
 
                     <dt>Current Controller</dt>
-                    <dd>{{this.route.name}}</dd>
+                    <dd>{{this.route.controller}}</dd>
 
 
                     <dt>Current Action</dt>
@@ -148,7 +142,7 @@ $(function(){prettyPrint();});
     </div>
     
   </div>
-</div>
+</div></div></div>
 
 <a href="#EdRooney" role="button" data-toggle="modal" style='position: fixed; bottom: 0px; right: 0px; color: gray;'>☸</a>
 
