@@ -72,7 +72,6 @@ class NamedBroadcastEvents(NamedEvents):
 
 class ViewEvent(BroadcastEvent):
     def fire(self, *args, **kwargs):
-        import logging; logging.info('called')
         results = super(ViewEvent, self).fire(*args, **kwargs)
         return ' '.join(results)
 
