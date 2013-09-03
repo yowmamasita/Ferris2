@@ -16,9 +16,24 @@ class Pagination(object):
 
     def __init__(self, controller):
         self.controller = controller
+        self.auto_paginate = True
         if not hasattr(self.controller.meta, 'pagination_actions'):
             setattr(self.controller.meta, 'pagination_actions', ('list',))
         self.controller.events.after_dispatch += self.after_dispatch_callback.__get__(self)
+
+
+    def set_pagination_info(self, current_cursor=None, next_cursor=None, limit=None, count=None):
+        self.controller.context.set_dotted('paging.cursor', current_cursor)
+        self.controller.context.set_dotted('paging.next_cursor', next_cursor)
+        self.controller.context.set_dotted('paging.limit', limit)
+        self.controller.context.set_dotted('paging.count', count)
+
+    def get_pagination_params(self, cursor=None, limit=None):
+        if not limit:
+            limit = self.controller.meta.pagination_limit if hasattr(self.controller.meta, 'pagination_limit') else 100
+        if not cursor:
+            cursor = self.controller.request.params.get('cursor', None)
+        return cursor, limit
 
     def _get_query(self, name):
         if not name and hasattr(self.controller, 'scaffold'):
@@ -30,12 +45,11 @@ class Pagination(object):
             query = name
 
         if not isinstance(query, (ndb.Query,)):
-            logging.info('Unable to paginate, couldn\'t locate a query')
             return None
 
         return query
 
-    def paginate(self, query=None, cursor=None, limit=None):
+    def auto_paginate(self, query=None, cursor=None, limit=None):
         """
         Paginates a query and sets up the appropriate template variables.
 
@@ -52,14 +66,14 @@ class Pagination(object):
         Returns the data, and if ``query_or_var_name`` is a string, sets that template variable.
         """
 
-        limit = limit if limit else self.controller.meta.pagination_limit if hasattr(self.controller.meta, 'pagination_limit') else 100
+        cursor, limit = self.get_pagination_params(cursor, limit)
         query = self._get_query(query)
 
         if not query:
-            logging.info('Couldn\'t paginate, no valid query found')
+            logging.info('Couldn\'t auto paginate, no valid query found')
             return
 
-        cursor = cursor if cursor else self.controller.request.params.get('cursor', None)
+        logging.info('Cursor: %s' % cursor)
         if cursor and not isinstance(cursor, Cursor):
             cursor = Cursor(urlsafe=cursor)
 
@@ -70,15 +84,17 @@ class Pagination(object):
         else:
             logging.info('Could not set data')
 
-        self.controller.context.set_dotted('paging.cursor', cursor.urlsafe() if cursor else False)
-        self.controller.context.set_dotted('paging.next_cursor', next_cursor.urlsafe() if more else False)
-        self.controller.context.set_dotted('paging.limit', limit)
-        self.controller.context.set_dotted('paging.count', len(data))
+        self.set_pagination_info(
+            current_cursor=cursor.urlsafe() if cursor else False,
+            next_cursor=next_cursor.urlsafe() if more else False,
+            limit=limit,
+            count=len(data)
+        )
 
-        return data, next_cursor if more else False
+        return data
 
-    __call__ = paginate
+    __call__ = auto_paginate
 
     def after_dispatch_callback(self, response, *args, **kwargs):
-        if self.controller.route.action in self.controller.meta.pagination_actions:  # checks for list and any prefixed lists
-            self.paginate()
+        if self.controller.route.action in self.controller.meta.pagination_actions and self.auto_paginate:  # checks for list and any prefixed lists
+            self()
