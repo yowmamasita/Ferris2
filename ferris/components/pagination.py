@@ -28,6 +28,10 @@ class Pagination(object):
         self.controller.context.set_dotted('paging.limit', limit)
         self.controller.context.set_dotted('paging.count', count)
 
+    def get_pagination_info(self):
+        ctx = self.controller.context
+        return ctx.get_dotted('paging.cursor'), ctx.get_dotted('paging.next_cursor'), ctx.get_dotted('paging.limit'), ctx.get_dotted('paging.count')
+
     def get_pagination_params(self, cursor=None, limit=None):
         if not limit:
             limit = self.controller.meta.pagination_limit if hasattr(self.controller.meta, 'pagination_limit') else 100
@@ -73,7 +77,6 @@ class Pagination(object):
             logging.info('Couldn\'t auto paginate, no valid query found')
             return
 
-        logging.info('Cursor: %s' % cursor)
         if cursor and not isinstance(cursor, Cursor):
             cursor = Cursor(urlsafe=cursor)
 

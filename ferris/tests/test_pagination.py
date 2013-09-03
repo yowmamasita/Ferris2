@@ -4,6 +4,7 @@ from ferris.core import scaffold
 from ferris.core.controller import Controller
 from ferris.core.ndb import Model, ndb
 from ferris.components import pagination
+from ferris.core import messages
 
 
 class Widget(Model):
@@ -13,15 +14,12 @@ class Widget(Model):
 class Widgets(Controller):
     class Meta:
         prefixes = ('api',)
-        components = (scaffold.Scaffolding, pagination.Pagination)
+        components = (scaffold.Scaffolding, pagination.Pagination, messages.Messaging)
         pagination_limit = 10
         Model = Widget
 
     list = scaffold.list
-    view = scaffold.view
-    add = scaffold.add
-    edit = scaffold.edit
-    delete = scaffold.delete
+    api_list = scaffold.list
 
 
 class TestPagination(FerrisTestCase):
@@ -42,4 +40,17 @@ class TestPagination(FerrisTestCase):
         assert cursor
         r = self.testapp.get('/widgets?cursor=%s' % cursor.urlsafe())
         assert '11' in r
+
+    def testApiList(self):
+        r = self.testapp.get('/api/widgets')
+        assert '11' not in r
+
+        assert len(r.json['items']) == 10
+        assert r.json['count'] == 10
+        assert r.json['limit'] == 10
+        assert r.json['next_page']
+
+        r = self.testapp.get(r.json['next_page'])
+        assert '11' in r
+
 

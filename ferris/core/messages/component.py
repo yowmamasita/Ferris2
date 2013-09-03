@@ -7,7 +7,9 @@ def list_message(message_type):
     name = message_type.__name__ + 'List'
     fields = {
         'items': messages.MessageField(message_type, 1, repeated=True),
-        'next_page': messages.StringField(2)
+        'next_page': messages.StringField(2),
+        'limit': messages.IntegerField(3),
+        'count': messages.IntegerField(4)
     }
     return type(name, (messages.Message,), fields)
 
@@ -36,7 +38,7 @@ class Messaging(object):
 
         # Events
         self.controller.events.before_startup += self._on_before_startup
-        self.controller.events.after_dispatch += self._on_after_dispatch
+        self.controller.events.before_render += self._on_before_render
 
     def _on_before_startup(self, controller, *args, **kwargs):
         if controller.route.prefix in self.controller.meta.messaging_prefixes:
@@ -71,20 +73,26 @@ class Messaging(object):
     def _transform_query(self, query):
         ListMessage = list_message(self.controller.meta.Message)
         items = [self._transform_entity(x) for x in query]
+        next_page_link = None
+        limit = None
+        count = len(items)
 
-        next_page_cursor = self.controller.context.get_dotted('paging.next_cursor', None)
-        if next_page_cursor:
-            next_page_link = self.controller.uri(_pass_all=True, cursor=next_page_cursor, _full=True)
-        else:
-            next_page_link = None
+        if 'pagination' in self.controller.components:
+            current_cursor, next_cursor, limit, count = self.controller.components.pagination.get_pagination_info()
+
+            if next_cursor:
+                next_page_link = self.controller.uri(_pass_all=True, cursor=next_cursor, _full=True)
+
 
         return ListMessage(
             items=items,
-            next_page=next_page_link)
+            next_page=next_page_link,
+            limit=limit,
+            count=count)
 
     def _transform_entity(self, entity):
         return to_message(entity, self.controller.meta.Message)
 
-    def _on_after_dispatch(self, *args, **kwargs):
+    def _on_before_render(self, *args, **kwargs):
         if self.transform:
             self.controller.context['data'] = self._transform_data(self._get_data())
