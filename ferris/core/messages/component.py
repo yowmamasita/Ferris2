@@ -8,8 +8,10 @@ def list_message(message_type):
     fields = {
         'items': messages.MessageField(message_type, 1, repeated=True),
         'next_page': messages.StringField(2),
-        'limit': messages.IntegerField(3),
-        'count': messages.IntegerField(4)
+        'previous_page': messages.StringField(3),
+        'limit': messages.IntegerField(4),
+        'count': messages.IntegerField(5),
+        'page': messages.IntegerField(6)
     }
     return type(name, (messages.Message,), fields)
 
@@ -74,21 +76,28 @@ class Messaging(object):
         ListMessage = list_message(self.controller.meta.Message)
         items = [self._transform_entity(x) for x in query]
         next_page_link = None
+        prev_page_link = None
         limit = None
         count = len(items)
+        page = None
 
         if 'pagination' in self.controller.components:
-            current_cursor, next_cursor, limit, count = self.controller.components.pagination.get_pagination_info()
+            previous_cursor, current_cursor, next_cursor, page, limit, count = self.controller.components.pagination.get_pagination_info()
 
-            if next_cursor:
+            if next_cursor is not None:
                 next_page_link = self.controller.uri(_pass_all=True, cursor=next_cursor, _full=True)
+
+            if previous_cursor is not None:
+                prev_page_link = self.controller.uri(_pass_all=True, cursor=previous_cursor, _full=True)
 
 
         return ListMessage(
             items=items,
             next_page=next_page_link,
+            previous_page=prev_page_link,
             limit=limit,
-            count=count)
+            count=count,
+            page=page)
 
     def _transform_entity(self, entity):
         return to_message(entity, self.controller.meta.Message)

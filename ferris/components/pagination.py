@@ -1,5 +1,5 @@
-from ferris.core import inflector
 from google.appengine.ext import ndb
+from google.appengine.api import memcache
 from google.appengine.datastore.datastore_query import Cursor
 import logging
 
@@ -21,16 +21,23 @@ class Pagination(object):
             setattr(self.controller.meta, 'pagination_actions', ('list',))
         self.controller.events.after_dispatch += self.after_dispatch_callback.__get__(self)
 
-
     def set_pagination_info(self, current_cursor=None, next_cursor=None, limit=None, count=None):
-        self.controller.context.set_dotted('paging.cursor', current_cursor)
-        self.controller.context.set_dotted('paging.next_cursor', next_cursor)
+        self._set_cursors(current_cursor, next_cursor)
         self.controller.context.set_dotted('paging.limit', limit)
         self.controller.context.set_dotted('paging.count', count)
 
     def get_pagination_info(self):
+        """
+        Returns the current pagination infomation: previous cursor, current cursor, next cursor, page, limit, and count.
+        """
         ctx = self.controller.context
-        return ctx.get_dotted('paging.cursor'), ctx.get_dotted('paging.next_cursor'), ctx.get_dotted('paging.limit'), ctx.get_dotted('paging.count')
+        return (
+            ctx.get_dotted('paging.previous_cursor'),
+            ctx.get_dotted('paging.cursor'),
+            ctx.get_dotted('paging.next_cursor'),
+            ctx.get_dotted('paging.page'),
+            ctx.get_dotted('paging.limit'),
+            ctx.get_dotted('paging.count'))
 
     def get_pagination_params(self, cursor=None, limit=None):
         if not limit:
@@ -38,6 +45,32 @@ class Pagination(object):
         if not cursor:
             cursor = self.controller.request.params.get('cursor', None)
         return cursor, limit
+
+
+    def _set_cursors(self, current, next):
+        ctx = self.controller.context
+
+        previous_tuple = memcache.get('paging.cursor.previous.%s' % current)
+
+        if previous_tuple:
+            page, previous = previous_tuple
+        else:
+            page, previous = 0, None
+
+        page += 1
+
+        memcache.set('paging.cursor.previous.%s' % next, (page, current))
+
+        logging.info("Page: %s, Previous: %s, Current: %s, Next: %s" % (page, previous, current, next))
+
+
+        ctx.set_dotted('paging.page', page)
+
+        if previous is not None:
+            ctx.set_dotted('paging.previous_cursor', previous)
+
+        if next is not None:
+            ctx.set_dotted('paging.next_cursor', next)
 
     def _get_query(self, name):
         if not name and hasattr(self.controller, 'scaffold'):
