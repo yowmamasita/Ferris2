@@ -44,6 +44,8 @@ class Pagination(object):
             limit = self.controller.meta.pagination_limit if hasattr(self.controller.meta, 'pagination_limit') else 100
         if not cursor:
             cursor = self.controller.request.params.get('cursor', None)
+            if cursor == 'False':
+                cursor = None
         return cursor, limit
 
 
@@ -59,7 +61,8 @@ class Pagination(object):
 
         page += 1
 
-        memcache.set('paging.cursor.previous.%s' % next, (page, current))
+        if next:
+            memcache.set('paging.cursor.previous.%s' % next, (page, current))
 
         logging.info("Page: %s, Previous: %s, Current: %s, Next: %s" % (page, previous, current, next))
 
