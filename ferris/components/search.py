@@ -24,18 +24,7 @@ class Search(object):
             return 'auto_ix_%s' % Model._get_kind()
         raise ValueError('No search index could be determined')
 
-    def _get_limit(self):
-        if hasattr(self.controller.meta, 'paginate_limit'):
-            return self.controller.meta.paginate_limit
-        if hasattr(self.controller.meta, 'pagination_limit'):
-            return self.controller.meta.pagination_limit
-        return 100
-
-    def _get_cursor(self):
-        cursor = self.controller.request.params.get('cursor', None)
-        return search.Cursor(web_safe_string=cursor) if cursor else search.Cursor()
-
-    def search(self, index=None, query=None, limit=None, options=None):
+    def search(self, index=None, query=None, limit=None, cursor=None, options=None):
         """
         Searches using the provided index (or an automatically determine one).
 
@@ -45,12 +34,15 @@ class Search(object):
         """
 
         index = index if index else self._get_index()
-        limit = limit if limit else self._get_limit()
         query_string = query if query else self.controller.request.params.get('query', '')
-        cursor = self._get_cursor()
         options = options if options else {}
 
+        if 'pagination' in self.controller.components:
+            cursor, limit = self.controller.components.pagination.get_pagination_params(cursor, limit)
+
         try:
+
+            cursor = search.Cursor(web_safe_string=cursor) if cursor else search.Cursor()
 
             options_params = dict(
                 limit=limit,
@@ -66,9 +58,12 @@ class Search(object):
             results = ndb.get_multi([ndb.Key(urlsafe=x.doc_id) for x in index_results])
             results = [x for x in results if x]
 
-            self.controller.context.set_dotted('paging.limit', limit)
-            self.controller.context.set_dotted('paging.count', len(results))
-            self.set_cursors(cursor, index_results.cursor, True if results else False)
+            if 'pagination' in self.controller.components:
+                self.controller.components.pagination.set_pagination_info(
+                    current_cursor=cursor.web_safe_string if cursor else None,
+                    next_cursor=index_results.cursor.web_safe_string if index_results.cursor and results else None,
+                    limit=limit,
+                    count=len(results))
 
         except (search.Error, search.query_parser.QueryException) as e:
             results = []
@@ -81,32 +76,6 @@ class Search(object):
             self.controller.context[self.controller.scaffold.plural] = results
 
         return results
-
-    def set_cursors(self, current, next, more):
-        ctx = self.controller.context
-        current_ws = current.web_safe_string if current else 'none'
-        next_ws = next.web_safe_string if next else 'none'
-
-        previous_tuple = memcache.get('paging.cursor.previous.%s' % current_ws)
-
-        if previous_tuple:
-            page, previous = previous_tuple
-        else:
-            page, previous = 1, None
-
-        previous_ws = previous.web_safe_string if previous else 'none'
-
-        memcache.set('paging.cursor.previous.%s' % next_ws, (page+1, current))
-
-        logging.info("Page: %s, Previous: %s, Current: %s, Next: %s" % (page, previous, current, next))
-
-        ctx.set_dotted('paging.page', page)
-
-        if previous:
-            ctx.set_dotted('paging.previous_cursor', previous_ws)
-
-        if next and more:
-            ctx.set_dotted('paging.next_cursor', next.web_safe_string)
 
     __call__ = search
 
