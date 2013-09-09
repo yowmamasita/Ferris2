@@ -29,6 +29,15 @@ class Widgets(Controller):
         self.meta.change_view('json')
         return scaffold.list(self)
 
+    @route
+    def add_prefixed(self, prefix):
+        def prefix_factory(self):
+            return Widget(id=prefix)
+        self.scaffold.create_factory = prefix_factory
+        self.meta.change_view('json')
+        self.scaffold.redirect = False
+        return scaffold.add(self)
+
 
 class TestScaffoldBehavior(FerrisTestCase):
     def setUp(self):
@@ -85,3 +94,8 @@ class TestScaffoldBehavior(FerrisTestCase):
         assert r.json[0]['name'] == 'a'
         assert r.json[1]['name'] == 'b'
         assert r.json[2]['name'] == 'c'
+
+        r = self.testapp.post('/widgets/add_prefixed/meow', {'name': 'dude'})
+
+        assert r.json['name'] == 'dude'
+        assert r.json['__id__'] == 'meow'

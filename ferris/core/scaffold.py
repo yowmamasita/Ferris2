@@ -77,6 +77,7 @@ class Scaffold(object):
 
         defaults = dict(
             query_factory=default_query_factory,
+            create_factory=default_create_factory,
             title=inflector.titleize(controller.proper_name),
             plural=inflector.underscore(controller.name),
             singular=inflector.underscore(inflector.singularize(controller.name)),
@@ -106,6 +107,9 @@ def default_query_factory(controller):
     if 'created' in Model._properties and Model._properties['created']._indexed:
         query = query.order(-Model.created)
     return query
+
+def default_create_factory(controller):
+    return controller.meta.Model()
 
 
 # Utility Functions
@@ -180,7 +184,7 @@ def parser_action(controller, item, callback=save_callback):
 
 
 def add(controller):
-    item = controller.meta.Model()
+    item = controller.scaffold.create_factory(controller)
     return parser_action(controller, item)
 
 
