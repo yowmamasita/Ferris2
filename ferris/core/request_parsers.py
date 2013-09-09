@@ -1,4 +1,5 @@
 import inspect
+import json
 
 
 _parsers = {}
@@ -90,16 +91,22 @@ class FormParser(RequestParser):
 class MessageParser(RequestParser):
     container_name = 'Message'
 
+    def __init__(self):
+        super(MessageParser, self).__init__()
+        self.partial_fields = None
+
     def process(self, request, container, fallback=None):
         from protorpc import protojson, messages
 
         try:
+            self.partial_fields = json.loads(request.body).keys()
             result = protojson.decode_message(container, request.body)
             self.errors = None
 
-        except messages.ValidationError as e:
+        except (messages.ValidationError, ValueError) as e:
             result = container()
             self.errors = [e.message]
+            self.partial_fields = None
 
         self.container = result
         self.fallback = fallback
@@ -110,4 +117,4 @@ class MessageParser(RequestParser):
 
     def update(self, obj):
         from .messages import to_entity
-        return to_entity(self.container, obj)
+        return to_entity(self.container, obj, only=self.partial_fields)

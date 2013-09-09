@@ -26,6 +26,21 @@ class TestMessageParserAndView(WithTestBed):
         assert parser.validate()
         assert parser.container == message
 
+        w = Widget()
+        parser.update(w)
+
+        assert w.title == message.title
+        assert w.content == message.content
+
+        # Partial update
+        message = WidgetMessage(title='Susan')
+        request = Bunch(body=unicode(protojson.encode_message(message)))
+        parser = MessageParser().process(request, WidgetMessage)
+        parser.update(w)
+
+        assert w.title == 'Susan'
+        assert w.content == 'Time Lord'
+
     def testMessageView(self):
         WidgetMessage = messages.model_message(Widget)
         controller = Bunch(events=NamedEvents(), response=Bunch())
