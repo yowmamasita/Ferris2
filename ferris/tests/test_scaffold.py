@@ -1,7 +1,7 @@
 import unittest
 from lib import FerrisTestCase
 from ferris.core import scaffold
-from ferris.core.controller import Controller
+from ferris.core.controller import Controller, route
 from ferris.core.ndb import Model, ndb
 
 
@@ -20,6 +20,14 @@ class Widgets(Controller):
     add = scaffold.add
     edit = scaffold.edit
     delete = scaffold.delete
+
+    @route
+    def list_alpha(self):
+        def alpha_factory(self):
+            return Widget.query().order(Widget.name)
+        self.scaffold.query_factory = alpha_factory
+        self.meta.change_view('json')
+        return scaffold.list(self)
 
 
 class TestScaffoldBehavior(FerrisTestCase):
@@ -66,3 +74,14 @@ class TestScaffoldBehavior(FerrisTestCase):
 
         r = self.testapp.delete('/widgets/:%s' % id)
         self.assertEqual(Widget.query().count(), 0)
+
+    def testFactories(self):
+        Widget(name='c').put()
+        Widget(name='a').put()
+        Widget(name='b').put()
+
+        r = self.testapp.get('/widgets/list_alpha')
+        
+        assert r.json[0]['name'] == 'a'
+        assert r.json[1]['name'] == 'b'
+        assert r.json[2]['name'] == 'c'

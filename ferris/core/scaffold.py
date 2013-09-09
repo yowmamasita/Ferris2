@@ -76,6 +76,7 @@ class Scaffold(object):
     def __init__(self, controller):
 
         defaults = dict(
+            query_factory=default_query_factory,
             title=inflector.titleize(controller.proper_name),
             plural=inflector.underscore(controller.name),
             singular=inflector.underscore(inflector.singularize(controller.name)),
@@ -94,6 +95,17 @@ class Scaffold(object):
         for k, v in defaults.iteritems():
             if not hasattr(self, k):
                 setattr(self, k, v)
+
+
+# Default Factories
+
+
+def default_query_factory(controller):
+    Model = controller.meta.Model
+    query = Model.query()
+    if 'created' in Model._properties and Model._properties['created']._indexed:
+        query = query.order(-Model.created)
+    return query
 
 
 # Utility Functions
@@ -119,7 +131,8 @@ def _flash(controller, *args, **kwargs):
 
 def list(controller):
     controller.context.set(**{
-        controller.scaffold.plural: controller.meta.Model.query()})
+        controller.scaffold.plural: controller.scaffold.query_factory(controller)
+    })
 
 
 def view(controller, key):
