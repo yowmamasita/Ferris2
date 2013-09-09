@@ -3,7 +3,6 @@ from google.appengine.api import memcache
 
 
 class Setting(ferris.Model):
-    _parent = ferris.ndb.Key('Setting', 'Parent')
     _defaults = {}
     _settings = {}
     _settings_key = None
@@ -25,6 +24,10 @@ class Setting(ferris.Model):
         return '__ferris__' + cls.__name__
 
     @classmethod
+    def get_key(cls):
+        return ferris.ndb.Key('Setting', 'Parent', cls, cls._settings_key)
+
+    @classmethod
     def get_instance(cls):
         result = cls.get_instance_async().get_result()
         if not result:
@@ -33,10 +36,10 @@ class Setting(ferris.Model):
 
     @classmethod
     def get_default(cls, wait=True):
-        defaults = ferris.settings.defaults().get(cls._settings_key, {})
-        defaults.update(cls._defaults)
+        defaults = cls._defaults.copy()
+        defaults.update(ferris.settings.defaults().get(cls._settings_key, {}))
 
-        result = cls(parent=cls._parent, **defaults)
+        result = cls(key=cls.get_key(), **defaults)
         f = result.put_async()
         if wait:
             f.get_result()
@@ -44,7 +47,8 @@ class Setting(ferris.Model):
 
     @classmethod
     def get_instance_async(cls):
-        return cls.query(ancestor=cls._parent).get_async()
+        key = cls.get_key()
+        return key.get_async()
 
     @classmethod
     def get_classes(cls):
