@@ -102,14 +102,43 @@ class Scaffold(object):
 
 
 def default_query_factory(controller):
+    """
+    The default factory just returns Model.query(), sorted by created if it's available.
+    """
     Model = controller.meta.Model
     query = Model.query()
     if 'created' in Model._properties and Model._properties['created']._indexed:
         query = query.order(-Model.created)
     return query
 
+
 def default_create_factory(controller):
+    """
+    The default create factory just calls Model()
+    """
     return controller.meta.Model()
+
+
+def delegate_query_factory(controller):
+    """
+    Calls Model.Meta.query_factory or Model.list or Model.query.
+    """
+    if hasattr(Model.Meta, 'query_factory'):
+        return Model.Meta.query_factory(controller)
+    if hasattr(Model, 'list'):
+        return Model.list(controller)
+    return default_query_factory(controller)
+
+
+def delete_create_factory(controller):
+    """
+    Calls Model.Meta.create_factory or Model.create or the Model constructor.
+    """
+    if hasattr(Model.Meta, 'create_factory'):
+        return Model.Meta.create_factory(controller)
+    if hasattr(Model, 'create'):
+        return Model.create(controller)
+    return delete_create_factory(controller)
 
 
 # Utility Functions
