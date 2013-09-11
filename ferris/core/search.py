@@ -2,7 +2,7 @@ import logging
 import datetime
 import calendar
 from ferris.core import inflector
-from google.appengine.api import search, users, memcache
+from google.appengine.api import search as search_api
 from google.appengine.ext import ndb
 
 
@@ -10,25 +10,25 @@ from google.appengine.ext import ndb
 #     pass
 
 def _datetime_coverter(n, v):
-    date = search.DateField(name=n, value=v)
-    iso = search.TextField(name=n + '_iso', value=v.isoformat())
+    date = search_api.DateField(name=n, value=v)
+    iso = search_api.TextField(name=n + '_iso', value=v.isoformat())
     return date, iso
 
 
 property_to_field_map = {
-    ndb.IntegerProperty: lambda n, v: search.NumberField(name=n, value=v),
-    ndb.FloatProperty: lambda n, v: search.NumberField(name=n, value=v),
-    ndb.BooleanProperty: lambda n, v: search.AtomField(name=n, value='true' if v else 'false'),
-    ndb.StringProperty: lambda n, v: search.TextField(name=n, value=v),
-    ndb.TextProperty: lambda n, v: search.TextField(name=n, value=v),
+    ndb.IntegerProperty: lambda n, v: search_api.NumberField(name=n, value=v),
+    ndb.FloatProperty: lambda n, v: search_api.NumberField(name=n, value=v),
+    ndb.BooleanProperty: lambda n, v: search_api.AtomField(name=n, value='true' if v else 'false'),
+    ndb.StringProperty: lambda n, v: search_api.TextField(name=n, value=v),
+    ndb.TextProperty: lambda n, v: search_api.TextField(name=n, value=v),
     # BlobProperty explicitly unindexable
     ndb.DateTimeProperty: _datetime_coverter,
-    ndb.DateProperty: lambda n, v: search.DateField(name=n, value=v),
-    ndb.TimeProperty: lambda n, v: search.TextField(name=n, value=v.isoformat()),
-    ndb.GeoPtProperty: lambda n, v: search.GeoField(name=n, value=search.GeoPoint(v.lat, v.lon)),
+    ndb.DateProperty: lambda n, v: search_api.DateField(name=n, value=v),
+    ndb.TimeProperty: lambda n, v: search_api.TextField(name=n, value=v.isoformat()),
+    ndb.GeoPtProperty: lambda n, v: search_api.GeoField(name=n, value=search_api.GeoPoint(v.lat, v.lon)),
     # KeyProperty explicity unindexable
     # BlobKeyProperty explicitly unindexable
-    ndb.UserProperty: lambda n, v: search.TextField(name=n, value=unicode(v)),
+    ndb.UserProperty: lambda n, v: search_api.TextField(name=n, value=unicode(v)),
     # StructuredProperty explicitly unindexable
     # LocalStructuredProperty explicitly unindexable
     # JsonProperty explicitly unindexable
@@ -99,10 +99,10 @@ def index_entity(instance, index, only=None, exclude=None, extra_converters=None
         callback(instance=instance, fields=fields)
 
     try:
-        doc = search.Document(doc_id=str(instance.key.urlsafe()), fields=fields)
+        doc = search_api.Document(doc_id=str(instance.key.urlsafe()), fields=fields)
 
         for index_name in indexes:
-            index = search.Index(name=index_name)
+            index = search_api.Index(name=index_name)
             index.put(doc)
 
     except Exception as e:
@@ -128,5 +128,5 @@ def unindex_entity(instance_or_key, index=None):
     indexes = index if isinstance(index, (list, tuple)) else [index]
 
     for index_name in indexes:
-        index = search.Index(name=index_name)
+        index = search_api.Index(name=index_name)
         index.delete(str(instance_or_key.urlsafe()))
