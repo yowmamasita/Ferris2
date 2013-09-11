@@ -1,9 +1,4 @@
-import logging
-import datetime
-import calendar
-from ferris.core import inflector
-from google.appengine.api import search, users, memcache
-from google.appengine.ext import ndb
+from ferris.core import search as ferris_search
 
 
 class Search(object):
@@ -40,34 +35,19 @@ class Search(object):
         if 'pagination' in self.controller.components:
             cursor, limit = self.controller.components.pagination.get_pagination_params(cursor, limit)
 
-        try:
 
-            cursor = search.Cursor(web_safe_string=cursor) if cursor else search.Cursor()
+        error, results, cursor, next_cursor = ferris_search.search(
+            index, query_string, cursor=cursor, limit=limit, options=options)
 
-            options_params = dict(
+        if error:
+            self.controller.context['search_error'] = error
+
+        if 'pagination' in self.controller.components:
+            self.controller.components.pagination.set_pagination_info(
+                current_cursor=cursor,
+                next_cursor=next_cursor,
                 limit=limit,
-                ids_only=True,
-                cursor=cursor)
-
-            options_params.update(options)
-
-            query = search.Query(query_string=query_string, options=search.QueryOptions(**options_params))
-            index = search.Index(name=index)
-            index_results = index.search(query)
-
-            results = ndb.get_multi([ndb.Key(urlsafe=x.doc_id) for x in index_results])
-            results = [x for x in results if x]
-
-            if 'pagination' in self.controller.components:
-                self.controller.components.pagination.set_pagination_info(
-                    current_cursor=cursor.web_safe_string if cursor else None,
-                    next_cursor=index_results.cursor.web_safe_string if index_results.cursor and results else None,
-                    limit=limit,
-                    count=len(results))
-
-        except (search.Error, search.query_parser.QueryException) as e:
-            results = []
-            self.controller.context['search_error'] = e
+                count=len(results))
 
         self.controller.context['search_query'] = query_string
         self.controller.context['search_results'] = results

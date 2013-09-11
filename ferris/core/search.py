@@ -130,3 +130,62 @@ def unindex_entity(instance_or_key, index=None):
     for index_name in indexes:
         index = search_api.Index(name=index_name)
         index.delete(str(instance_or_key.urlsafe()))
+
+
+def transform_to_entities(results):
+    """
+    Transform a list of search results into ndb.Model entities by using the document id
+    as the urlsafe form of the key.
+    """
+    results = ndb.get_multi([ndb.Key(urlsafe=x.doc_id) for x in results])
+    results = [x for x in results if x]
+    return results
+
+
+def search(self, index, query, limit=None, cursor=None, options=None, transformer=transform_to_entities):
+    """
+    Searches an index with the given query.
+
+    By default, this will transform the results into a list of datastore
+    entities. This behavior can be override by providing a function to the transformer argument.
+
+    Additionally, this only gets document ids by default. To override this, pass in an options parameter that
+    sets ids_only to False.
+
+    example of disabling both of these default behaviors:
+
+        search(index='test_index', query='test', options={'ids_only': False}, transformer=list)
+
+    This function returns a tuple: error, results, cursor, next_cursor.
+    """
+
+    options = options if options else {}
+    error = None
+    results = []
+    cursor = None
+    next_cursor = None
+
+    try:
+        index = search_api.Index(name=index)
+        cursor = search_api.Cursor(web_safe_string=cursor) if cursor else search_api.Cursor()
+
+        options_params = dict(
+            limit=limit,
+            ids_only=True,
+            cursor=cursor)
+
+        options_params.update(options)
+
+        query = search_api.Query(query_string=query, options=search_api.QueryOptions(**options_params))
+        index_results = index.search(query)
+
+        results = ndb.get_multi([ndb.Key(urlsafe=x.doc_id) for x in index_results])
+        results = [x for x in results if x]
+
+        cursor = cursor.web_safe_string if cursor else None
+        next_cursor = index_results.cursor.web_safe_string if index_results.cursor and results else None
+
+    except (search_api.Error, search_api.query_parser.QueryException) as e:
+        error = str(e)
+
+    return error, results, cursor, next_cursor
