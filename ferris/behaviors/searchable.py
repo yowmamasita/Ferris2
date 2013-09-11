@@ -1,8 +1,8 @@
 from ferris.core.ndb import Behavior
-from ferris.components import search
+from ferris.core import search
 
 
-default_indexer = search.default_indexer
+default_indexer = search.default_entity_indexer
 
 
 class Searchable(Behavior):
@@ -16,14 +16,16 @@ class Searchable(Behavior):
         only = self.Model.Meta.search_fields if hasattr(self.Model.Meta, 'search_fields') else None
         exclude = self.Model.Meta.search_exclude if hasattr(self.Model.Meta, 'search_exclude') else None
         indexer = self.Model.Meta.search_indexer if hasattr(self.Model.Meta, 'search_indexer') else None
+        converters = self.Model.Meta.search_converters if hasattr(self.Model.Meta, 'search_converters') else None
         callback = self.Model.Meta.search_callback if hasattr(self.Model.Meta, 'search_callback') else None
-        search.index(
+        search.index_entity(
             instance=instance,
             index=self._get_index(),
             only=only,
             exclude=exclude,
             indexer=indexer,
+            extra_converters=converters,
             callback=callback)
 
     def before_delete(self, key):
-        search.unindex(key, self._get_index())
+        search.unindex_entity(key, self._get_index())
