@@ -35,7 +35,6 @@ class Search(object):
         if 'pagination' in self.controller.components:
             cursor, limit = self.controller.components.pagination.get_pagination_params(cursor, limit)
 
-
         error, results, cursor, next_cursor = ferris_search.search(
             index, query_string, cursor=cursor, limit=limit, options=options)
 

@@ -162,17 +162,17 @@ def search(index, query, limit=None, cursor=None, options=None, transformer=tran
     options = options if options else {}
     error = None
     results = []
-    cursor = None
+    current_cursor = None
     next_cursor = None
 
     try:
         index = search_api.Index(name=index)
-        cursor = search_api.Cursor(web_safe_string=cursor) if cursor else search_api.Cursor()
+        current_cursor = search_api.Cursor(web_safe_string=cursor) if cursor else search_api.Cursor()
 
         options_params = dict(
             limit=limit,
             ids_only=True,
-            cursor=cursor)
+            cursor=current_cursor)
 
         options_params.update(options)
 
@@ -182,10 +182,10 @@ def search(index, query, limit=None, cursor=None, options=None, transformer=tran
         results = ndb.get_multi([ndb.Key(urlsafe=x.doc_id) for x in index_results])
         results = [x for x in results if x]
 
-        cursor = cursor.web_safe_string if cursor else None
+        current_cursor = current_cursor.web_safe_string if current_cursor else None
         next_cursor = index_results.cursor.web_safe_string if index_results.cursor and results else None
 
     except (search_api.Error, search_api.query_parser.QueryException) as e:
         error = str(e)
 
-    return error, results, cursor, next_cursor
+    return error, results, current_cursor, next_cursor
