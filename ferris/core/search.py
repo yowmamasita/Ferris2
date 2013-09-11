@@ -179,8 +179,7 @@ def search(index, query, limit=None, cursor=None, options=None, transformer=tran
         query = search_api.Query(query_string=query, options=search_api.QueryOptions(**options_params))
         index_results = index.search(query)
 
-        results = ndb.get_multi([ndb.Key(urlsafe=x.doc_id) for x in index_results])
-        results = [x for x in results if x]
+        results = transformer(index_results)
 
         current_cursor = current_cursor.web_safe_string if current_cursor else None
         next_cursor = index_results.cursor.web_safe_string if index_results.cursor and results else None
