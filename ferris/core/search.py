@@ -142,7 +142,7 @@ def transform_to_entities(results):
     return results
 
 
-def search(self, index, query, limit=None, cursor=None, options=None, transformer=transform_to_entities):
+def search(index, query, limit=None, cursor=None, options=None, transformer=transform_to_entities):
     """
     Searches an index with the given query.
 
