@@ -3,7 +3,7 @@ from ferris.core import search as ferris_search
 
 class Search(object):
     """
-    Provides a simple high-level interface to the App Engine Search API.
+    Provides a simple high-level interface to searching items in the App Engine Search API.
     """
 
     def __init__(self, controller):

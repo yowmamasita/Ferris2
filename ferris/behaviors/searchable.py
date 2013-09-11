@@ -6,6 +6,9 @@ default_indexer = search.default_entity_indexer
 
 
 class Searchable(Behavior):
+    """
+    Automatically indexes models during after_put into the App Engine Text Search API.
+    """
     def _get_index(self):
         if hasattr(self.Model.Meta, 'search_index'):
             return self.Model.Meta.search_index
