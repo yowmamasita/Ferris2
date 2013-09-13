@@ -19,7 +19,7 @@ class Search(object):
             return 'auto_ix_%s' % Model._get_kind()
         raise ValueError('No search index could be determined')
 
-    def search(self, index=None, query=None, limit=None, cursor=None, options=None):
+    def search(self, index=None, query=None, limit=None, cursor=None, sort_field=None, sort_direction='asc', sort_default_value=None, options=None):
         """
         Searches using the provided index (or an automatically determine one).
 
@@ -36,7 +36,14 @@ class Search(object):
             cursor, limit = self.controller.components.pagination.get_pagination_params(cursor, limit)
 
         error, results, cursor, next_cursor = ferris_search.search(
-            index, query_string, cursor=cursor, limit=limit, options=options)
+            index,
+            query_string,
+            cursor=cursor,
+            limit=limit,
+            options=options,
+            sort_field=sort_field,
+            sort_direction=sort_direction,
+            sort_default_value=sort_default_value)
 
         if error:
             self.controller.context['search_error'] = error

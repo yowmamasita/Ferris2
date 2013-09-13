@@ -6,7 +6,6 @@ from ferris.core.ndb import Model, ndb
 from ferris.components import pagination, search
 from ferris.behaviors import searchable
 from ferris.core import messages
-from google.appengine.api.search import SortOptions, SortExpression
 
 
 class Sprocket(Model):
@@ -29,14 +28,7 @@ class Sprockets(Controller):
 
     @route
     def api_search(self):
-        sort_options = SortOptions(expressions=[
-            SortExpression(
-                expression='stamp',
-                direction=SortExpression.ASCENDING
-            )
-        ])
-        self.components.search(options={'sort_options': sort_options})
-
+        self.components.search(sort_field='stamp', sort_direction='asc')
 
 class TestPagination(FerrisTestCase):
     def setUp(self):

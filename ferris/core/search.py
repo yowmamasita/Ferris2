@@ -1,7 +1,5 @@
 import logging
-import datetime
-import calendar
-from ferris.core import inflector
+import inspect
 from google.appengine.api import search as search_api
 from google.appengine.ext import ndb
 
@@ -142,7 +140,7 @@ def transform_to_entities(results):
     return results
 
 
-def search(index, query, limit=None, cursor=None, options=None, transformer=transform_to_entities):
+def search(index, query, limit=None, cursor=None, options=None, sort_field=None, sort_direction='asc', sort_default_value=None, transformer=transform_to_entities):
     """
     Searches an index with the given query.
 
@@ -174,6 +172,9 @@ def search(index, query, limit=None, cursor=None, options=None, transformer=tran
             ids_only=True,
             cursor=current_cursor)
 
+        if sort_field:
+            options_params['sort_options'] = create_sort_options(sort_field, sort_direction, sort_default_value)
+
         options_params.update(options)
 
         query = search_api.Query(query_string=query, options=search_api.QueryOptions(**options_params))
@@ -188,3 +189,29 @@ def search(index, query, limit=None, cursor=None, options=None, transformer=tran
         error = str(e)
 
     return error, results, current_cursor, next_cursor
+
+
+def create_sort_options(field, direction='asc', default_value=None):
+    direction_exp = search_api.SortExpression.ASCENDING if direction == 'asc' else search_api.SortExpression.DESCENDING
+
+    if inspect.isfunction(default_value):
+        default_value = default_value(field, direction)
+
+    return search_api.SortOptions(expressions=[
+        search_api.SortExpression(
+            expression=field,
+            direction=direction_exp,
+            default_value=default_value or ''
+        )
+    ])
+
+
+def join_query(filters, operator='AND', parenthesis=False):
+    """
+    Utility function for joining muliple queries together
+    """
+    operator = ' %s ' % operator
+    filters = [x for x in filters if x]
+    if parenthesis:
+        filters = ["(%s)" % x for x in filters]
+    return operator.join(filters)
