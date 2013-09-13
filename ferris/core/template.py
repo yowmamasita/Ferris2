@@ -128,7 +128,8 @@ class TemplateEngine(object):
                 'settings': settings(),
                 'has_plugin': plugins.exists,
                 'plugins': plugins.list,
-                'version': ferris.version
+                'version': ferris.version,
+                'app_version': os.environ['CURRENT_VERSION_ID']
             },
             'json': _json_filter,
             'inflector': ferris.core.inflector,
