@@ -69,7 +69,7 @@ class Upload(object):
 
     def generate_upload_url(self, action=None):
         if not action:
-            action = self.controller.action
+            action = self.controller.route.action
 
         url = urllib2.unquote(self.controller.uri(action=action, _pass_all=True, _full=True))
 
