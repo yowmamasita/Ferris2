@@ -11,9 +11,9 @@ To create a plugin:
 * Create a folder in ``plugins`` named after you plugin, like ``plugins/test``.
 * Create a ``__init__.py`` file in your plugin like so::
 
-    from ferris.core.plugins import register_plugin
+    from ferris.core.plugins import register
 
-    register_plugin('test')
+    register('test')
 
 * Create your models, handlers, templates in the plugins directory just as you would with ``app``.
 
@@ -23,7 +23,7 @@ Enabling Plugins
 
 Before a plugin can be used, you must enable it in ``app/routes.py`` like so::
 
-    enable_plugin('test')
+    plugins.enable('test')
 
 
 Using Plugins
