@@ -1,4 +1,4 @@
-version = "2.0.0a"
+version = "2.0.0b"
 
 from . import tests, core, components, behaviors
 from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins, views
