@@ -1,4 +1,5 @@
 import webapp2
+import re
 from webapp2 import cached_property
 from webapp2_extras import sessions
 from google.appengine.api import users
@@ -234,7 +235,22 @@ class Controller(webapp2.RequestHandler, Uri):
 
         # Auto route the remaining methods
         for route in routing.build_routes_for_controller(cls):
-            router.add(route)
+	    vars = re.findall(r'\[(\w+)\]', route.template)
+	    if vars:
+	      action = route.handler_method
+	      split = action.split('_')
+	      prefixed = split[0] in cls.Meta.prefixes
+	      controller_data = {
+		'prefix': split[0] if prefixed else None,
+		'controller': inflector.underscore(cls.__name__),
+		'action': '_'.join(split[1:]) if prefixed else action,
+		}
+	      for i in vars:
+		value = controller_data.get(i)
+		if not value:
+		  continue
+		route.template = route.template.replace('['+i+']', value) 
+	    router.add(route)
 
         events.fire('controller_build_routes', cls=cls, router=router)
 

@@ -205,6 +205,7 @@ def build_routes_for_controller(controllercls):
     /controller/some_method/<arg1>/<arg2>/<arg3>
     """
     routes_list = []
+    name_counters = {}
 
     for entry in controllercls._route_list:
         method = entry[0]
@@ -222,6 +223,10 @@ def build_routes_for_controller(controllercls):
         method = parts['action']
         if parts['prefix']:
             method = '%s_%s' % (parts['prefix'], parts['action'])
+
+	name_counters[route_name] = name_counters.get(route_name, 0)+1
+	if name_counters[route_name] > 1:
+	  route_name = '%s-%d' % (route_name, name_counters[route_name])
 
         tkwargs = dict(
             template=route_path,
