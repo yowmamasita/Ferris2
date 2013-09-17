@@ -15,21 +15,7 @@
     are localized.
 #}
 {% macro print_value(value) -%}
-    {% if (value is sequence and not value is string) or (isinstance(value, (db.Query, ndb.Query))): %}
-        <ul>
-        {% for item in value %}
-            <li>{{print_value(item)}}</li>
-        {% endfor %}
-        </ul>
-    {% elif value is datetime: %}
-        {{localize(value).strftime('%b %d, %Y at %I:%M%p %Z')}}
-    {% elif isinstance(value, datetime.date): %}
-        {{value.strftime('%b %d, %Y')}}
-    {% elif isinstance(value, ndb.Key) %}
-        {{value.get()}}
-    {% else %}
-        {{value}}
-    {% endif %}
+    {{ferris.format_value(value)}}
 {%- endmacro %}
 
 {% set print = print_value %}

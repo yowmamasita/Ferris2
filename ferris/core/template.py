@@ -10,11 +10,14 @@ import datetime
 import json
 import jinja2
 import webapp2
+import types
+import collections
 from google.appengine.api import users
 from google.appengine.ext import db, ndb
 import ferris.core
 from ferris.core import events
 from ferris.core import plugins
+from ferris.core import time_util
 from ferris.core.routing import route_name_exists, current_route_name
 from ferris.core.json_util import DatastoreEncoder
 
@@ -105,9 +108,9 @@ class TemplateEngine(object):
         """
         Sets up all of the appropriate global variales for the templating system
         """
-        from ferris.core import time_util
 
         self.environment.globals.update({
+            'format_value': format_value,
             'isinstance': isinstance,
             'math': math,
             'int': int,
@@ -119,6 +122,7 @@ class TemplateEngine(object):
             'datetime': datetime,
             'localize': time_util.localize,
             'ferris': {
+                'format_value': format_value,
                 'uri_for': webapp2.uri_for,
                 'route_name_exists': route_name_exists,
                 'current_route_name': current_route_name,
@@ -204,3 +208,28 @@ def _json_filter(obj, *args, **kwargs):
 
 def _is_datetime(obj):
     return isinstance(obj, datetime.datetime)
+
+
+#
+# Formatters
+#
+
+formatters = {
+    datetime.datetime: lambda x: time_util.localize(x).strftime('%b %d, %Y at %I:%M%p %Z'),
+    datetime.date: lambda x: x.strftime('%b %d, %Y'),
+    ndb.Key: lambda x: x.get()
+}
+
+def format_value(val):
+    if isinstance(val, types.StringTypes):
+        return val
+
+    if isinstance(val, collections.Iterable):
+        return u', '.join([format_value(x) for x in val])
+
+    formatter = formatters.get(type(val))
+
+    if formatter:
+        return formatter(val)
+
+    return unicode(val)
