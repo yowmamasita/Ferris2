@@ -48,17 +48,19 @@ Email
 
 For example::
 
-    from ferris.core.handler import Handler
-    from ferris.components.email import Email
+    from ferris import Controller
+    from ferris.core import mail
 
-    class Example(Handler):
-        components = [Email]
+    class Example(Controller):
 
         def list(self):
-            self.set(text="Hello!")
-            self.components.email.send_template(
+            res, body = mail.send_template(
+                sender='user@example.com',
                 recipient="test@example",
                 subject="Test Email",
+                context={
+                    'text': 'Hello!'
+                },
                 template="emails/test.html")
 
 Assuming you have a template at ``emails/test.html``.
