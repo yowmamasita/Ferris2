@@ -1,4 +1,5 @@
 import logging
+import json
 from ferris.core.template import render_template
 
 
@@ -9,9 +10,19 @@ def generic_handler(code, template=None):
 
     def inner(request, response, exception):
         logging.exception(exception)
-        response.content_type = 'text/html'
-        response.text = render_template(template, {'request': request, 'exception': exception})
+
         response.set_status(code)
+
+        if request.headers.get('Accepts') == 'application/json' or request.headers.get('Content-Type') == 'application/json':
+            response.text =  json.dumps({
+                'error': str(exception), 
+                'code': code
+            }, encoding='utf8', ensure_ascii=False)
+
+        else:
+            response.content_type = 'text/html'
+            response.text = render_template(template, {'request': request, 'exception': exception})
+
 
     return inner
 
