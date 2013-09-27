@@ -1,5 +1,7 @@
 {% import 'scaffolding/macros.html' as s with context %}
 
+{% if scaffolding %}
+
 <ul class="nav nav-tabs justified">
     {% set item = context[scaffolding.singularized] %}
 
@@ -12,3 +14,5 @@
         {{s.nav_link('Add', 'add', 'glyphicon-plus')}}
     {% endblock %}
 <ul>
+
+{% endif %}
