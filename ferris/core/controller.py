@@ -344,6 +344,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self.events.dispatch_complete(controller=self)
 
         self.session_store.save_sessions(self.response)
+        self.events.clear()
         return self.response
 
     @cached_property
