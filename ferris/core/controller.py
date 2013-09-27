@@ -1,5 +1,6 @@
 import webapp2
 import re
+import weakref
 from webapp2 import cached_property
 from webapp2_extras import sessions
 from google.appengine.api import users
@@ -178,7 +179,7 @@ class Controller(webapp2.RequestHandler, Uri):
 
         self.name = inflector.underscore(self.__class__.__name__)
         self.proper_name = self.__class__.__name__
-        self.util = self.Util(self)
+        self.util = self.Util(weakref.proxy(self))
         self.route = None
 
     def _build_components(self):
@@ -191,7 +192,7 @@ class Controller(webapp2.RequestHandler, Uri):
                     name = cls.name
                 else:
                     name = inflector.underscore(cls.__name__)
-                self.components[name] = (cls(self))
+                self.components[name] = cls(weakref.proxy(self))
         else:
             self.components = Bunch()
         self.events.after_build_components(controller=self)
@@ -218,7 +219,7 @@ class Controller(webapp2.RequestHandler, Uri):
         self._init_route()
 
         self.events = events.NamedBroadcastEvents(prefix='controller_')
-        self.meta = self.Meta(self)
+        self.meta = self.Meta(weakref.proxy(self))
         self._build_components()
 
     @classmethod
