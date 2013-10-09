@@ -3,6 +3,8 @@
 from google.appengine.api import memcache
 from decorator import decorator
 from functools import wraps
+import inspect
+
 
 none_sentinel_string = u'☃☸☃ - memcache none sentinel'
 
@@ -57,32 +59,33 @@ def cached(key, ttl=0):
     return wrapper
 
 
-def cached_by_args(key, ttl=0, method=False):
-    @decorator
-    def inner(f, *args, **kwargs):
-        if method:
-            targs = args[1:]
+def cached_by_args(key, ttl=0):
+    def wrapper(f):
+        argspec = inspect.getargspec(f)[0]
+
+        if len(argspec) and argspec[0] in ('self', 'cls'):
+            is_method = True
         else:
-            targs = args
-        tkey = (key + '-' + _args_to_string(*targs, **kwargs))
+            is_method = False
 
-        data = memcache.get(tkey)
+        @wraps(f)
+        def dispatcher(*args, **kwargs):
+            targs = args if not is_method else args[1:]
+            arg_key = (key + ':' + _args_to_string(*targs, **kwargs))
 
-        if data == none_sentinel_string:
-            return None
+            @cached(arg_key, ttl)
+            def inner_dispatcher():
+                return f(*args, **kwargs)
 
-        if data is None:
-            data = f(*args, **kwargs)
-            memcache.set(tkey, none_sentinel_string if data is None else data, ttl)
-
-        return data
-    return inner
+            return inner_dispatcher()
+        return dispatcher
+    return wrapper
 
 
 def _args_to_string(*args, **kwargs):
-    return ('-'.join(map(str, args)) + '-' +
-        '-'.join(map(str, kwargs.keys())) +
-        '-'.join(map(str, kwargs.values())) + '-')
+    return ':'.join((','.join(map(str, args)),
+        ','.join(map(str, kwargs.keys())),
+        ','.join(map(str, kwargs.values()))))
 
 
 def chunk_cached(key, ttl=0, chunk_size=500):
