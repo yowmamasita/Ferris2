@@ -1,6 +1,6 @@
 from .lib import WithTestBed
 from google.appengine.api import memcache
-from ferris.core.memcache import cached, cached_by_args, chunk_cached, none_sentinel_string
+from ferris.core.memcache import cached, cached_by_args, none_sentinel_string
 
 
 class MemcacheTest(WithTestBed):

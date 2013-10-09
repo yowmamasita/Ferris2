@@ -6,7 +6,7 @@ from core.event import Event
 from core.bunch import Bunch
 from core.json_util import stringify as json_stringify, parse as json_parse
 from core.controller import Controller, route, route_with, auth, add_authorizations
-from core.memcache import cached, cached_by_args, chunk_cached
+from core.memcache import cached, cached_by_args
 from core.request_parsers import RequestParser, FormParser
 from core.template import render_template
 from core.time_util import localize
@@ -42,7 +42,6 @@ __all__ = (
     'json_stringify',
     'cached',
     'cached_by_args',
-    'chunk_cached',
     'plugins',
     'RequestParser',
     'FormParser',
