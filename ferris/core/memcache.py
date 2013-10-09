@@ -60,6 +60,11 @@ def cached(key, ttl=0):
 
 
 def cached_by_args(key, ttl=0):
+    """
+    Similar to @cached, but takes arguments into account. It will turn each argument into
+    a string an use it as part of the key. If the first argument is 'self' or 'cls', it will
+    ignore it.
+    """
     def wrapper(f):
         argspec = inspect.getargspec(f)[0]
 
