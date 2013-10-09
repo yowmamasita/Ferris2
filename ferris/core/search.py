@@ -46,13 +46,17 @@ def default_entity_indexer(instance, properties, extra_converters=None):
 
     for property in properties:
         value = getattr(instance, property)
-        property_class = instance._properties[property].__class__
+        property_instance = instance._properties[property]
+        property_class = property_instance.__class__
         converter = converters.get(property_class, converters.get(property, None))
 
         if not value or not converter:
             continue
 
-        converted = converter(property, value)
+        if not property_instance._repeated:
+            converted = converter(property, value)
+        else:
+            converted = [converter(property + str(n), x) for n, x in enumerate(value)]
 
         if not converted:
             continue

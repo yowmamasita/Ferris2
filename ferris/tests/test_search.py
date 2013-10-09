@@ -9,6 +9,7 @@ import datetime
 class SearchTestModel(ndb.Model):
     string = ndb.StringProperty()
     string2 = ndb.StringProperty()
+    repeated_string = ndb.StringProperty(repeated=True)
     datetime = ndb.DateTimeProperty()  # auto_now_add=True is broken due to it calling now() locally instead of utcnow()
     person = ndb.UserProperty(auto_current_user=True)
     date = ndb.DateProperty(auto_now_add=True)
@@ -22,6 +23,7 @@ class SearchTest(WithTestBed):
     def _create_test_data(self):
         instance = SearchTestModel(
             string='123',
+            repeated_string=['1', '2', '3'],
             datetime=datetime.datetime.utcnow(),
             person=users.User(email='a@example.com'),
             date=datetime.date.today(),
@@ -36,7 +38,7 @@ class SearchTest(WithTestBed):
 
         indexed_fields = search.default_entity_indexer(instance, instance._properties.keys())
 
-        assert len(indexed_fields) == 7  # -1 for the key, +1 for the datetime (creates two fields)
+        assert len(indexed_fields) == 10  # -1 for the key, +1 for the datetime (creates two fields), +3 for the repeated string
 
     def test_index_and_unindex(self):
         instance = self._create_test_data()
