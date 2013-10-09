@@ -2,23 +2,59 @@
 
 from google.appengine.api import memcache
 from decorator import decorator
+from functools import wraps
 
 none_sentinel_string = u'☃☸☃ - memcache none sentinel'
 
 
-def cached(key, ttl=0):
-    @decorator
-    def inner(f, *args, **kwargs):
+def _cache_invalidator(key):
+    """ Generates a function that will invalidate the given cache key """
+    def f():
+        memcache.delete(key)
+    return f
+
+
+def _cache_getter(key):
+    """ Generates a function that will get the cached data of a key """
+    def f():
         data = memcache.get(key)
         if data == none_sentinel_string:
             return None
-
-        if data is None:
-            data = f(*args, **kwargs)
-            memcache.set(key, none_sentinel_string if data is None else data, ttl)
-
         return data
-    return inner
+    return f
+
+
+def cached(key, ttl=0):
+    """
+    Decorator that given a cache key and optionally a time to live will automatically
+    cache the result of a function in memcache. The next time the function is called it
+    will return the result from memcache (if it's still there). This decorator does not
+    take arguments to the wrapped function into account- you can use cached_by_args for
+    that.
+
+    This function also adds the cached, uncached, and clear_cache functions to the
+    wrapped function that allow you to get the cached and uncached values and clear the
+    cache.
+    """
+    def wrapper(f):
+        @wraps(f)
+        def dispatcher(*args, **kwargs):
+            data = memcache.get(key)
+
+            if data == none_sentinel_string:
+                return None
+
+            if data is None:
+                data = f(*args, **kwargs)
+                memcache.set(key, none_sentinel_string if data is None else data, ttl)
+
+            return data
+
+        setattr(dispatcher, 'clear_cache', _cache_invalidator(key))
+        setattr(dispatcher, 'cached', _cache_getter(key))
+        setattr(dispatcher, 'uncached', f)
+        return dispatcher
+    return wrapper
 
 
 def cached_by_args(key, ttl=0, method=False):
