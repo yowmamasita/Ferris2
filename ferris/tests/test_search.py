@@ -53,3 +53,12 @@ class SearchTest(WithTestBed):
 
         response = search_index.get_range()
         assert len(response.results) == 0
+
+    def test_search(self):
+        instance = self._create_test_data()
+        search.index_entity(instance, index='test_index')
+
+        error, results, current_cursor, next_cursor = search.search('test_index', '')
+
+        assert not error
+        assert len(results) == 1

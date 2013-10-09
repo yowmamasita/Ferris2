@@ -181,6 +181,10 @@ def search(index, query, limit=None, cursor=None, options=None, sort_field=None,
 
         options_params.update(options)
 
+        # if limit is none, remove it, as it'll cause issues.
+        if options_params.get('limit') is None:
+            del options_params['limit']
+
         query = search_api.Query(query_string=query, options=search_api.QueryOptions(**options_params))
         index_results = index.search(query)
 
