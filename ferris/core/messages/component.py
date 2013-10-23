@@ -84,7 +84,7 @@ class Messaging(object):
         if 'pagination' in self.controller.components:
             previous_cursor, current_cursor, next_cursor, page, limit, count = self.controller.components.pagination.get_pagination_info()
 
-            if next_cursor is not None:
+            if next_cursor:
                 next_page_link = self.controller.uri(_pass_all=True, cursor=next_cursor, _full=True)
 
             if previous_cursor is not None:
@@ -100,6 +100,8 @@ class Messaging(object):
             page=page)
 
     def _transform_entity(self, entity):
+        if hasattr(self.controller.meta, 'messaging_transform_function'):
+            return self.controller.meta.messaging_transform_function(entity, self.controller.meta.Message)
         return to_message(entity, self.controller.meta.Message)
 
     def _on_before_render(self, *args, **kwargs):
