@@ -24,12 +24,7 @@ Use git to export ferris to your project directory (trailing slash is important!
 
     git checkout-index -a -f --prefix=/project-directory/
 
-Remove the docs directory, you won't be needing it.
-
-    cd /project-directory
-    rm -r docs
-
-You're ready to go, just run the app engine server.
+You're ready to go, just open your project directory and  run the app engine server.
 
 License
 -------
