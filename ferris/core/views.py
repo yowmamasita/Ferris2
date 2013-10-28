@@ -96,7 +96,7 @@ class TemplateView(View):
 
         result = template.render_template(self.get_template_names(), self.context, theme=self.theme)
         self.controller.response.content_type = 'text/html'
-        self.controller.response.charset = 'utf8'
+        self.controller.response.charset = 'utf-8'
         self.controller.response.unicode_body = result
 
         self.controller.events.after_render(controller=self.controller, result=result)
@@ -159,7 +159,7 @@ class JsonView(View):
 
         result = unicode(json_util.stringify(self._get_data()))
         self.controller.response.content_type = 'application/json'
-        self.controller.response.charset = 'utf8'
+        self.controller.response.charset = 'utf-8'
         self.controller.response.unicode_body = result
 
         self.controller.events.after_render(controller=self.controller, result=result)
@@ -174,7 +174,7 @@ class MessageView(JsonView):
         data = self._get_data(default=VoidMessage())
         result = unicode(protojson.encode_message(data))
         self.controller.response.content_type = 'application/json'
-        self.controller.response.charset = 'utf8'
+        self.controller.response.charset = 'utf-8'
         self.controller.response.unicode_body = result
 
         self.controller.events.after_render(controller=self.controller, result=result)

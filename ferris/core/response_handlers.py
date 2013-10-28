@@ -47,7 +47,7 @@ class StringResponseHandler(ResponseHandler):
 
     def process(self, handler, result):
         handler._clear_redirect()
-        handler.response.charset = 'utf8'
+        handler.response.charset = 'utf-8'
         handler.response.unicode_body = unicode(result)
         if not handler.response.content_type:
             handler.response.content_type = result.content_type if hasattr(result, 'content_type') else 'text/html'

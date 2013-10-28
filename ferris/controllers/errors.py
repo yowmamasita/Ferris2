@@ -17,7 +17,7 @@ def generic_handler(code, template=None):
             response.text =  json.dumps({
                 'error': str(exception), 
                 'code': code
-            }, encoding='utf8', ensure_ascii=False)
+            }, encoding='utf-8', ensure_ascii=False)
 
         else:
             response.content_type = 'text/html'
