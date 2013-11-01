@@ -32,5 +32,11 @@ defaults['ed_rooney'] = {
     'enabled': True
 }
 
+# Enables or disables app stats.
+# NOTE: This must also be enabled in app.yaml.
+defaults['appstats'] = {
+    'enabled': False,
+    'enabled_live': False
+}
 
 settings.defaults(defaults)
