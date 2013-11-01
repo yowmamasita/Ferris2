@@ -12,7 +12,7 @@ import jinja2
 import webapp2
 import types
 import collections
-from google.appengine.api import users
+from google.appengine.api import users, app_identity
 from google.appengine.ext import db, ndb
 import ferris.core
 from ferris.core import events
@@ -133,7 +133,8 @@ class TemplateEngine(object):
                 'has_plugin': plugins.exists,
                 'plugins': plugins.list,
                 'version': ferris.version,
-                'app_version': os.environ['CURRENT_VERSION_ID']
+                'app_version': os.environ['CURRENT_VERSION_ID'],
+                'hostname': app_identity.get_default_version_hostname()
             },
             'json': _json_filter,
             'inflector': ferris.core.inflector,
