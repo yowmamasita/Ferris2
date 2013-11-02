@@ -13,6 +13,10 @@ class FlashMessages(object):
         Adds the given message to the list of "flash" messages to show to the user on the next page.
         """
         flash = self.controller.session.get('__flash', [])
+
+        if type == 'error':
+            type = 'danger'
+
         flash.append((message, type))
         self.controller.session['__flash'] = flash
 
