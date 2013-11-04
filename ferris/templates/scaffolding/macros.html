@@ -76,20 +76,10 @@
 {%- endmacro %}
 
 {#
-    Generates a link for the sidebar
+    Link for navigation
 #}
-{% macro nav_link(title, action, icon): -%}
-    {% if this.uri_exists(action=action) %}
-        {% if this.route.action == action %}
-            {% set active = True %}
-        {% else %}
-            {% set active = False %}
-        {% endif %}
-        <li {% if active %}class='active'{% endif %}>
-            <a href="{{action_uri(action, **kwargs)}}">
-                <i class="glyphicon {{icon}}"></i>
-                {{title}}
-            </a>
-        </li>
+{% macro nav_link(action, text) -%}
+    {% if uri_exists(action=action) %}
+        <a href="{{uri(action=action)}}" class="btn btn-default">{{text}}</a>
     {% endif %}
 {%- endmacro %}

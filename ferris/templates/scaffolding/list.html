@@ -3,6 +3,8 @@
 
 {% block layout_content %}
 
+{{s.override_include('nav.html')}}
+
 {% set list = context[scaffolding.plural] %}
 
 <table class="table table-striped table-hover table-condensed">

@@ -1,18 +1,9 @@
 {% import 'scaffolding/macros.html' as s with context %}
 
 {% if scaffolding %}
-
-<ul class="nav nav-tabs justified">
-    {% set item = context[scaffolding.singularized] %}
-
+<header class="clearfix">
     {% block links %}
-        {% if item %}
-            {{s.nav_link('View', 'view', 'glyphicon-search', id=scaffolding.url_id_for(item))}}
-            {{s.nav_link('Edit', 'edit', 'glyphicon-pencil', id=scaffolding.url_id_for(item))}}
-        {% endif %}
-        {{s.nav_link('List', 'list', 'glyphicon-list')}}
-        {{s.nav_link('Add', 'add', 'glyphicon-plus')}}
+    {{s.nav_link('add', 'New ' + inflector.titleize(scaffolding.singular))}}
     {% endblock %}
-<ul>
-
+</header>
 {% endif %}
