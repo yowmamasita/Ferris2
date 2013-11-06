@@ -13,11 +13,11 @@ def generic_handler(code, template=None):
 
         response.set_status(code)
 
-        if request.headers.get('Accepts') == 'application/json' or request.headers.get('Content-Type') == 'application/json':
-            response.text =  json.dumps({
+        if 'application/json' in request.headers.get('Accept') or request.headers.get('Content-Type') == 'application/json':
+            response.text = unicode(json.dumps({
                 'error': str(exception), 
                 'code': code
-            }, encoding='utf-8', ensure_ascii=False)
+            }, encoding='utf-8', ensure_ascii=False))
 
         else:
             response.content_type = 'text/html'
