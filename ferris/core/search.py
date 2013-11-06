@@ -144,7 +144,7 @@ def transform_to_entities(results):
     return results
 
 
-def search(index, query, limit=None, cursor=None, options=None, sort_field=None, sort_direction='asc', sort_default_value=None, transformer=transform_to_entities):
+def search(index, query, limit=None, cursor=None, options=None, sort_field=None, sort_direction='asc', sort_default_value=None, per_document_cursor=False, transformer=transform_to_entities):
     """
     Searches an index with the given query.
 
@@ -169,7 +169,7 @@ def search(index, query, limit=None, cursor=None, options=None, sort_field=None,
 
     try:
         index = search_api.Index(name=index)
-        current_cursor = search_api.Cursor(web_safe_string=cursor) if cursor else search_api.Cursor()
+        current_cursor = search_api.Cursor(web_safe_string=cursor) if cursor else search_api.Cursor(per_result=per_document_cursor)
 
         options_params = dict(
             limit=limit,
