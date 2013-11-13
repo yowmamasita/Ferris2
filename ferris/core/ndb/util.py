@@ -21,6 +21,8 @@ def decode_key(str, kind=None):
     and optionally a kind. Kind is only needed if
     the str is an id.
     """
+    if isinstance(str, ndb.Key):
+        return str
     str = str.lstrip(':')
     try:
         id = long(str)
