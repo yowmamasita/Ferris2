@@ -123,6 +123,7 @@ def delegate_query_factory(controller):
     """
     Calls Model.Meta.query_factory or Model.list or Model.query.
     """
+    Model = controller.Meta.Model
     if hasattr(Model.Meta, 'query_factory'):
         return Model.Meta.query_factory(controller)
     if hasattr(Model, 'list'):
@@ -130,15 +131,16 @@ def delegate_query_factory(controller):
     return default_query_factory(controller)
 
 
-def delete_create_factory(controller):
+def delegate_create_factory(controller):
     """
     Calls Model.Meta.create_factory or Model.create or the Model constructor.
     """
+    Model = controller.Meta.Model
     if hasattr(Model.Meta, 'create_factory'):
         return Model.Meta.create_factory(controller)
     if hasattr(Model, 'create'):
         return Model.create(controller)
-    return delete_create_factory(controller)
+    return default_create_factory(controller)
 
 
 # Utility Functions
