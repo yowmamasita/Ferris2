@@ -65,7 +65,8 @@ class Scaffolding(object):
             'form_action': controller.scaffold.form_action,
             'form_encoding': controller.scaffold.form_encoding,
             'display_properties': controller.scaffold.display_properties,
-            'layouts': controller.scaffold.layouts
+            'layouts': controller.scaffold.layouts,
+            'navigation': controller.scaffold.navigation
         }
 
 
@@ -90,7 +91,8 @@ class Scaffold(object):
             layouts={
                 None: 'layouts/default.html',
                 'admin': 'layouts/admin.html'
-            }
+            },
+            navigation={}
         )
 
         for k, v in defaults.iteritems():

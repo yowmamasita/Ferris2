@@ -2,6 +2,7 @@ from ferris import Controller, route, scaffold
 from ferris.core.oauth2.user_credentials import UserCredentials
 from ferris.components import oauth
 from apiclient.discovery import build
+from collections import OrderedDict
 import wtforms
 
 
@@ -17,7 +18,10 @@ class OauthManager(Controller):
         oauth_scopes = ['https://www.googleapis.com/auth/userinfo.profile']
 
     class Scaffold:
-        pass
+        navigation = OrderedDict(
+            test='Test',
+            add='Add credentials'
+        )
 
     def startup(self):
         self.oauth.force_prompt = True
