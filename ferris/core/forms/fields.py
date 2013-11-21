@@ -46,7 +46,7 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
 
     def __init__(self, label=None, validators=None, kind=None,
                  label_attr=None, get_label=None, allow_blank=False,
-                 blank_text='', **kwargs):
+                 blank_text='', query=None, **kwargs):
         super(KeyPropertyField, self).__init__(label, validators,
                                                      **kwargs)
         if label_attr is not None:
@@ -62,12 +62,12 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
         self.allow_blank = allow_blank
         self.blank_text = blank_text
         self._set_data(None)
-        if kind is not None:
+        if not query and kind is not None:
             if isinstance(kind, basestring):
                 kind = ndb.Model._kind_map[kind]
             self.query = kind.query()
         else:
-            self.query = None
+            self.query = query
 
     def _value(self):
         if self.data:
@@ -131,26 +131,24 @@ class MultipleReferenceField(wtforms.SelectMultipleField):
     widget = widgets.MultipleReferenceCheckboxWidget()
     option_widget = wtforms.widgets.CheckboxInput()
 
-    def __init__(self, kind, choices=None, validate_choices=True, *args, **kwargs):
+    def __init__(self, kind, choices=None, validate_choices=True, query=None, *args, **kwargs):
         super(MultipleReferenceField, self).__init__(*args, **kwargs)
         if isinstance(kind, basestring):
                 kind = ndb.Model._kind_map[kind]
         self.kind = kind
-        if choices is None:
-            if kind:
-                if issubclass(kind, ndb.Model):
-                    choices = [(x.key, x.name) for x in kind.query()]
-                else:
-                    choices = [(x.key(), x.name) for x in kind.all()]
-            else:
-                choices = []
-        elif not choices:
-            choices = []
-        self.choices = choices
+
+        if query:
+            self.query = query
+        else:
+            self.query = self.kind.query()
+
         self.validate_choices = validate_choices
 
     def iter_choices(self):
-        for value, label in self.choices:
+        for item in self.query:
+            value = item.key
+            label = str(item)
+
             selected = self.data is not None and value in self.data
 
             if not self.kind or issubclass(self.kind, ndb.Model):
@@ -160,6 +158,7 @@ class MultipleReferenceField(wtforms.SelectMultipleField):
 
     def pre_validate(self, form):
         if self.validate_choices:
+            self.choices = [(x, 'key') for x in self.query.fetch(keys_only=True)]
             super(MultipleReferenceField, self).pre_validate(form)
 
     def process_data(self, value):

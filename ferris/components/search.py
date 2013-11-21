@@ -31,11 +31,12 @@ class Search(object):
         index = index if index else self._get_index()
         query_string = query if query else self.controller.request.params.get('query', '')
         options = options if options else {}
+        search_function = self.controller.meta.search_function if hasattr(self.controller.meta, 'search_function') else ferris_search.search
 
         if 'pagination' in self.controller.components:
             cursor, limit = self.controller.components.pagination.get_pagination_params(cursor, limit)
 
-        error, results, cursor, next_cursor = ferris_search.search(
+        error, results, cursor, next_cursor = search_function(
             index,
             query_string,
             cursor=cursor,
