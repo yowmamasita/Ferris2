@@ -8,16 +8,16 @@
 <h3>Current Configuration</h3>
 
 <ul>
-{% for name, values in settings|dictsort %}
+{% for name, values in settings|dictsort recursive %}
     <li>
-        {{name}}
-        <ul>
-            {% for key, value in values|dictsort %}           
-                <li>
-                    {{key}} : {{value}}
-                </li>
-            {% endfor %}
-        </ul>
+        {% if values is mapping %}
+            {{name}}
+            <ul>
+                {{loop(values|dictsort)}}
+            </ul>
+        {% else %}
+            {{name}} : {{values}}
+        {% endif %}
     </li>
 {% endfor %}
 </ul>
