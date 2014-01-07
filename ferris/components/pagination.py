@@ -89,7 +89,7 @@ class Pagination(object):
 
         return query
 
-    def auto_paginate(self, query=None, cursor=None, limit=None):
+    def paginate(self, query=None, cursor=None, limit=None):
         """
         Paginates a query and sets up the appropriate template variables.
 
@@ -132,7 +132,7 @@ class Pagination(object):
 
         return data
 
-    __call__ = auto_paginate
+    __call__ = paginate
 
     def after_dispatch_callback(self, response, *args, **kwargs):
         if self.controller.route.action in self.controller.meta.pagination_actions and self.auto_paginate:  # checks for list and any prefixed lists
