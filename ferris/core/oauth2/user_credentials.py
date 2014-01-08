@@ -77,3 +77,13 @@ class UserCredentials(Model):
         c = cls.find_all(user, scopes, admin)
         for x in c:
             x.key.delete()
+
+
+def find_credentials(user=None, scopes=None, admin=None):
+    """
+    Finds credentials that fit the criteria provided. If no user is provided,
+    the first set of credentials that have the given scopes and privilege level.
+
+    Returns None if no credentials are found.
+    """
+    return UserCredentials.find(user, scopes, admin)
