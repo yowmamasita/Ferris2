@@ -9,11 +9,12 @@ class Upload(object):
     Automatically handles file upload fields that need to use the blobstore.
 
     This works by:
-    * Detecting if you're on an add or edit action (you can add additional actions with ``upload_actions``, or set ``process_uploads`` to True)
-    * Adding the ``upload_url`` template variable that points to the blobstore
-    * Updating the ``form_action`` and ``form_encoding`` scaffolding variables to use the new blobstore action
-    * Processing uploads when they come back
-    * Adding each upload's key to the form data so that it can be saved to the model
+
+     * Detecting if you're on an add or edit action (you can add additional actions with ``upload_actions``, or set ``process_uploads`` to True)
+     * Adding the ``upload_url`` template variable that points to the blobstore
+     * Updating the ``form_action`` and ``form_encoding`` scaffolding variables to use the new blobstore action
+     * Processing uploads when they come back
+     * Adding each upload's key to the form data so that it can be saved to the model
 
     Does not require that the controller subclass ``BlobstoreUploadHandler``, however to serve blobs you must subclass ``BlobstoreDownloadHandler``.
     """
@@ -93,7 +94,7 @@ class Upload(object):
 
         Returns:
         A list of BlobInfo records corresponding to each upload.
-        Empty list if there are no blob-info records for field_name.
+        Empty list if there are no blobinfo records for field_name.
         """
         if self.__uploads is None:
             self.__uploads = {}

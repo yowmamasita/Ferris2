@@ -3,7 +3,8 @@ from ferris.core import search as ferris_search
 
 class Search(object):
     """
-    Provides a simple high-level interface to searching items in the App Engine Search API.
+    Provides a simple high-level interface to searching items in the App Engine Search API and
+    utilizes the search helpers in :mod:`ferris.core.search`.
     """
 
     def __init__(self, controller):
@@ -25,7 +26,9 @@ class Search(object):
 
         Expects the search query to be in the ``query`` request parameter.
 
-        Also takes care of setting pagination information if the :class:`pagination component <ferris.components.pagination.Pagnation>` is present.
+        Also takes care of setting pagination information if the :mod:`pagination component <ferris.components.pagination>` is present.
+
+        See :func:`ferris.core.search.search` for more details.
         """
 
         index = index if index else self._get_index()
@@ -65,4 +68,3 @@ class Search(object):
         return results
 
     __call__ = search
-

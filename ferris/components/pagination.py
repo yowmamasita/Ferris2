@@ -6,12 +6,13 @@ import logging
 
 class Pagination(object):
     """
-    Provides automatic pagination of ``db.Query`` and ``ndb.Query`` objects.
+    Provides a generic, reusable Pagination API.
+
+    This can be used to automatically paginate ``ndb.Query`` objects but it can also
+    be used directly to provide pagination over custom datasources.
 
     Automatically happens for any ``list`` actions but can also be manually invoked
-    via :meth:`paginate`.
-
-    In automatic operation, it looks for a template variable with the underscored pluralized version of the Handler's name. For instance, if you're on ``Pages`` it looks for the template variable ``pages``.
+    via :meth:`paginate`  or :meth:`__call__`.
     """
 
     def __init__(self, controller):
@@ -22,13 +23,28 @@ class Pagination(object):
         self.controller.events.after_dispatch += self.after_dispatch_callback.__get__(self)
 
     def set_pagination_info(self, current_cursor=None, next_cursor=None, limit=None, count=None):
+        """
+        Sets the pagintion information for the view context. Use by your custom APIs to expose the
+        next cursor, the limit, and the number of objects currently visible.
+
+        Sets the ``paging`` template variable to a dictionary like::
+
+            {
+                "cursor": "abc...",
+                "previous_cursor": "rvx...",
+                "next_cursor": "nzb...",
+                "limit": 10,
+                "count": 10
+            }
+        """
         self._set_cursors(current_cursor, next_cursor)
         self.controller.context.set_dotted('paging.limit', limit)
         self.controller.context.set_dotted('paging.count', count)
 
     def get_pagination_info(self):
         """
-        Returns the current pagination infomation: previous cursor, current cursor, next cursor, page, limit, and count.
+        Returns the current pagination infomation from the view context: previous cursor, current cursor,
+        next cursor, page, limit, and count.
         """
         ctx = self.controller.context
         return (
@@ -40,6 +56,10 @@ class Pagination(object):
             ctx.get_dotted('paging.count'))
 
     def get_pagination_params(self, cursor=None, limit=None):
+        """
+        Retuns the pagination parameters provided by the request. Use this in your custom APIs to determine
+        which cursor and the number of objects the user is requesting.
+        """
         if not limit:
             limit = self.controller.meta.pagination_limit if hasattr(self.controller.meta, 'pagination_limit') else 100
         if not cursor:
@@ -48,8 +68,10 @@ class Pagination(object):
                 cursor = None
         return cursor, limit
 
-
     def _set_cursors(self, current, next):
+        """
+        Uses memcache to track the cursors
+        """
         ctx = self.controller.context
 
         previous_tuple = memcache.get('paging.cursor.previous.%s' % current)
@@ -65,7 +87,6 @@ class Pagination(object):
             memcache.set('paging.cursor.previous.%s' % next, (page, current))
 
         logging.info("Page: %s, Previous: %s, Current: %s, Next: %s" % (page, previous, current, next))
-
 
         ctx.set_dotted('paging.page', page)
 
@@ -91,19 +112,14 @@ class Pagination(object):
 
     def paginate(self, query=None, cursor=None, limit=None):
         """
-        Paginates a query and sets up the appropriate template variables.
+        Paginates a ``ndb.Query`` and sets up the appropriate template variables.
 
-        Uses ``handler.paginate_limit`` to determine how many items per page, or defaults to 10 if omitted.
+        Uses ``Controller.Meta.pagination_limit`` to determine how many items per page
+        or defaults to 10 if omitted.
 
-        Sets the ``paging`` template variable to a dictionary like::
+        Returns the data, and if ``query`` is a string, sets that template variable.
 
-            {
-                "cursor": "abc...",
-                "next_cursor": "nzb...",
-                "limit": 10
-            }
-
-        Returns the data, and if ``query_or_var_name`` is a string, sets that template variable.
+        If ``query`` is omitted it'll attempt to find the dataset using the scaffold variable names.
         """
 
         cursor, limit = self.get_pagination_params(cursor, limit)
