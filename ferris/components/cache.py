@@ -40,4 +40,3 @@ def set_cache(mode='public', minutes=None):
             return f(self, *args, **kwargs)
         return inner2
     return inner
-
