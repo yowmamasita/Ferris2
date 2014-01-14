@@ -2,15 +2,10 @@
 
 
 {#
-    Chooses either the admin layout or the default layout depending
-    on the prefix of the handler.
+    Chooses the appropriate layout for the current prefix.
 #}
-{% macro admin_or_default() -%}
-    {% if handler.prefix == 'admin' -%}
-        layouts/admin.html
-    {%- else -%}
-        layouts/default.html
-    {%- endif %}
+{% macro layout() -%}
+    {{ scaffolding.layouts.get(this.route.prefix, scaffolding.layouts[None]) }}
 {%- endmacro %}
 
 
@@ -20,56 +15,26 @@
     are localized.
 #}
 {% macro print_value(value) -%}
-    {% if (value is sequence and not value is string) or (isinstance(value, (db.Query, ndb.Query))): %}
-        <ul>
-        {% for item in value %}
-            <li>{{print_value(item)}}</li>
-        {% endfor %}
-        </ul>
-    {% elif value is datetime: %}
-        {{localize(value).strftime('%b %d, %Y at %I:%M%p %Z')}}
-    {% elif isinstance(value, datetime.date): %}
-        {{value.strftime('%b %d, %Y')}}
-    {% elif isinstance(value, ndb.Key) %}
-        {{value.get()}}
-    {% else %}
-        {{value}}
-    {% endif %}
+    {{ferris.format_value(value)}}
 {%- endmacro %}
 
 {% set print = print_value %}
 
 
 {#
-    Includes {{handler.name}}/{{template}} and falls back to
+    Includes {{this.name}}/{{template}} and falls back to
     scaffolding/{{template}}
 #}
 {% macro override_include(template) -%}
-{% include [handler.name+'/'+template,'scaffolding/'+template] %}
+{% include [this.name+'/'+template,'scaffolding/'+template] %}
 {%- endmacro %}
 
 
 {#
-    Creates a uri for the current handler with a given action.
+    Creates a uri for the current controller with a given action.
 #}
 {% macro action_uri(action) -%}
-    {{ handler.uri(action=action,*varargs,**kwargs) }}
-{%- endmacro %}
-
-
-{#
-    Flash messages from the session.
-#}
-{% macro flash() -%}
-    {% set flashes = handler.session.pop('__flash',None) %}
-    {% if flashes %}
-        {% for flash in flashes %}
-            <div class="alert alert-{{flash[1]}}">
-              <button type="button" class="close" data-dismiss="alert">×</button>
-              {{flash[0]}}
-            </div>
-        {% endfor %}
-    {% endif %}
+    {{ this.uri(action=action,*varargs,**kwargs) }}
 {%- endmacro %}
 
 
@@ -81,21 +46,20 @@
 {%- endmacro %}
 
 
-
 {#
     Generates a single action button for an item
 #}
 {% macro action_button(item, action, icon, btn, class=None, confirm=False): -%}
-    {% if handler.uri_exists(action=action) %}
+    {% if this.uri_exists(action=action) %}
         <a
-            href='{{ action_uri(action,id=scaffolding.url_id_for(item)) }}'
-            class='btn {{btn}} {{class}}'
+            href='{{ action_uri(action,key=this.encode_key(item)) }}'
+            class='btn btn-sm {{btn}} {{class}}'
             rel="tooltip"
             title='{{inflector.titleize(action)}}'
             {% if confirm: %}
             onclick='javascript: return confirm("Are you sure you want to delete this item?");'
             {% endif %}>
-            <i class="{{icon}} icon-white"></i>
+            <i class="glyphicon {{icon}} icon-white"></i>
         </a>
     {% endif %}
 {%- endmacro %}
@@ -105,29 +69,17 @@
     Generates the standard suite of action buttons for an item (view, edit, delete)
 #}
 {% macro action_buttons(item, class=None) -%}
-<div class='btn-group'>
     {% set class = class or ''%}
-    {{action_button(item, 'view', 'icon-search', 'btn-success', class)}}
-    {{action_button(item, 'edit', 'icon-pencil', 'btn-primary', class)}}
-    {{action_button(item, 'delete', 'icon-trash', 'btn-danger', class)}}
-</div>
+    {{action_button(item, 'view', 'glyphicon-search', 'btn-success', class)}}
+    {{action_button(item, 'edit', 'glyphicon-pencil', 'btn-primary', class)}}
+    {{action_button(item, 'delete', 'glyphicon-trash', 'btn-danger', class, True)}}
 {%- endmacro %}
 
 {#
-    Generates a link for the sidebar
+    Link for navigation
 #}
-{% macro nav_link(title, action, icon): -%}
-    {% if handler.uri_exists(action=action) %}
-        {% if handler.action == action %}
-            {% set active = True %}
-        {% else %}
-            {% set active = False %}
-        {% endif %}
-        <li {% if active %}class='active'{% endif %}>
-            <a href="{{action_uri(action, **kwargs)}}">
-                <i class="{{icon}} {% if active %}icon-white{% endif %}"></i>
-                {{title}}
-            </a>
-        </li>
+{% macro nav_link(action, text) -%}
+    {% if uri_exists(action=action) %}
+        <a href="{{uri(action=action)}}" class="btn btn-default">{{text}}</a>
     {% endif %}
 {%- endmacro %}

@@ -88,6 +88,9 @@ class NamedEvents(object):
             setattr(self, name, value)
         self.setEventNoAttr(name, value)
 
+    def clear(self):
+        self._events.clear()
+
     __getitem__ = getEvent
     __setitem__ = setEvent
     __getattr__ = getEventNoAttr

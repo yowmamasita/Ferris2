@@ -1,4 +1,4 @@
-from google.appengine.ext import db, ndb
+from google.appengine.ext import db, ndb, blobstore
 from google.appengine.api.users import User
 import wtforms
 from wtforms.compat import text_type, string_types
@@ -38,18 +38,6 @@ class UserField(wtforms.Field):
             self.data = self.__temporary_data
 
 
-def convert_UserProperty(model, prop, kwargs):
-    """Returns a form field for a ``db.UserProperty``."""
-    if isinstance(prop, db.Property) and (prop.auto_current_user or prop.auto_current_user_add):
-        return None
-    elif isinstance(prop, ndb.Property) and (prop._auto_current_user or prop._auto_current_user_add):
-        return None
-
-    kwargs['validators'].append(wtforms.validators.email())
-    kwargs['validators'].append(wtforms.validators.length(max=500))
-    return UserField(**kwargs)
-
-
 class KeyPropertyField(wtforms.fields.SelectFieldBase):
     """
     Identical to the non-ndb counterpart, but only supports ndb references.
@@ -58,7 +46,7 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
 
     def __init__(self, label=None, validators=None, kind=None,
                  label_attr=None, get_label=None, allow_blank=False,
-                 blank_text='', **kwargs):
+                 blank_text='', query=None, **kwargs):
         super(KeyPropertyField, self).__init__(label, validators,
                                                      **kwargs)
         if label_attr is not None:
@@ -74,12 +62,12 @@ class KeyPropertyField(wtforms.fields.SelectFieldBase):
         self.allow_blank = allow_blank
         self.blank_text = blank_text
         self._set_data(None)
-        if kind is not None:
+        if not query and kind is not None:
             if isinstance(kind, basestring):
                 kind = ndb.Model._kind_map[kind]
             self.query = kind.query()
         else:
-            self.query = None
+            self.query = query
 
     def _value(self):
         if self.data:
@@ -143,26 +131,24 @@ class MultipleReferenceField(wtforms.SelectMultipleField):
     widget = widgets.MultipleReferenceCheckboxWidget()
     option_widget = wtforms.widgets.CheckboxInput()
 
-    def __init__(self, kind, choices=None, validate_choices=True, *args, **kwargs):
+    def __init__(self, kind, choices=None, validate_choices=True, query=None, *args, **kwargs):
         super(MultipleReferenceField, self).__init__(*args, **kwargs)
         if isinstance(kind, basestring):
                 kind = ndb.Model._kind_map[kind]
         self.kind = kind
-        if choices is None:
-            if kind:
-                if issubclass(kind, ndb.Model):
-                    choices = [(x.key, x.name) for x in kind.query()]
-                else:
-                    choices = [(x.key(), x.name) for x in kind.all()]
-            else:
-                choices = []
-        elif not choices:
-            choices = []
-        self.choices = choices
+
+        if query:
+            self.query = query
+        else:
+            self.query = self.kind.query()
+
         self.validate_choices = validate_choices
 
     def iter_choices(self):
-        for value, label in self.choices:
+        for item in self.query:
+            value = item.key
+            label = str(item)
+
             selected = self.data is not None and value in self.data
 
             if not self.kind or issubclass(self.kind, ndb.Model):
@@ -172,6 +158,7 @@ class MultipleReferenceField(wtforms.SelectMultipleField):
 
     def pre_validate(self, form):
         if self.validate_choices:
+            self.choices = [(x, 'key') for x in self.query.fetch(keys_only=True)]
             super(MultipleReferenceField, self).pre_validate(form)
 
     def process_data(self, value):
@@ -188,3 +175,43 @@ class MultipleReferenceField(wtforms.SelectMultipleField):
                 self.data = [db.Key(x) for x in valuelist]
         else:
             self.data = []
+
+
+class BlobKeyField(wtforms.FileField):
+    """
+    Manages uploading blobs and cleaning up blob entries if validation fails
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(BlobKeyField, self).__init__(*args, **kwargs)
+
+        # Wrap the original validate method on the form to get a true post-all-validators callback.
+        if '_form' in kwargs:
+            form = kwargs['_form']
+            original_validate = form.validate
+
+            def validate_wrapper():
+                res = original_validate()
+                self.post_form_validate(form)
+                return res
+
+            form.validate = validate_wrapper
+
+    def post_form_validate(self, form):
+        if form.errors:
+            self.delete_blob()
+
+    def get_blob_info(self):
+        import cgi
+        if self.data is None or not isinstance(self.data, cgi.FieldStorage) or not 'blob-key' in self.data.type_options:
+            return None
+
+        info = blobstore.parse_blob_info(self.data)
+        if not info:
+            return None
+        return info
+
+    def delete_blob(self):
+        info = self.get_blob_info()
+        if info:
+            blobstore.delete(info.key())

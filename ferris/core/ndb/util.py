@@ -15,12 +15,14 @@ def list(Model, *args, **kwargs):
         return Model.query()
 
 
-def key_from_string(str, kind=None):
+def decode_key(str, kind=None):
     """
     Makes a ndb Key object from the given data
     and optionally a kind. Kind is only needed if
     the str is an id.
     """
+    if isinstance(str, ndb.Key):
+        return str
     str = str.lstrip(':')
     try:
         id = long(str)
@@ -29,14 +31,7 @@ def key_from_string(str, kind=None):
         return ndb.Key(urlsafe=str)
 
 
-def key_id_for(ins):
-    """
-    Gets the id of a key for either a db or ndb instance
-    """
-    return new_key(ins).id()
-
-
-def key_urlsafe_for(ins):
+def encode_key(ins):
     """
     Gets the urlsafe of a key for either a db or ndb instance
     """

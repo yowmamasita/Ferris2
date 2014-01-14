@@ -1,8 +1,8 @@
-from webapp2 import Route
-from ferris.app import app as ferris_app
+from ferris.core import routing
 
-from ferris.handlers.root import Root
-from ferris.handlers.oauth import Oauth
+from ferris.controllers.root import Root
+from ferris.controllers.oauth import Oauth
 
-ferris_app.router.add(Route('/admin', Root, handler_method='admin'))
-Oauth.build_routes(ferris_app.router)
+routing.add(routing.Route('/admin', Root, handler_method='admin'))
+routing.add(routing.Route('/error/<code>', Root, handler_method='error'))
+routing.route_controller(Oauth)

@@ -3,7 +3,7 @@ Global Ferris events.
 Applications may also fire events with this bus
 """
 
-from event import NamedEvents
+from event import Event, NamedEvents
 
 # The Global Events Bus
 # This is just a NamedEvents object that certain parts of ferris tap into
@@ -42,3 +42,41 @@ register([
     'before_template_render',
     'after_template_render'
 ])
+
+
+class BroadcastEvent(Event):
+    def __init__(self, name=None, prefix=None):
+        super(BroadcastEvent, self).__init__(name)
+        self.prefix = prefix
+
+    def fire(self, *args, **kwargs):
+        results = super(BroadcastEvent, self).fire(*args, **kwargs)
+        return results + fire(self.prefix + self.name, *args, **kwargs)
+
+    __call__ = fire
+
+
+class NamedBroadcastEvents(NamedEvents):
+    _event_class = BroadcastEvent
+    def __init__(self, prefix=None):
+        super(NamedBroadcastEvents, self).__init__()
+        self.prefix = prefix
+
+    def getEventNoAttr(self, name):
+        if not name in self._events:
+            self._events[name] = self._event_class(name=name, prefix=self.prefix)
+        return self._events[name]
+
+    __getattr__ = getEventNoAttr
+
+
+class ViewEvent(BroadcastEvent):
+    def fire(self, *args, **kwargs):
+        results = super(ViewEvent, self).fire(*args, **kwargs)
+        return ' '.join(results)
+
+    __call__ = fire
+
+
+class ViewEvents(NamedBroadcastEvents):
+    _event_class = ViewEvent

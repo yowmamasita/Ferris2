@@ -12,6 +12,14 @@ from google.appengine.datastore import entity_pb
 import json
 
 
+def parse(str):
+    return json.loads(str, cls=DatastoreDecoder)
+
+
+def stringify(data):
+    return json.dumps(data, cls=DatastoreEncoder)
+
+
 class DatastoreEncoder(json.JSONEncoder):
     """
     Extends JSONEncoder to add support for App Engine Datastore Objects.

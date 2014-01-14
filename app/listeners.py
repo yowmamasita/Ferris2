@@ -3,15 +3,11 @@ Central place to store event listeners for your application,
 automatically imported at run time.
 """
 import logging
-import webapp2
 from ferris.core.events import on
 
 
-@on('handler_is_authorized')
-def is_authorized(handler):
-    pass
-
-
-@on('before_template_render')
-def before_template_render(name, *args, **kwargs):
-    pass
+# example
+@on('controller_before_authorization')
+def inject_authorization_chains(controller, authorizations):
+	pass
+    #authorizations.insert(0, custom_auth_chain)

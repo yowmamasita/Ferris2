@@ -1,15 +1,13 @@
 from google.appengine.ext import testbed, deferred
 from google.appengine.api.blobstore import blobstore_stub, file_blob_storage
 from google.appengine.api.files import file_service_stub
+from google.appengine.datastore import datastore_stub_util
 from google.appengine.api.search.simple_search_stub import SearchServiceStub
+from webapp2 import WSGIApplication
 import unittest
 import webtest
 import os
 import base64
-import ferris
-
-from ferris.core.wsgi import WSGIApp
-from settings import app_config
 
 
 class TestbedWithFiles(testbed.Testbed):
@@ -28,6 +26,8 @@ class WithTestBed(unittest.TestCase):
     Provides a complete App Engine test environment.
     """
     def setUp(self):
+        import ferris
+
         self.testbed = TestbedWithFiles()
 
         self.testbed.setup_env(
@@ -36,7 +36,9 @@ class WithTestBed(unittest.TestCase):
 
         self.testbed.activate()
         self.testbed.init_memcache_stub()
-        self.testbed.init_datastore_v3_stub()
+
+        policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
+        self.testbed.init_datastore_v3_stub(consistency_policy=policy)
         self.testbed.init_taskqueue_stub(root_path=os.path.join(os.path.abspath(os.path.dirname(ferris.__file__)), '..'))
         self.testbed.init_blobstore_stub()
         self.testbed.init_images_stub()
@@ -56,9 +58,9 @@ class WithTestBed(unittest.TestCase):
     def loginUser(self, email='test@example.com', admin=False):
         self.testbed.setup_env(
             USER_EMAIL=email,
-            USER_ID='123',
+            USER_ID=email,
             USER_IS_ADMIN='1' if admin else '0',
-            AUTH_DOMAIN='example.com',
+            AUTH_DOMAIN='gmail.com',
             overwrite=True)
 
     def runDeferredTasks(self, queue='default'):
@@ -79,11 +81,16 @@ class AppTestCase(WithTestBed):
 
         import main
         reload(main)
-        self.testapp = webtest.TestApp(main.app)
+        self.testapp = webtest.TestApp(main.main_app)
 
 
 class FerrisTestCase(WithTestBed):
     def setUp(self):
         super(FerrisTestCase, self).setUp()
-        app = WSGIApp(debug=True, config=app_config)
+        app = WSGIApplication(debug=True, config={
+            'webapp2_extras.sessions': {'secret_key': 'notasecret'}
+        })
         self.testapp = webtest.TestApp(app)
+
+    def addController(self, c):
+        c._build_routes(self.testapp.app.router)

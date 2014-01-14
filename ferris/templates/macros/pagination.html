@@ -1,43 +1,34 @@
-{% macro next_page_link(numbers=True, class=None) -%}
+{% macro next_page_link(class=None) -%}
 {% if paging %}
 
-<div class='paging-container'>
-	<ul class="pager single-pager pagination-centered">
-		<li class="next" {% if not paging.next_cursor %}class='disabled'{% endif %}>
-			<a href="{{handler.uri(cursor=paging.next_cursor, *args, **kwargs)}}">More  &rarr;</a>
-		</li>
-	</ul>
+{% set class = class or 'pull-right' %}
+  <ul class="pager">
 
-	{% set class = class or 'pagination-centered' %}
-	<div class='pagination {{class}}' style='display: none'>
-	<ul>
-		<li class="previous">
-			<a class='paging-previous-link'>&laquo;</a>
-		</li>
-		{% if numbers %}
-		<li class="active">
-			<a onclick='return false;' class='paging_text'></a>
-		</li>
-		{% endif %}
-		<li class="next">
-			<a class='paging-next-link'>&raquo;</a>
-		</li>
-	</ul>
-	</div>
-</div>
+    {% if paging.previous_cursor is defined %}
+    <li class="previous">
+        <a href="{{this.uri(_pass_all=True, cursor=paging.previous_cursor)}}" class='paging-previous-link'><i class="glyphicon glyphicon-chevron-left "></i></a>
+    </li>
+    {% else %}
+    <li class="previous disabled">
+        <span class='paging-previous-link'><i class="glyphicon glyphicon-chevron-left "></i></span>
+    </li>
+    {% endif %}
 
-<script type="text/javascript">
-var paging_config = {
-	cursor: {{paging.cursor|json}},
-	next_cursor: {{paging.next_cursor|json}},
-	limit: {{paging.limit|json}},
-	uri: {{handler.uri(_pass_all=True, cursor=None, limit=None, *args, **kwargs)|json}},
-	storage_key: 'paging_' + {{handler.uri(*args, **kwargs)|json}} + '_' + {{paging.limit|json}},
-	results: {{context[scaffolding.pluralized]|length|json}}
-};
-console.log(paging_config)
-</script>
-<script type="text/javascript" src='/ferris/js/ferris/pagination.js'></script>
-    
+    <li class="disabled">
+        <span class="paging_text">
+            Page {{paging.page}}
+        </span>
+    </li>
+
+    {% if paging.next_cursor %}
+    <li class="next">
+        <a href="{{this.uri(_pass_all=True, cursor=paging.next_cursor)}}" class='paging-next-link'><i class="glyphicon glyphicon-chevron-right "></i></a>
+    </li>
+    {% else %}
+    <li class="next disabled">
+        <span class='paging-next-link'><i class="glyphicon glyphicon-chevron-right "></i></span>
+    </li>
+    {% endif %}
+  </ul>
 {% endif %}
 {%- endmacro %}
