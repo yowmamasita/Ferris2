@@ -1,7 +1,7 @@
 import unittest
 from lib import FerrisTestCase
-from ferris.core import scaffolding
-from ferris.core.handler import Handler
+from ferris.core import scaffold
+from ferris.core.controller import Controller, route
 from ferris.core.ndb import Model, ndb
 
 
@@ -9,66 +9,40 @@ class Widget(Model):
     name = ndb.StringProperty()
 
 
-@scaffolding.scaffold
-class Widgets(Handler):
-    prefixes = ['admin']
-    Model = Widget
+class Widgets(Controller):
+    class Meta:
+        prefixes = ('admin',)
+        components = (scaffold.Scaffolding,)
+        Model = Widget
 
-    @scaffolding.scaffold
-    def list(self):
-        pass
+    list = scaffold.list
+    view = scaffold.view
+    add = scaffold.add
+    edit = scaffold.edit
+    delete = scaffold.delete
 
-    @scaffolding.scaffold
-    def add(self):
-        pass
+    @route
+    def list_alpha(self):
+        def alpha_factory(self):
+            return Widget.query().order(Widget.name)
+        self.scaffold.query_factory = alpha_factory
+        self.meta.change_view('json')
+        return scaffold.list(self)
 
-    @scaffolding.scaffold
-    def view(self, id):
-        pass
-
-    @scaffolding.scaffold
-    def edit(self, id):
-        pass
-
-    @scaffolding.scaffold
-    def delete(self, id):
-        pass
-
-    @scaffolding.scaffold
-    def admin_list(self):
-        pass
-
-
-class TestScaffoldInjection(unittest.TestCase):
-
-    def testAttributes(self):
-        self.assertTrue(hasattr(Widgets, 'scaffold'))
-        self.assertTrue(hasattr(Widgets, 'ModelForm'))
-        self.assertTrue(hasattr(Widgets.scaffold, 'display_properties'))
-        self.assertTrue(hasattr(Widgets, 'modelform'))
-        self.assertTrue(hasattr(Widgets, '_scaffold_on_before_render'))
-        self.assertTrue(hasattr(Widgets, '_determine_display_properties'))
-        self.assertTrue(hasattr(Widgets, 'get_modelform'))
-        self.assertTrue(hasattr(Widgets, 'flash'))
-        self.assertEqual(Widgets.dispatch.im_func.__module__, 'ferris.core.scaffolding.wrap')
-
-    def testAutoAdmin(self):
-        from ferris.core.autoadmin import admin_handlers
-        self.assertTrue(Widgets in admin_handlers)
-
-    def testMethods(self):
-        self.assertEqual(Widgets.list.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.add.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.view.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.edit.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.delete.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
-        self.assertEqual(Widgets.admin_list.im_func.__module__, 'ferris.core.scaffolding.scaffolding')
+    @route
+    def add_prefixed(self, prefix):
+        def prefix_factory(self):
+            return Widget(id=prefix)
+        self.scaffold.create_factory = prefix_factory
+        self.meta.change_view('json')
+        self.scaffold.redirect = False
+        return scaffold.add(self)
 
 
 class TestScaffoldBehavior(FerrisTestCase):
     def setUp(self):
         super(TestScaffoldBehavior, self).setUp()
-        Widgets.build_routes(self.testapp.app.router)
+        Widgets._build_routes(self.testapp.app.router)
 
     def testCrudMethods(self):
         self.testapp.get('/widgets/add')
@@ -83,8 +57,10 @@ class TestScaffoldBehavior(FerrisTestCase):
         r = self.testapp.get('/widgets/:%s' % id)
         self.assertTrue('Inigo Montoya' in r)
 
-        self.testapp.get('/widgets/:%s/edit' % id)
-        self.testapp.post('/widgets/:%s/edit' % id, {'name': 'Dread Pirate Roberts'})
+        r = self.testapp.get('/widgets/:%s/edit' % id)
+        self.assertTrue('Inigo Montoya' in r)
+        r.form['name'] = 'Dread Pirate Roberts'
+        r = r.form.submit()
 
         r = self.testapp.get('/widgets/:%s' % id)
         self.assertTrue('Dread Pirate Roberts' in r)
@@ -107,3 +83,19 @@ class TestScaffoldBehavior(FerrisTestCase):
 
         r = self.testapp.delete('/widgets/:%s' % id)
         self.assertEqual(Widget.query().count(), 0)
+
+    def testFactories(self):
+        Widget(name='c').put()
+        Widget(name='a').put()
+        Widget(name='b').put()
+
+        r = self.testapp.get('/widgets/list_alpha')
+        
+        assert r.json[0]['name'] == 'a'
+        assert r.json[1]['name'] == 'b'
+        assert r.json[2]['name'] == 'c'
+
+        r = self.testapp.post('/widgets/add_prefixed/meow', {'name': 'dude'})
+
+        assert r.json['name'] == 'dude'
+        assert r.json['__id__'] == 'meow'

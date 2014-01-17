@@ -1,17 +1,14 @@
-{% macro search_filter(handler_name=None, action='search', examples=[], _pass_all=False) -%}
-{% if not handler_name %}
-    {% set handler_name = handler.name %}
-{% endif %}
+{% macro filter(uri, examples=[], _pass_all=False) -%}
 <div>
-    <form id='search-form' class="form-search" action="{{handler.uri(handler=handler_name,action=action,_pass_all=_pass_all)}}">
-        <input type="text" name='query' class="input-xlarge search-query" value="{{query_string|default('')}}">
+    <form id='search-form' class="form-search" action="{{uri}}">
+        <input type="text" name='query' class="input-xlarge search-query" value="{{search_query|default('')}}">
         <button type="submit" class="btn btn-primary"><i class='icon icon-search icon-white'></i> Search</button>
         {% if examples %}
         <span class='help-inline'>
             Examples:
                 {% for example in examples %}
                 <span class='label label-info'>{{example}}</span>
-                {% if not loop.last %}, {% endif %} 
+                {% if not loop.last %}, {% endif %}
                 {% endfor %}
         </span>
         <script type='text/javascript'>
@@ -27,19 +24,24 @@
 {%- endmacro %}
 
 
-{% macro search_info() -%}
-    {% if error %}
+{% macro info() -%}
+    {% if search_error %}
         <div class="alert alert-block alert-error">
           <a class="close" data-dismiss="alert">×</a>
           <h4 class="alert-heading">Whoa, now!</h4>
-          It appears that you somehow gave me an invalid search query, please try again with a different query. <br/>
-          If you'd like to know what kind of queries are valid, 
+          It appears that you somehow gave me an invalid search query or something went horribly wrong, please try again with a different query. <br/>
+          If you'd like to know what kind of queries are valid,
           <a href='https://developers.google.com/appengine/docs/python/search/overview#Query_Language_Overview'>
             read here</a>.
+          <p>
+            <code>
+              {{search_error}}
+            </code>
+          </p>
         </div>
     {% endif %}
 
-    {% if not context[scaffolding.pluralized] %}
+    {% if search_query and not search_results %}
         <div class="alert alert-info">
             <a class="close" data-dismiss="alert">×</a>
             <h4 class="alert-heading">No results found</h4>

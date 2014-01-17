@@ -16,11 +16,12 @@ class ModelMeta(ndb.model.MetaModel):
     def __init__(cls, name, bases, dct):
         super(ModelMeta, cls).__init__(name, bases, dct)
 
-        if set(['beforeDelete', 'afterDelete', 'beforePut', 'afterPut']) & set(dct.keys()):
-            raise AttributeError('NDB Models use before_delete style callbacks')
+        # Make sure the Meta class has a proper chain
+        if cls.__name__ != 'Model' and not issubclass(cls.Meta, Model.Meta):
+            cls.Meta = type('Meta', (cls.Meta, Model.Meta), {})
 
         # Behaviors
-        setattr(cls, '_behaviors', [x(cls) for x in cls.behaviors])
+        setattr(cls, 'behaviors', [x(cls) for x in cls.Meta.behaviors])
 
         # find_by_x and find_all_by_x
         for prop_name, property in cls._properties.items():
@@ -33,7 +34,8 @@ class ModelMeta(ndb.model.MetaModel):
                     return cls.find_all_by_properties(**args)
                 return types.MethodType(find_all, cls)
 
-            setattr(cls, find_all_name, bind_all(prop_name))
+            if not find_all_name in dct:
+                setattr(cls, find_all_name, bind_all(prop_name))
 
             find_one_name = 'find_by_' + prop_name
 
@@ -44,7 +46,8 @@ class ModelMeta(ndb.model.MetaModel):
                     return cls.find_by_properties(**args)
                 return types.MethodType(find_one, cls)
 
-            setattr(cls, find_one_name, bind_one(prop_name))
+            if not find_one_name in dct:
+                setattr(cls, find_one_name, bind_one(prop_name))
 
 
 class Model(ndb.Model):
@@ -53,7 +56,8 @@ class Model(ndb.Model):
     """
     __metaclass__ = ModelMeta
 
-    behaviors = []
+    class Meta(object):
+        behaviors = ()
 
     @classmethod
     def find_all_by_properties(cls, **kwargs):
@@ -146,7 +150,7 @@ class Model(ndb.Model):
 
     @classmethod
     def _invoke_behaviors(cls, method, *args, **kwargs):
-        for b in cls._behaviors:
+        for b in cls.behaviors:
             getattr(b, method)(*args, **kwargs)
 
     def _pre_put_hook(self):

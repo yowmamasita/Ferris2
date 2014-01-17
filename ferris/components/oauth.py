@@ -26,14 +26,14 @@ class OAuth(object):
 
     force_prompt = False
 
-    def __init__(self, handler):
-        if hasattr(handler, 'oauth_scopes'):
-            self._scopes = handler.oauth_scopes
+    def __init__(self, controller):
+        if hasattr(controller.meta, 'oauth_scopes'):
+            self._scopes = controller.meta.oauth_scopes
         else:
             self._scopes = []
         self._user_credentials = None
-        setattr(handler, 'oauth', self)
-        self.handler = handler
+        setattr(controller, 'oauth', self)
+        self.controller = controller
 
     def credentials(self):
         """
@@ -62,66 +62,66 @@ class OAuth(object):
         """
         Generates an authorization url to start the OAuth flow for the current user.
         """
-        return self._create_oauth_session(self.handler, admin, redirect, force_prompt)
+        return self._create_oauth_session(self.controller, admin, redirect, force_prompt)
 
-    def _create_oauth_session(self, handler, admin=False, redirect=None, force_prompt=False):
+    def _create_oauth_session(self, controller, admin=False, redirect=None, force_prompt=False):
         if admin and not users.is_current_user_admin():
             webapp2.abort(500, 'The server does not have the needed authorization to complete the request')
 
         if not redirect:
-            redirect = handler.request.url
+            redirect = controller.request.url
 
         session = OAuth2Session(scopes=self._scopes, redirect=redirect, admin=admin, force_prompt=force_prompt)
         session.put()
-        uri = handler.uri('oauth-start', session=session.key.urlsafe())
+        uri = controller.uri('oauth:start', session=session.key.urlsafe())
         return uri
 
 
 @decorator
-def require_credentials(method, handler, *args, **kwargs):
+def require_credentials(method, controller, *args, **kwargs):
     """
-    Requires that valid credentials exist for the current user before executing the handler.
+    Requires that valid credentials exist for the current user before executing the controller.
     Will redirect the user for authorization.
-    User handler.oauth_scopes to specify which scopes are required.
+    User controller.oauth_scopes to specify which scopes are required.
     """
-    oauth = handler.components.oauth
-    user_credentials = OAuth2UserCredentials.find(user=handler.user, scopes=oauth.scopes, admin=False)
+    oauth = controller.components.oauth
+    user_credentials = OAuth2UserCredentials.find(user=controller.user, scopes=oauth.scopes, admin=False)
     oauth._user_credentials = user_credentials
     if not oauth.has_credentials():
-        return handler.redirect(oauth.authorization_url(admin=False, force_prompt=oauth.force_prompt))
+        return controller.redirect(oauth.authorization_url(admin=False, force_prompt=oauth.force_prompt))
 
     try:
-        return method(handler, *args, **kwargs)
+        return method(controller, *args, **kwargs)
     except AccessTokenRefreshError:
-        return handler.redirect(oauth.authorization_url(admin=False, force_prompt=oauth.force_prompt))
+        return controller.redirect(oauth.authorization_url(admin=False, force_prompt=oauth.force_prompt))
 
 
 @decorator
-def provide_credentials(method, handler, *args, **kwargs):
+def provide_credentials(method, controller, *args, **kwargs):
     """
     Similar to :func:`require_credentials` but instead of automatically redirecting the user when credentials are required it allows you to take your own action.
 
     You can use :meth:`OAuth.has_credentials()` to interrogate.
     """
-    oauth = handler.components.oauth
-    user_credentials = OAuth2UserCredentials.find(user=handler.user, scopes=oauth.scopes, admin=False)
+    oauth = controller.components.oauth
+    user_credentials = OAuth2UserCredentials.find(user=controller.user, scopes=oauth.scopes, admin=False)
     oauth._user_credentials = user_credentials
-    return method(handler, *args, **kwargs)
+    return method(controller, *args, **kwargs)
 
 
 @decorator
-def require_admin_credentials(method, handler, *args, **kwargs):
+def require_admin_credentials(method, controller, *args, **kwargs):
     """
-    Requires that valid credentials exist for the administrator before executing the handler.
+    Requires that valid credentials exist for the administrator before executing the controller.
     Will redirect the user for authorization if the user is an admin.
     """
-    oauth = handler.components.oauth
+    oauth = controller.components.oauth
     user_credentials = OAuth2UserCredentials.find(scopes=oauth.scopes, admin=True)
     oauth._user_credentials = user_credentials
     if not oauth.has_credentials():
-        return handler.redirect(oauth.authorization_url(admin=True))
+        return controller.redirect(oauth.authorization_url(admin=True))
 
     try:
-        return method(handler, *args, **kwargs)
+        return method(controller, *args, **kwargs)
     except AccessTokenRefreshError:
-        return handler.redirect(oauth.authorization_url(admin=True))
+        return controller.redirect(oauth.authorization_url(admin=True))

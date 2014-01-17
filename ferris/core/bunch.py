@@ -18,3 +18,9 @@ class Bunch(object):
 
     def __iter__(self):
         return self.__dict__.__iter__()
+
+    def __unicode__(self):
+        return self.__dict__.__unicode__()
+
+    def __str__(self):
+        return self.__dict__.__str__()

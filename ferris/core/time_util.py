@@ -1,12 +1,18 @@
-from datetime import datetime
 from pytz.gae import pytz
-from settings import app_config
-
-utc = pytz.timezone('UTC')
-local_tz = pytz.timezone(app_config['timezone'])
+from . import settings
 
 
-def localize(dt):
+def utc_tz():
+    return pytz.timezone('UTC')
+
+
+def local_tz():
+    return pytz.timezone(settings.get('timezone')['local'])
+
+
+def localize(dt, tz=None):
     if not dt.tzinfo:
-        dt = utc.localize(dt)
-    return dt.astimezone(local_tz)
+        dt = utc_tz().localize(dt)
+    if not tz:
+        tz = local_tz()
+    return dt.astimezone(tz)
