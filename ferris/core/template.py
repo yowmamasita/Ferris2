@@ -218,8 +218,9 @@ def _is_datetime(obj):
 formatters = {
     datetime.datetime: lambda x: time_util.localize(x).strftime('%b %d, %Y at %I:%M%p %Z'),
     datetime.date: lambda x: x.strftime('%b %d, %Y'),
-    ndb.Key: lambda x: x.get()
+    ndb.Key: lambda x: format_value(x.get())
 }
+
 
 def format_value(val):
     if isinstance(val, types.StringTypes):
