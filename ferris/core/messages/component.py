@@ -39,8 +39,15 @@ class IntResponseHandler(ResponseHandler):
 
 class Messaging(object):
     def __init__(self, controller):
+        from ferris.core.scaffold import Scaffolding
+
         self.controller = controller
         self.transform = False
+
+        # Make sure scaffold is ahead of us
+        if Scaffolding in controller.Meta.components:
+            if controller.Meta.components.index(Messaging) < controller.Meta.components.index(Scaffolding):
+                raise ValueError("Scaffolding must come before Messaging in the component list for controller %s" % controller.name)
 
         # Create a Message class if needed
         if not hasattr(self.controller.meta, 'Message'):
