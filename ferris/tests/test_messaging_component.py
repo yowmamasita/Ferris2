@@ -29,6 +29,7 @@ class People(Controller):
             item.put()
             self.context['data'] = item
         else:
+            self.context['errors'] = result.errors
             return 400
 
     def api_edit(self, key):
@@ -39,6 +40,7 @@ class People(Controller):
             item.put()
             self.context['data'] = item
         else:
+            self.context['errors'] = result.errors
             return 400
 
 
@@ -111,4 +113,6 @@ class MessagingTest(FerrisTestCase):
     def testErrors(self):
         data = json.dumps({'title': 'Dalek', 'content': 12346})
 
-        self.testapp.post('/api/people', data, status=400, content_type='application/json')
+        r = self.testapp.post('/api/people', data, status=400, content_type='application/json')
+
+        assert len(r.json['errors']) == 1
