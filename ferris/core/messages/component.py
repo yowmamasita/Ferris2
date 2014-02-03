@@ -130,11 +130,11 @@ class Messaging(object):
         return msg
 
     def render(self):
-        logging.error(self.controller.context.get('errors'))
-        data = self._get_data()
-        data = self._transform_data(data)
-        if not data and 'errors' in self.controller.context:
+        if 'errors' in self.controller.context:
             data = self._transform_errors()
+        else:
+            data = self._get_data()
+            data = self._transform_data(data)
         self.controller.context['data'] = data
 
     def _on_before_render(self, *args, **kwargs):
