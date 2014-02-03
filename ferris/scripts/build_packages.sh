@@ -27,32 +27,25 @@ cp -r gae-pytz/pytz $packages
 echo ' --> Packaging gdata'
 cd /tmp
 rm -rf gdata gdata.zip 2>/dev/null
-hg clone https://code.google.com/p/gdata-python-client gdata
+hg      clone https://code.google.com/p/gdata-python-client gdata
 cd gdata/src
 zip ../../gdata.zip -rq *
 cd ../../
 cp gdata.zip $packages
 
-echo ' --> Packaging api-client'
-sudo pip install --upgrade google-api-python-client
-cd /tmp
-rm -rf apiclient 2>/dev/null
-mkdir apiclient
-cd apiclient
-echo "application: x\nversion: 1\nruntime: python27\napi_version: 1\n" > app.yaml
-enable-app-engine-project .
-rm app.yaml
-zip ../apiclient.zip -rq *
-cd ../
-cp apiclient.zip $packages
+
+echo ' --> Getting api-client'
+cd $packages
+rm google-api-python-client-gae-1.2.zip 2>/dev/null
+wget https://google-api-python-client.googlecode.com/files/google-api-python-client-gae-1.2.zip
+
 
 echo ' --> Packaging wtforms & wtforms-json'
 cd /tmp
 rm -rf wtforms.zip wtforms wtforms-json six 2>/dev/null
 
-hg clone ssh://hg@bitbucket.org/simplecodes/wtforms wtforms
+git clone https://github.com/wtforms/wtforms.git
 cd wtforms
-hg checkout 1.0.4
 zip ../wtforms.zip -rq wtforms AUTHORS.txt LICENSE.txt
 cd ../
 
@@ -67,6 +60,7 @@ zip -r ../wtforms.zip six.py
 cd ../
 
 cp wtforms.zip $packages
+
 
 echo ' --> Packaging utils'
 cd /tmp
