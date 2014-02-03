@@ -10,7 +10,6 @@
 <table class='table table-striped'>
     <thead>
         <tr>
-            <th class='span1'>#</th>
             <th>User</th>
             <th>Scopes</th>
             <th>Expired</th>
@@ -22,9 +21,6 @@
     <tbody>
         {% for item in list %}
             <tr>
-                <td class='span1'>
-                    <span class='badge'>{{item.key.id()}}</span>
-                </td>
                 <td>
                     {{s.print_value(item.user)}}
                     {% if item.admin %}

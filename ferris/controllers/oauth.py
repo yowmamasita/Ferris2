@@ -39,10 +39,6 @@ class Oauth(Controller):
 
         credentials = session.flow.step2_exchange(self.request.params['code'])
 
-        # Delete any old credentials
-        OAuth2UserCredentials.delete_all(user=self.user, scopes=session.scopes, admin=session.admin)
-
-        # Save the new ones
         OAuth2UserCredentials.create(
             user=self.user,
             scopes=session.scopes,
