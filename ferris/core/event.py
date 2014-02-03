@@ -3,6 +3,7 @@ Ferris event class
 """
 
 import logging
+import bisect
 
 
 class Event(object):
@@ -15,23 +16,23 @@ class Event(object):
         myevent()
     """
     def __init__(self, name=None):
-        self.handlers = set()
+        self.handlers = []
         self.name = name
 
-    def handle(self, handler):
+    def handle(self, handler, priority=0):
         """
         Add a handler function to this event. You can also use +=
         """
-        self.handlers.add(handler)
+        bisect.insort(self.handlers, (priority, handler))
         return self
 
-    def unhandle(self, handler):
+    def unhandle(self, handler, priority=0):
         """
         Remove a handler function from this event. If it's not in the
         list, it'll raise a ValueError.
         """
         try:
-            self.handlers.remove(handler)
+            self.handlers.remove((priority, handler))
         except:
             raise ValueError("Handler is not handling this event, so cannot unhandle it.")
         return self
@@ -43,7 +44,7 @@ class Event(object):
         """
         #logging.debug('Event %s firing %s listeners' % (self.name, self.handlers))
         results = []
-        for handler in self.handlers:
+        for p, handler in self.handlers:
             results.append(handler(*args, **kargs))
         return results
 
