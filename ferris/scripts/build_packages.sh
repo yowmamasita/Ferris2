@@ -14,15 +14,17 @@ echo $packages
 echo ' --> Cleaning'
 
 rm -rf "$packages/pytz" 2>/dev/null
-rm $packages/gdata.zip $packages/atom.zip $packages/apiclient.zip $packages/wtforms.zip $packages/utils.zip $packages/protopigeon.zip 2>/dev/null
+rm $packages/gdata.zip $packages/atom.zip $packages/google-api* $packages/wtforms.zip $packages/utils.zip $packages/protopigeon.zip 2>/dev/null
 
 echo ' --> Starting Packaging'
 
 echo ' --> Packaging pytz'
 cd /tmp
-rm -rf gae-pytz 2>/dev/null
-hg clone https://code.google.com/p/gae-pytz/ gae-pytz
-cp -r gae-pytz/pytz $packages
+rm -rf pytz-appengine 2>/dev/null
+git clone https://github.com/brianmhunt/pytz-appengine.git
+cd pytz-appengine
+python build.py all
+cp -r pytz $packages
 
 echo ' --> Packaging gdata'
 cd /tmp

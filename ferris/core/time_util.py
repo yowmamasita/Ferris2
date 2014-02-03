@@ -1,4 +1,4 @@
-from pytz.gae import pytz
+import pytz
 from . import settings
 
 
