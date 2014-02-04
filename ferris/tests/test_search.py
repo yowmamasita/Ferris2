@@ -1,4 +1,4 @@
-from .lib import WithTestBed
+from ferrisnose import AppEngineTest
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from google.appengine.api import search as search_api
@@ -18,7 +18,7 @@ class SearchTestModel(ndb.Model):
     geopt = ndb.GeoPtProperty()
 
 
-class SearchTest(WithTestBed):
+class SearchTest(AppEngineTest):
 
     def _create_test_data(self):
         instance = SearchTestModel(

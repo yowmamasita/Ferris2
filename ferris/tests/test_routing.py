@@ -1,5 +1,5 @@
 import unittest
-from lib import FerrisTestCase
+from ferrisnose import AppEngineWebTest
 from ferris.core import routing
 from ferris.core.controller import Controller, route
 
@@ -142,7 +142,7 @@ class RoutingTest(unittest.TestCase):
         )
 
 
-class TestOnUri(FerrisTestCase):
+class TestOnUri(AppEngineWebTest):
     def setUp(self):
         super(TestOnUri, self).setUp()
         self.addController(TestClass)

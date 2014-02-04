@@ -1,8 +1,8 @@
-from .lib import WithTestBed
+from ferrisnose import AppEngineTest
 from ferris.core import mail
 
 
-class MailTest(WithTestBed):
+class MailTest(AppEngineTest):
 
     def test(self):
         res, body = mail.send_template(

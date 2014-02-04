@@ -1,4 +1,4 @@
-from .lib import WithTestBed
+from ferrisnose import AppEngineTest
 from ferris.core.ndb import Model, Behavior, ndb
 
 
@@ -33,7 +33,7 @@ class BehaviorTestModel(Model):
     string_two = ndb.StringProperty()
 
 
-class BehaviorTest(WithTestBed):
+class BehaviorTest(AppEngineTest):
 
     def test(self):
         m = BehaviorTestModel(string_one='123')

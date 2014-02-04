@@ -1,4 +1,4 @@
-from lib import FerrisTestCase
+from ferrisnose import AppEngineWebTest
 from ferris.core.controller import Controller, route
 from ferris.components import cache
 
@@ -23,7 +23,7 @@ class Cachable(Controller):
         return 'decorator'
 
 
-class TestEdgeCaching(FerrisTestCase):
+class TestEdgeCaching(AppEngineWebTest):
     def setUp(self):
         super(TestEdgeCaching, self).setUp()
         Cachable._build_routes(self.testapp.app.router)

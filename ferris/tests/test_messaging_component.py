@@ -1,5 +1,5 @@
-from lib import FerrisTestCase
-from ferris.core.controller import Controller, route, route_with
+from ferrisnose import AppEngineWebTest
+from ferris.core.controller import Controller
 from ferris.core.messages import Messaging
 from ferris.core.ndb import Model, ndb
 import json
@@ -44,7 +44,7 @@ class People(Controller):
             return 400
 
 
-class MessagingTest(FerrisTestCase):
+class MessagingTest(AppEngineWebTest):
     def setUp(self):
         super(MessagingTest, self).setUp()
         People._build_routes(self.testapp.app.router)

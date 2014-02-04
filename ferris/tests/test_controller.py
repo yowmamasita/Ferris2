@@ -1,4 +1,4 @@
-from lib import FerrisTestCase
+from ferrisnose import AppEngineWebTest
 import wtforms
 import json
 from ferris.core.controller import Controller, route, route_with
@@ -122,7 +122,7 @@ class TestController(Controller):
         return str(form.data)
 
 
-class ControllerTest(FerrisTestCase):
+class ControllerTest(AppEngineWebTest):
     def setUp(self):
         super(ControllerTest, self).setUp()
         TestController._build_routes(self.testapp.app.router)

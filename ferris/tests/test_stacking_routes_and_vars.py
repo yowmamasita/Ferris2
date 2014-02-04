@@ -1,10 +1,11 @@
 from ferris.core.controller import Controller, route_with, route
-from ferris.tests.lib import FerrisTestCase
+from ferrisnose import AppEngineWebTest
+
 
 class TestController(Controller):
 
     class Meta:
-      prefixes = ['pre']
+        prefixes = ['pre']
 
     @route_with('/[controller]/[action]/<a>/<b>/<c>')
     @route_with('/[controller]/[action]/<a>/<b>')
@@ -37,7 +38,7 @@ class TestController(Controller):
         return 'done'
 
 
-class DefaultArgsTest(FerrisTestCase):
+class DefaultArgsTest(AppEngineWebTest):
 
     def setUp(self):
         super(DefaultArgsTest, self).setUp()

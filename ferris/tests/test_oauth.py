@@ -1,9 +1,9 @@
-from ferris.tests.lib import WithTestBed
+from ferrisnose import AppEngineTest
 from google.appengine.api import users
 from ferris.core.oauth2.user_credentials import UserCredentials, find_credentials
 
 
-class TestOAuth(WithTestBed):
+class TestOAuth(AppEngineTest):
 
     def test_credential_storage(self):
         user1 = users.User("test@example.com")

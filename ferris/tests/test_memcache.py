@@ -1,9 +1,9 @@
-from .lib import WithTestBed
+from ferrisnose import AppEngineTest
 from google.appengine.api import memcache
 from ferris.core.memcache import cached, cached_by_args, none_sentinel_string
 
 
-class MemcacheTest(WithTestBed):
+class MemcacheTest(AppEngineTest):
 
     def test_cached(self):
         mutators = [0, 0, 0]

@@ -1,4 +1,4 @@
-from .lib import WithTestBed
+from ferrisnose import AppEngineTest
 from google.appengine.ext import ndb
 from ferris.core.template import format_value
 import datetime
@@ -11,7 +11,7 @@ class FormatTestModel(ndb.Model):
         return self.name or u"Un-named"
 
 
-class ValueFormatterTest(WithTestBed):
+class ValueFormatterTest(AppEngineTest):
 
     def test_string_types(self):
         assert format_value("test") == "test"

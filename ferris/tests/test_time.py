@@ -1,9 +1,9 @@
 from ferris.core import time_util, settings
-from ferris.tests.lib import WithTestBed
+from ferrisnose import AppEngineTest
 import datetime
 
 
-class TestTime(WithTestBed):
+class TestTime(AppEngineTest):
     def test_localize(self):
         settings.defaults({'timezone': {
             'local': 'US/Eastern'

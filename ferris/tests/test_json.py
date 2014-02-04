@@ -1,4 +1,4 @@
-from lib import WithTestBed
+from ferrisnose import AppEngineTest
 from google.appengine.ext import db, ndb
 from ferris.core.json_util import DatastoreEncoder, DatastoreDecoder
 import datetime
@@ -20,7 +20,7 @@ class DbTestModel(db.Model):
     ref = db.SelfReferenceProperty()
 
 
-class JsonTest(WithTestBed):
+class JsonTest(AppEngineTest):
 
     def testNdbEncoding(self):
         # Key only test
