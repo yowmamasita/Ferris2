@@ -2,6 +2,7 @@ from google.appengine.ext import blobstore
 import wtforms
 import urllib2
 import cgi
+import logging
 
 
 class Upload(object):
@@ -16,7 +17,8 @@ class Upload(object):
      * Processing uploads when they come back
      * Adding each upload's key to the form data so that it can be saved to the model
 
-    Does not require that the controller subclass ``BlobstoreUploadHandler``, however to serve blobs you must subclass ``BlobstoreDownloadHandler``.
+    Does not require that the controller subclass ``BlobstoreUploadHandler``, however to serve blobs you must
+    either use the built-in Download controller or create a custom controller that subclasses ``BlobstoreDownloadHandler``.
     """
 
     def __init__(self, controller):
@@ -24,7 +26,7 @@ class Upload(object):
         self.__uploads = None
         self.process_uploads = False
         self.upload_actions = ('add', 'edit')
-        self.gs_bucket_name = None
+        self.cloud_storage_bucket = controller.Meta.cloud_storage_bucket if hasattr(controller.Meta, 'cloud_storage_bucket') else None
 
         controller.events.before_startup += self.on_before_startup
         controller.events.scaffold_before_apply += self.on_scaffold_before_apply
@@ -58,13 +60,19 @@ class Upload(object):
 
     def process(self, form, item=None):
         """
-        Process all of the incoming file upload and populate the form with them.
-        Only processes file fields that are present in the form
+        Process all of the incoming file upload and populates the current model form with them.
+
+        Additionally, if using cloudstorage and there is a field present with the name
+        "x_cloud_storage" that corresponds to the file, then the cloud storage object
+        name will be saved to that field.
         """
+        uploads = self.get_uploads()
         for field in [x for x in form if isinstance(x, wtforms.fields.FileField)]:
-            files = self.get_uploads(field.name)
+            files = uploads.get(field.name)
             if files and files[0]:
                 getattr(form, field.name).data = files[0].key()
+                if hasattr(form, "%s_cloud_storage" % field.name):
+                    getattr(form, "%s_cloud_storage" % field.name).data = files[0].cloud_storage.gs_object_name
             else:
                 delattr(form, field.name)
 
@@ -76,7 +84,7 @@ class Upload(object):
 
         return blobstore.create_upload_url(
             success_path=url,
-            gs_bucket_name=self.gs_bucket_name)
+            gs_bucket_name=self.cloud_storage_bucket)
 
     def serve(self, item, property):
         if not item:
@@ -86,34 +94,28 @@ class Upload(object):
 
         return self.controller.response
 
-    def get_uploads(self, field_name=None):
-        """Get uploads sent to this controller.
-
-        Args:
-        field_name: Only select uploads that were sent as a specific field.
+    def get_uploads(self):
+        """Get all uploads sent to this controller.
 
         Returns:
-        A list of BlobInfo records corresponding to each upload.
-        Empty list if there are no blobinfo records for field_name.
+        A dictionary mapping field names to a list of blobinfo objects. This blobinfos
+        will have an additional cloud_storage property if they have been uploaded
+        to cloud storage but be aware that this will not be persisted.
         """
         if self.__uploads is None:
             self.__uploads = {}
             for key, value in self.controller.request.params.items():
                 if isinstance(value, cgi.FieldStorage):
                     if 'blob-key' in value.type_options:
-                        info = blobstore.parse_blob_info(value)
-                        self.__uploads.setdefault(key, []).append(info)
+                        blob_info = blobstore.parse_blob_info(value)
+                        cloud_info = blobstore.parse_file_info(value)
 
-        results = []
+                        # work around mangled names
+                        blob_info = blobstore.BlobInfo.get(blob_info.key())
 
-        if field_name:
-            try:
-                results = list(self.__uploads[field_name])
-            except KeyError:
-                pass
-        else:
-            for uploads in self.__uploads.itervalues():
-                results += uploads
+                        # Add cloud storage data
+                        setattr(blob_info, 'cloud_storage', cloud_info)
 
-        # Workaround for mangled filenames
-        return blobstore.BlobInfo.get([x.key() for x in results])
+                        self.__uploads.setdefault(key, []).append(blob_info)
+
+        return self.__uploads
