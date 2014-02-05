@@ -26,12 +26,6 @@ defaults['oauth2'] = {
     'client_secret': None
 }
 
-# This enables the template debugger.
-# It is automatically disabled in the live environment as it may leak sensitive data.
-defaults['ed_rooney'] = {
-    'enabled': True
-}
-
 # Enables or disables app stats.
 # NOTE: This must also be enabled in app.yaml.
 defaults['appstats'] = {
