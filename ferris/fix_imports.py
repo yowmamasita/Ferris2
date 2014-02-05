@@ -4,7 +4,8 @@ import logging
 
 # Setup the import path
 package_dir = "packages"
-package_dir_path = os.path.join(os.path.dirname(__file__), package_dir)
+package_dir_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', package_dir))
 
 # Allow unzipped packages to be imported
 # from packages folder

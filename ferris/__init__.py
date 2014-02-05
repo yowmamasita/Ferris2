@@ -1,6 +1,6 @@
 version = "2.0.0"
 
-from . import core, components, behaviors
+from . import fix_imports, core, components, behaviors
 from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins, views
 from core.event import Event
 from core.bunch import Bunch

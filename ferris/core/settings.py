@@ -1,4 +1,3 @@
-
 from webapp2 import get_request
 from . import events
 
@@ -7,6 +6,23 @@ _defaults = {}
 
 class ConfigurationError(Exception):
     pass
+
+
+def load_settings():
+    """
+    Executed when the project is created and loads the settings from app/settings.py
+    """
+    try:
+        import app.settings as appsettings
+    except ImportError:
+        raise ConfigurationError("Settings not found. Please create /app/settings.py")
+
+    try:
+        _defaults = appsettings.settings
+    except AttributeError:
+        raise ConfigurationError("No dictionary 'settings' found in settings.py")
+
+    defaults(_defaults)
 
 
 def defaults(dict=None):
