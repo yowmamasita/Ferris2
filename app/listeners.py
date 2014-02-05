@@ -9,5 +9,5 @@ from ferris.core.events import on
 # example
 @on('controller_before_authorization')
 def inject_authorization_chains(controller, authorizations):
-	pass
     #authorizations.insert(0, custom_auth_chain)
+    pass
