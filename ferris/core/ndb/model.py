@@ -4,7 +4,6 @@ Classes that extend the basic ndb.Model classes
 
 from google.appengine.ext import ndb
 import types
-import logging
 
 
 class ModelMeta(ndb.model.MetaModel):
@@ -23,6 +22,11 @@ class ModelMeta(ndb.model.MetaModel):
         # Behaviors
         setattr(cls, 'behaviors', [x(cls) for x in cls.Meta.behaviors])
 
+        # Inject finder methods
+        ModelMeta._inject_find_methods(cls, name, bases, dct)
+
+    @staticmethod
+    def _inject_find_methods(cls, name, bases, dct):
         # find_by_x and find_all_by_x
         for prop_name, property in cls._properties.items():
             find_all_name = 'find_all_by_' + prop_name
@@ -76,7 +80,7 @@ class Model(ndb.Model):
         query = cls.query()
         for name, value in kwargs.items():
             property = cls._properties[name]
-            query = query.filter(property==value)
+            query = query.filter(property == value)
         return query
 
     @classmethod

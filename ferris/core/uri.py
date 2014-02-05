@@ -13,7 +13,9 @@ class Uri(object):
     """
 
     def get_route_name(self,
-        prefix=route_sentinel, controller=route_sentinel, action=route_sentinel):
+                       prefix=route_sentinel,
+                       controller=route_sentinel,
+                       action=route_sentinel):
         """
         Function used to build the route name for a given prefix, controller, and
         action. For example, build_action_route('admin','pages','view', id=2)
@@ -27,8 +29,11 @@ class Uri(object):
         return routing.name_from_canonical_parts(prefix, controller, action)
 
     def uri(self, route_name=None,
-        prefix=route_sentinel, controller=route_sentinel, action=route_sentinel,
-        _pass_all=False, *args, **kwargs):
+            prefix=route_sentinel,
+            controller=route_sentinel,
+            action=route_sentinel,
+            _pass_all=False,
+            *args, **kwargs):
         """
         Generate in-application URIs (or URLs).
 
@@ -65,7 +70,7 @@ class Uri(object):
             tkwargs = kwargs
 
         tkwargs = {key: value for key, value in tkwargs.items()
-             if value is not None}
+                   if value is not None}
         for key, value in tkwargs.items():
             if isinstance(value, unicode):
                 tkwargs[key] = value.encode("utf-8")
@@ -73,8 +78,10 @@ class Uri(object):
         return webapp2.uri_for(route_name, *args, **tkwargs)
 
     def uri_exists(self, route_name=None,
-        prefix=route_sentinel, controller=route_sentinel, action=route_sentinel,
-        *args, **kwargs):
+                   prefix=route_sentinel,
+                   controller=route_sentinel,
+                   action=route_sentinel,
+                   *args, **kwargs):
         """
         Check if a route exists.
         """
@@ -84,8 +91,10 @@ class Uri(object):
         return routing.route_name_exists(route_name)
 
     def on_uri(self, route_name=None,
-        prefix=route_sentinel, controller=route_sentinel, action=route_sentinel,
-        **kwargs):
+               prefix=route_sentinel,
+               controller=route_sentinel,
+               action=route_sentinel,
+               **kwargs):
         """
         Checks to see if we're currently on the specified route.
         """

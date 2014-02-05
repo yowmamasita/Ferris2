@@ -28,11 +28,10 @@ class MemcacheTest(AppEngineTest):
             mutators[1] += 1
             return None
 
-        assert test_cached_with_none() == None
-        assert test_cached_with_none() == None
+        assert test_cached_with_none() is None
+        assert test_cached_with_none() is None
         assert mutators[1] == 1
         assert memcache.get('test-key-none') == none_sentinel_string
-
 
         @cached_by_args('arg-test')
         def args_test(num):
@@ -53,4 +52,3 @@ class MemcacheTest(AppEngineTest):
         assert args_method_test(1, 4) == 4
         assert mutators[2] == 2
         assert memcache.get('arg-method-test:4::') == 4
-

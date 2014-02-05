@@ -58,6 +58,7 @@ class BroadcastEvent(Event):
 
 class NamedBroadcastEvents(NamedEvents):
     _event_class = BroadcastEvent
+
     def __init__(self, prefix=None):
         super(NamedBroadcastEvents, self).__init__()
         self.prefix = prefix

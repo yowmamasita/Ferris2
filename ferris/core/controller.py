@@ -246,12 +246,12 @@ class Controller(webapp2.RequestHandler, Uri):
                     'controller': inflector.underscore(cls.__name__),
                     'action': '_'.join(split[1:]) if prefixed else action,
                 }
-                
+
                 for i in vars:
                     value = controller_data.get(i)
                     if not value:
                         continue
-                    route.template = route.template.replace('['+i+']', value) 
+                    route.template = route.template.replace('[' + i + ']', value)
             router.add(route)
 
         events.fire('controller_build_routes', cls=cls, router=router)

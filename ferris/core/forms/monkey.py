@@ -3,9 +3,11 @@ import wtforms
 from google.appengine.ext import ndb
 from . import fields
 
+
 ### Additional Converters
 def add_convertor(property_type, converter_func):
     setattr(wtfndb.ModelConverter, 'convert_%s' % property_type, converter_func)
+
 
 def convert_UserProperty(self, model, prop, kwargs):
     """Returns a form field for a ``ndb.UserProperty``."""
@@ -15,6 +17,7 @@ def convert_UserProperty(self, model, prop, kwargs):
     kwargs['validators'].append(wtforms.validators.email())
     kwargs['validators'].append(wtforms.validators.length(max=500))
     return fields.UserField(**kwargs)
+
 
 def convert_KeyProperty(self, model, prop, kwargs):
     """Returns a form field for a ``ndb.KeyProperty``."""
@@ -26,9 +29,11 @@ def convert_KeyProperty(self, model, prop, kwargs):
         del kwargs['allow_blank']
         return fields.MultipleReferenceField(**kwargs)
 
+
 def convert_BlobKeyProperty(self, model, prop, kwargs):
     """Returns a form field for a ``ndb.BlobKeyProperty``."""
     return fields.BlobKeyField(**kwargs)
+
 
 def fallback_converter(self, model, prop, kwargs):
     pass

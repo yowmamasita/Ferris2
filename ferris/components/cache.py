@@ -10,7 +10,6 @@ class Cache(object):
     def __init__(self, controller):
         self.controller = controller
 
-
     def _get_default_expiration(self):
         return self.controller.meta.default_cache_expiration if hasattr(self.controller.meta, 'default_cache_expiration') else 15
 

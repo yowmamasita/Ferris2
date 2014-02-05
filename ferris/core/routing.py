@@ -224,7 +224,7 @@ def build_routes_for_controller(controllercls):
         if parts['prefix']:
             method = '%s_%s' % (parts['prefix'], parts['action'])
 
-        name_counters[route_name] = name_counters.get(route_name, 0)+1
+        name_counters[route_name] = name_counters.get(route_name, 0) + 1
         if name_counters[route_name] > 1:
             route_name = '%s-%d' % (route_name, name_counters[route_name])
 

@@ -12,7 +12,7 @@ def factory(name):
     Creates a view instance by name
     """
     global _views
-    return _views.get(name.lower(), _views.get((name+'View').lower()))
+    return _views.get(name.lower(), _views.get((name + 'View').lower()))
 
 
 class ViewContext(dict):
