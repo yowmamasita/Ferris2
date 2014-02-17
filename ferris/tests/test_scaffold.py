@@ -1,5 +1,4 @@
-import unittest
-from lib import FerrisTestCase
+from ferrisnose import AppEngineWebTest
 from ferris.core import scaffold
 from ferris.core.controller import Controller, route
 from ferris.core.ndb import Model, ndb
@@ -39,7 +38,7 @@ class Widgets(Controller):
         return scaffold.add(self)
 
 
-class TestScaffoldBehavior(FerrisTestCase):
+class TestScaffoldBehavior(AppEngineWebTest):
     def setUp(self):
         super(TestScaffoldBehavior, self).setUp()
         Widgets._build_routes(self.testapp.app.router)
@@ -90,7 +89,7 @@ class TestScaffoldBehavior(FerrisTestCase):
         Widget(name='b').put()
 
         r = self.testapp.get('/widgets/list_alpha')
-        
+
         assert r.json[0]['name'] == 'a'
         assert r.json[1]['name'] == 'b'
         assert r.json[2]['name'] == 'c'

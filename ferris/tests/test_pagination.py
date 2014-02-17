@@ -1,5 +1,4 @@
-import unittest
-from lib import FerrisTestCase
+from ferrisnose import AppEngineWebTest
 from ferris.core import scaffold
 from ferris.core.controller import Controller, route
 from ferris.core.ndb import Model, ndb
@@ -30,7 +29,8 @@ class Sprockets(Controller):
     def api_search(self):
         self.components.search(sort_field='stamp', sort_direction='asc')
 
-class TestPagination(FerrisTestCase):
+
+class TestPagination(AppEngineWebTest):
     def setUp(self):
         super(TestPagination, self).setUp()
         Sprockets._build_routes(self.testapp.app.router)

@@ -1,4 +1,5 @@
 from ferris.core.ndb import ndb
+from ferris.core.response_handlers import ResponseHandler
 from protopigeon import Message, model_message, to_message, messages
 import logging
 
@@ -16,10 +17,37 @@ def list_message(message_type):
     return type(name, (messages.Message,), fields)
 
 
+class ErrorMessage(Message):
+    errors = messages.StringField(1, repeated=True)
+
+
+# Install a new int response handler that can detect if
+# Errors are present and if so can show them instead of a generic
+# 400 error
+
+class IntResponseHandler(ResponseHandler):
+    type = int
+
+    def process(self, handler, result):
+        handler._clear_redirect()
+        if result == 400 and 'messaging' in handler.components and 'errors' in handler.context and handler.components.messaging.transform:
+            handler.response = handler.meta.view.render()
+            handler.response.status = result
+        else:
+            handler.abort(result)
+
+
 class Messaging(object):
     def __init__(self, controller):
+        from ferris.core.scaffold import Scaffolding
+
         self.controller = controller
         self.transform = False
+
+        # Make sure scaffold is ahead of us
+        if Scaffolding in controller.Meta.components:
+            if controller.Meta.components.index(Messaging) < controller.Meta.components.index(Scaffolding):
+                raise ValueError("Scaffolding must come before Messaging in the component list for controller %s" % controller.name)
 
         # Create a Message class if needed
         if not hasattr(self.controller.meta, 'Message'):
@@ -90,7 +118,6 @@ class Messaging(object):
             if previous_cursor is not None:
                 prev_page_link = self.controller.uri(_pass_all=True, cursor=previous_cursor, _full=True)
 
-
         return ListMessage(
             items=items,
             next_page=next_page_link,
@@ -104,6 +131,19 @@ class Messaging(object):
             return self.controller.meta.messaging_transform_function(entity, self.controller.meta.Message)
         return to_message(entity, self.controller.meta.Message)
 
+    def _transform_errors(self):
+        errors = self.controller.context.get('errors')
+        msg = ErrorMessage(errors=errors)
+        return msg
+
+    def render(self):
+        if 'errors' in self.controller.context:
+            data = self._transform_errors()
+        else:
+            data = self._get_data()
+            data = self._transform_data(data)
+        self.controller.context['data'] = data
+
     def _on_before_render(self, *args, **kwargs):
         if self.transform:
-            self.controller.context['data'] = self._transform_data(self._get_data())
+            self.render()

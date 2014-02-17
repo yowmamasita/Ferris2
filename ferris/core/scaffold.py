@@ -209,6 +209,7 @@ def parser_action(controller, item, callback=save_callback):
                 return controller.redirect(controller.scaffold.redirect)
 
         else:
+            controller.context['errors'] = parser.errors
             _flash(controller, 'There were errors on the form, please correct and try again.', 'error')
 
     controller.context.set(**{

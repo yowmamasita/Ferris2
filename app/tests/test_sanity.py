@@ -1,7 +1,7 @@
-from ferris.tests.lib import AppTestCase
+from ferrisnose import FerrisAppTest
 
 
-class SanityTest(AppTestCase):
+class SanityTest(FerrisAppTest):
 
     def testRoot(self):
         self.loginUser()

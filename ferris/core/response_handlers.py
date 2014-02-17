@@ -1,5 +1,5 @@
 from webapp2 import Response
-from .messages import Message
+from protopigeon import Message
 
 
 _handlers = {}

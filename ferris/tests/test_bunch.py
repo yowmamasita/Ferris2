@@ -1,8 +1,8 @@
-from lib import WithTestBed
+from ferrisnose import AppEngineTest
 from ferris.core.bunch import Bunch
 
 
-class TestBunch(WithTestBed):
+class TestBunch(AppEngineTest):
 
     def test_bunch(self):
         data = Bunch()

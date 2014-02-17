@@ -6,15 +6,16 @@ from google.appengine.ext import ndb
 from ferris.core.ndb import Model
 from credentials_property import CredentialsProperty
 from ndb_storage import NdbStorage
+import hashlib
 
 
 class UserCredentials(Model):
 
-    user = ndb.UserProperty()
-    scopes = ndb.StringProperty(repeated=True)
-    admin = ndb.BooleanProperty()
-    credentials = CredentialsProperty()
-    filter_scopes = ndb.StringProperty()
+    user = ndb.UserProperty(indexed=True)
+    scopes = ndb.StringProperty(repeated=True, indexed=False)
+    admin = ndb.BooleanProperty(indexed=True)
+    credentials = CredentialsProperty(indexed=False)
+    filter_scopes = ndb.ComputedProperty(lambda x: ','.join(sorted(x.scopes)), indexed=True)
 
     @classmethod
     def _get_kind(cls):
@@ -25,56 +26,40 @@ class UserCredentials(Model):
         if item and item.credentials:
             item.credentials = NdbStorage(key, 'credentials', item).get()
 
-    def before_put(self):
-        if self.scopes:
-            self.filter_scopes = ','.join(sorted(self.scopes))
-
     @classmethod
-    def _get_parent_key(cls, user, admin):
-        if user and not admin:
-            return ndb.Key('oauth2_parent', 'User:%s' % user)
-        elif admin:
-            return ndb.Key('oauth2_parent', 'Admin')
-
-    @classmethod
-    def _find_query(cls, user=None, scopes=None, admin=None):
-        parent_key = cls._get_parent_key(user, admin)
-
-        q = cls.query(ancestor=parent_key)
-
-        if scopes:
-            scopes = ','.join(sorted(scopes))
-            q = q.filter(cls.filter_scopes == scopes)
-
-        if user:
-            q = q.filter(cls.user == user)
-
-        return q
+    def _get_key(cls, user, scopes, admin):
+        scopes_hash = hashlib.sha1(','.join(sorted(scopes))).hexdigest()
+        return ndb.Key(cls, '%s:%s:%s' % (user, scopes_hash, True if admin else False))
 
     @classmethod
     def create(cls, user, scopes, credentials, admin):
-        parent = cls._get_parent_key(user, admin)
-        item = cls(parent=parent, user=user, scopes=scopes, credentials=credentials, admin=admin)
+        key = cls._get_key(user, scopes, admin)
+        item = cls(key=key, user=user, scopes=scopes, credentials=credentials, admin=admin)
         item.put()
         return item
 
     @classmethod
-    def find(cls, user=None, scopes=None, admin=None):
-        x = cls._find_query(user, scopes, admin).get()
+    def find(cls, user=None, scopes=None, admin=False):
+        if user and scopes:
+            key = cls._get_key(user, scopes, admin)
+            x = key.get()
+        else:
+            q = cls.query()
+            if user:
+                q = q.filter(cls.user == user)
+            if scopes:
+                q = q.filter(cls.filter_scopes == ','.join(sorted(scopes)))
+            if admin:
+                q = q.filter(cls.admin == admin)
+            x = q.get()
+
         if x:
             cls.after_get(x.key, x)
         return x
 
     @classmethod
-    def find_all(cls, user, scopes, admin):
-        x = cls._find_query(user, scopes, admin)
-        for _ in x:
-            cls.after_get(_.key, _)
-        return x
-
-    @classmethod
-    def delete_all(cls, user, scopes, admin):
-        c = cls.find_all(user, scopes, admin)
+    def delete_all(cls, user):
+        c = cls.query().filter(user=user)
         for x in c:
             x.key.delete()
 

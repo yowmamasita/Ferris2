@@ -1,6 +1,6 @@
-version = "2.0.0b"
+version = "2.0.1"
 
-from . import tests, core, components, behaviors
+from . import core, components, behaviors
 from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins, views
 from core.event import Event
 from core.bunch import Bunch
@@ -19,7 +19,6 @@ __all__ = (
     'ndb',
     'settings',
     'inflector',
-    'tests',
     'core',
     'auth',
     'components',

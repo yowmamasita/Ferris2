@@ -1,4 +1,4 @@
-from lib import FerrisTestCase
+from ferrisnose import AppEngineWebTest
 from ferris.core.controller import Controller, route
 from ferris.core.views import ViewContext, View, JsonView
 
@@ -16,7 +16,7 @@ class Widgets(Controller):
         self.meta.view.template_name = 'index.html'
 
 
-class TestJsonView(FerrisTestCase):
+class TestJsonView(AppEngineWebTest):
     def setUp(self):
         super(TestJsonView, self).setUp()
         self.addController(Widgets)

@@ -1,4 +1,4 @@
-from lib import WithTestBed
+from ferrisnose import AppEngineTest
 from ferris import Model, ndb, messages
 from ferris.core.bunch import Bunch
 from ferris.core.request_parsers import MessageParser
@@ -13,7 +13,7 @@ class Widget(Model):
     content = ndb.TextProperty()
 
 
-class TestMessageParserAndView(WithTestBed):
+class TestMessageParserAndView(AppEngineTest):
 
     def testMessageParser(self):
         WidgetMessage = messages.model_message(Widget)
