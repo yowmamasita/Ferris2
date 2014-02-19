@@ -5,6 +5,8 @@ from wtforms.compat import text_type, string_types
 import operator
 import warnings
 import widgets
+from wtforms.ext.appengine import fields
+import decimal
 
 
 class UserField(wtforms.Field):
@@ -215,3 +217,14 @@ class BlobKeyField(wtforms.FileField):
         info = self.get_blob_info()
         if info:
             blobstore.delete(info.key())
+
+
+class GeoPtPropertyField(fields.fields.TextField):
+    def process_formdata(self, valuelist):
+        if valuelist:
+            try:
+                lat, lon = valuelist[0].split(',')
+                data = '%s,%s' % (decimal.Decimal(lat.strip()), decimal.Decimal(lon.strip()),)
+                self.data = ndb.GeoPt(data) # note this change from the original GeoPtPropertyField
+            except (decimal.InvalidOperation, ValueError):
+                raise ValueError('Not a valid coordinate location')
