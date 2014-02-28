@@ -251,7 +251,7 @@ class Controller(webapp2.RequestHandler, Uri):
                     value = controller_data.get(i)
                     if not value:
                         continue
-                    route.template = route.template.replace('[' + i + ']', value)
+                    route.template = route.template.replace('['+i+']', value)
             router.add(route)
 
         events.fire('controller_build_routes', cls=cls, router=router)
@@ -282,7 +282,10 @@ class Controller(webapp2.RequestHandler, Uri):
             if auth_result is not True:
                 break
 
-        if auth_result is not True:
+        if isinstance(auth_result, webapp2.Response):
+            pass
+
+        elif auth_result is not True:
             message = u"Authorization chain rejected request"
             if isinstance(auth_result, tuple):
                 message = auth_result[1]
@@ -290,7 +293,9 @@ class Controller(webapp2.RequestHandler, Uri):
             self.events.authorization_failed(controller=self, message=message)
             self.abort(403, message)
 
-        self.events.after_authorization(controller=self)
+        self.events.after_authorization(controller=self, result=auth_result)
+
+        return auth_result
 
     def _clear_redirect(self):
         if self.response.status_int in [300, 301, 302]:
@@ -319,7 +324,9 @@ class Controller(webapp2.RequestHandler, Uri):
         self.events.after_startup(controller=self)
 
         # Authorization
-        self._is_authorized()
+        res = self._is_authorized()
+        if isinstance(res, webapp2.Response):
+            return res
 
         # Dispatch to the method
         self.events.before_dispatch(controller=self)
