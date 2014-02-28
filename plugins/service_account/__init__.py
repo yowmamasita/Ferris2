@@ -1,4 +1,5 @@
 from ferris import plugins, settings, ndb
+import hashlib
 
 plugins.register('service_account')
 
@@ -22,6 +23,7 @@ def get_config():
 
 
 from oauth2client.client import SignedJwtAssertionCredentials
+from oauth2client.appengine import StorageByKeyName, CredentialsNDBProperty
 
 
 def build_credentials(scope, user=None):
@@ -37,11 +39,15 @@ def build_credentials(scope, user=None):
     if not isinstance(scope, (list, tuple)):
         scope = [scope]
 
+    key = generate_storage_key(config['client_email'], scope, user)
+    storage = StorageByKeyName(ServiceAccountStorage, key, 'credentials')
+
     creds = SignedJwtAssertionCredentials(
         service_account_name=config['client_email'],
         private_key=config['private_key'],
         scope=scope,
         prn=user)
+    creds.set_store(storage)
 
     return creds
 
@@ -63,3 +69,21 @@ def credentials_to_token(credentials):
         access_token=credentials.access_token,
         refresh_token=credentials.refresh_token)
     return token
+
+
+class ServiceAccountStorage(ndb.Model):
+    """
+    Tracks access tokens in the database. The key is
+    based on the scopes, user, and clientid
+    """
+    credentials = CredentialsNDBProperty()
+
+    @classmethod
+    def _get_kind(cls):
+        return '_ferris_OAuth2ServiceAccountStorage'
+
+
+def generate_storage_key(client_id, scopes, user):
+    s = u"%s%s%s" % (client_id, sorted(scopes), user)
+    hash = hashlib.sha1(s.encode())
+    return hash.hexdigest()
