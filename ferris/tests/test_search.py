@@ -16,6 +16,7 @@ class SearchTestModel(ndb.Model):
     time = ndb.TimeProperty()
     ref = ndb.KeyProperty()
     geopt = ndb.GeoPtProperty()
+    repeated_number = ndb.IntegerProperty(repeated=True)
 
 
 class SearchTest(AppEngineTest):
@@ -29,7 +30,8 @@ class SearchTest(AppEngineTest):
             date=datetime.date.today(),
             time=datetime.time(4),
             ref=ndb.Key('Test', '123'),
-            geopt=ndb.GeoPt(1, 2))
+            geopt=ndb.GeoPt(1, 2),
+            repeated_number=[1, 2, 3])
         instance.put()
         return instance
 

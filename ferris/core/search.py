@@ -32,6 +32,14 @@ property_to_field_map = {
     # ComputedProperty explicitly unindexable
 }
 
+non_repeatable_properties = (
+    ndb.DateTimeProperty,
+    ndb.DateProperty,
+    ndb.TimeProperty,
+    ndb.IntegerProperty,
+    ndb.FloatProperty
+)
+
 
 def default_entity_indexer(instance, properties, extra_converters=None):
     results = []
@@ -43,17 +51,23 @@ def default_entity_indexer(instance, properties, extra_converters=None):
 
     for property in properties:
         value = getattr(instance, property)
+        converted = None
         property_instance = instance._properties[property]
         property_class = property_instance.__class__
         converter = converters.get(property_class, converters.get(property, None))
 
         if not value or not converter:
+            if property_class in (ndb.KeyProperty, ndb.BlobKeyProperty):
+                logging.debug("Search utilities will not automatically index Key or BlobKey property %s" % property)
             continue
 
         if not property_instance._repeated:
             converted = converter(property, value)
         else:
-            converted = [converter(property + str(n), x) for n, x in enumerate(value)]
+            if not property_class in non_repeatable_properties:
+                converted = [converter(property, x) for n, x in enumerate(value)]
+            else:
+                logging.debug("Could not automatically add field %s to the index because date and number fields can not be repeated." % property)
 
         if not converted:
             continue
