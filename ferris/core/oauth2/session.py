@@ -4,7 +4,7 @@ OAuth dance session
 
 from google.appengine.ext import ndb
 from ferris.core.ndb import Model
-from flow_property import FlowProperty
+from oauth2client.appengine import FlowNDBProperty
 
 
 class Session(Model):
@@ -13,8 +13,8 @@ class Session(Model):
     admin = ndb.BooleanProperty(indexed=False)
     force_prompt = ndb.BooleanProperty(indexed=False)
     redirect = ndb.StringProperty(indexed=False)
-    flow = FlowProperty(indexed=False)
+    flow = FlowNDBProperty(indexed=False)
 
     @classmethod
     def _get_kind(cls):
-        return '__ferris__oauth2_session'
+        return '_ferris_oauth2_session'

@@ -4,8 +4,7 @@ OAuth dance session
 
 from google.appengine.ext import ndb
 from ferris.core.ndb import Model
-from credentials_property import CredentialsProperty
-from ndb_storage import NdbStorage
+from oauth2client.appengine import CredentialsNDBProperty, StorageByKeyName
 import hashlib
 
 
@@ -14,17 +13,19 @@ class UserCredentials(Model):
     user = ndb.UserProperty(indexed=True)
     scopes = ndb.StringProperty(repeated=True, indexed=False)
     admin = ndb.BooleanProperty(indexed=True)
-    credentials = CredentialsProperty(indexed=False)
+    credentials = CredentialsNDBProperty(indexed=False)
     filter_scopes = ndb.ComputedProperty(lambda x: ','.join(sorted(x.scopes)), indexed=True)
+    updated = ndb.DateTimeProperty(indexed=False, auto_now=True)
 
     @classmethod
     def _get_kind(cls):
-        return '__ferris__oauth2_user_credentials'
+        return '_ferris_oauth2_user_credentials'
 
     @classmethod
     def after_get(cls, key, item):
         if item and item.credentials:
-            item.credentials = NdbStorage(key, 'credentials', item).get()
+            storage = StorageByKeyName(UserCredentials, key.id(), 'credentials')
+            item.credentials.set_store(storage)
 
     @classmethod
     def _get_key(cls, user, scopes, admin):
