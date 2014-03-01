@@ -14,7 +14,8 @@ def load_settings():
     """
     try:
         import app.settings as appsettings
-    except ImportError:
+    except ImportError as e:
+        raise e
         raise ConfigurationError("Settings not found. Please create /app/settings.py")
 
     try:

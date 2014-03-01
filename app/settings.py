@@ -1,8 +1,7 @@
 """
-This file is used to configure application settings
+This file is used to configure application settings.
 
-Settings is just a dictionary that is loaded and made available to your
-application via the settings api.
+Do not import this file directly.
 
 You can use the settings API via:
 
@@ -43,14 +42,22 @@ settings['oauth2'] = {
 }
 
 # Enables or disables app stats.
-# NOTE: This must also be enabled in app.yaml.
+# Note that appstats must also be enabled in app.yaml.
 settings['appstats'] = {
     'enabled': False,
     'enabled_live': False
 }
 
-
 # Optionally, you may use the settings plugin to dynamically
-# configure your settings via the admin interface
-from plugins.settings import activate
-activate(settings)
+# configure your settings via the admin interface. Be sure to
+# also enable the plugin via app/routes.py.
+
+#import plugins.settings
+
+# import any additional dynamic settings classes here.
+
+#import plugins.service_account.settings
+
+# Un-comment to enable dynamic settings
+
+#plugins.settings.activate(settings)

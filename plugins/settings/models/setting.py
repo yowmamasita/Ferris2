@@ -1,5 +1,6 @@
 import ferris
 from google.appengine.api import memcache
+import logging
 
 
 class Setting(ferris.Model):
@@ -11,8 +12,15 @@ class Setting(ferris.Model):
     class __metaclass__(ferris.Model.__metaclass__):
         def __new__(meta, name, bases, dict):
             cls = ferris.Model.__metaclass__.__new__(meta, name, bases, dict)
+
             if name != 'Setting':
                 Setting._settings[ferris.inflector.underscore(cls.__name__)] = cls
+
+                if name not in ('TimezoneSetting', 'EmailSetting', 'OAuth2Setting'):
+                    from plugins.settings import is_active
+                    if is_active():
+                        logging.warning("Dynamic settings class %s loaded after the dynamic settings plugin was activated. Please check app/settings.py" % name)
+
             return cls
 
     @classmethod
@@ -21,7 +29,7 @@ class Setting(ferris.Model):
 
     @classmethod
     def _get_kind(cls):
-        return '__ferris__' + cls.__name__
+        return '_ferris_' + cls.__name__
 
     @classmethod
     def get_key(cls):
