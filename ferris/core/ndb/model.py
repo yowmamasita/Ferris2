@@ -130,7 +130,7 @@ class Model(ndb.Model):
     @classmethod
     def before_get(cls, key):
         """
-        Called after an item is retrieved.
+        Called before an item is retrieved. Note that this does not occur for queries.
 
         :arg key: Is the key of the item that is to be retrieved.
         """
@@ -139,7 +139,7 @@ class Model(ndb.Model):
     @classmethod
     def after_get(cls, key, item):
         """
-        Called after an item has been retrieved.
+        Called after an item has been retrieved. Note that this does not occur for queries.
 
         :arg key: Is the key of the item that was retrieved.
         :arg item: Is the item itself.
