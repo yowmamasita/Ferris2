@@ -31,17 +31,19 @@ def send_template(recipient, subject, template_name, context=None, theme=None, *
     Renders a template and sends an email in the same way as :func:`send`.
     templates should be stored in ``/templates/email/<template>.html``.
 
-    For example:
+    For example::
 
-        mail.send(
+        mail.send_template(
             recipient='jondoe@example.com',
             subject='A Test Email',
             template_name='test',
             context={
                 'name': 'George'
-            })
+            }
+        )
 
-    Would render the template ``/templates/email/test.html``.
+
+    Would render the template ``/templates/email/test.html`` and email the rendered html.
     """
     name = ('email/' + template_name + '.html', template)
     context = context if context else {}
