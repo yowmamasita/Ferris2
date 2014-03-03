@@ -42,8 +42,7 @@ def send_template(recipient, subject, template_name, context=None, theme=None, *
             }
         )
 
-
-    Would render the template ``/templates/email/test.html``.
+    Would render the template ``/templates/email/test.html`` and email the rendered html.
     """
     name = ('email/' + template_name + '.html', template)
     context = context if context else {}

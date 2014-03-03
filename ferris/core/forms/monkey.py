@@ -35,6 +35,10 @@ def convert_BlobKeyProperty(self, model, prop, kwargs):
     return fields.BlobKeyField(**kwargs)
 
 
+def convert_GeoPtProperty(self, model, prop, kwargs):
+        return fields.GeoPtPropertyField(**kwargs)
+
+
 def fallback_converter(self, model, prop, kwargs):
     pass
 
@@ -44,3 +48,4 @@ setattr(wtfndb.ModelConverter, 'fallback_converter', fallback_converter)
 add_convertor('UserProperty', convert_UserProperty)
 add_convertor('KeyProperty', convert_KeyProperty)
 add_convertor('BlobKeyProperty', convert_BlobKeyProperty)
+add_convertor('GeoPtProperty', convert_GeoPtProperty)
