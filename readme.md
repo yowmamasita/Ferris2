@@ -15,27 +15,22 @@ For help and questions:
 Starting a new project
 ----------------------
 
-Checkout a copy of Ferris using git:
+Download Ferris from bitbucket using the [downloads]() tab and choosing "tags" and downloading the newest version.
 
-    git clone git@bitbucket.org:cloudsherpas/ferris-framework.git
-    cd ferris-framework
+Then, just extract the downloaded zip file into your project directory (top-level, there should be an app.yaml in the top level of your project directory).
 
-Use git to export ferris to your project directory (trailing slash is important!):
-
-    git checkout-index -a -f --prefix=/project-directory/
-
-You're ready to go, just open your project directory and  run the app engine server.
+You're ready to go! Just open your project directory and  run the app engine server.
 
 License
 -------
 
 Ferris is licensed under the Apache License, Version 2.
 
-Third-party libraries that are in the packages directory have varying licenses. Please check the license file that's with each package.
+Third-party libraries that are in the packages directory have varying licenses. Please check the license file that is included within each package.
 
-WTForms: BSD
-ProtoPigeon: Apache License v2
-PyTZ: MIT
-GData Client Library: Apache License v2
-Google API Python Client Library: Apache License v2
-OAuth2 Client: Apache License v2
+ * WTForms: BSD
+ * ProtoPigeon: Apache License v2
+ * PyTZ: MIT
+ * GData Client Library: Apache License v2
+ * Google API Python Client Library: Apache License v2
+ * OAuth2 Client: Apache License v2
