@@ -1,4 +1,4 @@
-version = "2.0.1"
+version = "2.1.0"
 
 from . import fix_imports, core, components, behaviors
 from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins, views
