@@ -10,7 +10,7 @@ class FlashMessages(object):
 
     def flash(self, message, level='info'):
         """
-        Adds the given message to the list of "flash" messages to show to the user on the next page.
+        Adds the given message to the dictionary of "flash" messages to show to the user on the next page.
         """
         flash = self.controller.session.get('__flash', {})
 
