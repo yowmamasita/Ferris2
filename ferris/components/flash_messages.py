@@ -8,28 +8,28 @@ class FlashMessages(object):
         self.controller = controller
         self.controller.events.before_render += self._on_before_render
 
-    def flash(self, message, type='info'):
+    def flash(self, message, level='info'):
         """
         Adds the given message to the list of "flash" messages to show to the user on the next page.
         """
-        flash = self.controller.session.get('__flash', [])
+        flash = self.controller.session.get('__flash', {})
 
-        if type == 'error':
-            type = 'danger'
+        if level == 'error':
+            level = 'danger'
 
-        flash.append((message, type))
+        flash[message] = level
         self.controller.session['__flash'] = flash
 
     def messages(self, clear=True):
         """
         returns all flash messsages, and by default clears the queue
         """
-        flashes = self.controller.session.get('__flash', [])
+        flashes = self.controller.session.get('__flash', {})
         if clear:
-            self.controller.session['__flash'] = []
+            self.controller.session['__flash'] = {}
         return flashes
 
     def _on_before_render(self, controller, *args, **kwargs):
-        controller.context.set_dotted('this.flash_messages', self.messages)
+        controller.context.set_dotted('this.flash_messages', self.messages().items)
 
     __call__ = flash
