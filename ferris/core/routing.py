@@ -86,30 +86,35 @@ def route_all_controllers(app_router, plugin=None):
         (plugin_module)
 
     directory = os.path.join(base_directory, directory)
-
-    # Walk through the controllers, if the directory for controllers exists
+    # the length of the path before "app/controllers"
+    base_directory_path_len = len(base_directory.split(os.path.sep))
+    
+    # check if [base_directory]/app/controllers exists
     if not os.path.exists(directory):
         return
 
-    for file in os.listdir(directory):
-        if file.endswith(".py") and file != '__init__.py':
-            try:
-                name = file.split('.')[0]
-                root_module = 'app.controllers'
-                if plugin:
-                    root_module = 'plugins.%s.controllers' % plugin
-                module = __import__('%s.%s' % (root_module, name), fromlist=['*'])
-
+    # walk the app/controllers directory and sub-directories
+    for root_path, _, files in os.walk(directory):
+        for file in files:
+            partial_path = root_path.split(os.path.sep)[base_directory_path_len:]
+            if file.endswith(".py") and file != '__init__.py':
                 try:
-                    cls = getattr(module, inflector.camelize(name))
-                    route_controller(cls, app_router)
+                    name = file.split('.')[0]
+                    module_path = '.'.join(partial_path)
+                    if plugin:
+                        module_path = 'plugins.%s.controllers' % plugin
+                    module = __import__('%s.%s' % (module_path, name), fromlist=['*'])
 
-                except AttributeError:
-                    logging.debug("Controller %s not found, skipping" % inflector.camelize(name))
+                    try:
+                        cls = getattr(module, inflector.camelize(name))
+                        route_controller(cls, app_router)
 
-            except AttributeError as e:
-                logging.error('Thought %s was a controller, but was wrong (or ran into some weird error): %s' % (file, e))
-                raise
+                    except AttributeError:
+                        logging.debug("Controller %s not found, skipping" % inflector.camelize(name))
+
+                except AttributeError as e:
+                    logging.error('Thought %s was a controller, but was wrong (or ran into some weird error): %s' % (file, e))
+                    raise
 
 
 def route_controller(controller_cls, app_router=None):
