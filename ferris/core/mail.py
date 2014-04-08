@@ -1,5 +1,5 @@
 from ferris.core import settings, template
-from google.appengine.api import mail
+from google.appengine.api import mail, app_identity
 import logging
 
 
@@ -13,7 +13,9 @@ def send(recipient, subject, body, sender=None, reply_to=None, **kwargs):
     """
     sender = sender if sender else settings.get('email')['sender']
     if not sender:
-        raise ValueError('No sender configured in settings')
+        sender = "noreply@%s.appspotmail.com" % app_identity.get_application_id()
+        logging.info("No sender configured, using the default one: %s" % sender)
+
     res = mail.send_mail(
         sender=sender,
         to=recipient,
