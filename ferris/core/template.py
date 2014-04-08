@@ -33,6 +33,7 @@ class TemplateEngine(object):
             auto_reload=False,
             cache_size=0 if debug else 50)
         self._update_globals(extra_globals)
+        events.fire("template_engine_created", self)
 
     def _build_loader(self, extra_paths=None):
         # Paths for resolving template file locations
