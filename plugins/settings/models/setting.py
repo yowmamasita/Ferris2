@@ -16,7 +16,7 @@ class Setting(ferris.Model):
             if name != 'Setting':
                 Setting._settings[ferris.inflector.underscore(cls.__name__)] = cls
 
-                if name not in ('TimezoneSetting', 'EmailSetting', 'OAuth2Setting'):
+                if name not in ('TimezoneSetting', 'EmailSetting', 'OAuth2Setting', 'UploadSetting'):
                     from plugins.settings import is_active
                     if is_active():
                         logging.warning("Dynamic settings class %s loaded after the dynamic settings plugin was activated. Please check app/settings.py" % name)
@@ -99,6 +99,13 @@ class EmailSetting(Setting):
     _name = 'Email'
     _settings_key = 'email'
     sender = ferris.ndb.StringProperty(indexed=False)
+
+
+class UploadSetting(Setting):
+    _name = 'Upload'
+    _settings_key = 'upload'
+    use_cloud_storage = ferris.ndb.BooleanProperty(indexed=False, default=True)
+    bucket = ferris.ndb.StringProperty(indexed=False, verbose_name="Leave blank to use the default GCS bucket.")
 
 
 class OAuth2Setting(Setting):

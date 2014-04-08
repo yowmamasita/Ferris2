@@ -41,6 +41,14 @@ settings['oauth2'] = {
     'client_secret': None
 }
 
+settings['upload'] = {
+    # Whether to use Cloud Storage (default) or the blobstore to store uploaded files.
+    'use_cloud_storage': True,
+    # The Cloud Storage bucket to use. Leave as "None" to use the default GCS bucket.
+    # See here for info: https://developers.google.com/appengine/docs/python/googlecloudstorageclient/activate#Using_the_Default_GCS_Bucket
+    'bucket': None
+}
+
 # Enables or disables app stats.
 # Note that appstats must also be enabled in app.yaml.
 settings['appstats'] = {

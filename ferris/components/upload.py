@@ -1,21 +1,25 @@
 from google.appengine.ext import blobstore
+from google.appengine.api import app_identity
 import wtforms
 import urllib2
 import cgi
 import logging
+from ferris.core import settings
 
 
 class Upload(object):
     """
-    Automatically handles file upload fields that need to use the blobstore.
+    Automatically handles file upload fields that need to use the blobstore/cloud storage.
+
+    With the default configuration, this will upload to the application's default Google Cloud Storage bucket. This behavior is configurable in ``app/settings.py``.
 
     This works by:
 
      * Detecting if you're on an add or edit action (you can add additional actions with ``upload_actions``, or set ``process_uploads`` to True)
-     * Adding the ``upload_url`` template variable that points to the blobstore
-     * Updating the ``form_action`` and ``form_encoding`` scaffolding variables to use the new blobstore action
-     * Processing uploads when they come back
-     * Adding each upload's key to the form data so that it can be saved to the model
+     * Adding the ``upload_url`` template variable that points to the blobstore / cloud storage.
+     * Updating the ``form_action`` and ``form_encoding`` scaffolding variables to use the new upload url.
+     * Processing uploads when the upload handler redirects back to your action.
+     * Adding each upload's key to the form data so that it can be saved to the model.
 
     Does not require that the controller subclass ``BlobstoreUploadHandler``, however to serve blobs you must
     either use the built-in Download controller or create a custom controller that subclasses ``BlobstoreDownloadHandler``.
@@ -27,6 +31,9 @@ class Upload(object):
         self.process_uploads = False
         self.upload_actions = ('add', 'edit')
         self.cloud_storage_bucket = controller.Meta.cloud_storage_bucket if hasattr(controller.Meta, 'cloud_storage_bucket') else None
+
+        if not self.cloud_storage_bucket and settings.get('upload').get('use_cloud_storage'):
+            self.cloud_storage_bucket = settings.get('upload', {}).get('bucket') or app_identity.get_default_gcs_bucket_name()
 
         controller.events.before_startup += self.on_before_startup
         controller.events.scaffold_before_apply += self.on_scaffold_before_apply
@@ -76,11 +83,8 @@ class Upload(object):
             else:
                 delattr(form, field.name)
 
-    def generate_upload_url(self, action=None):
-        if not action:
-            action = self.controller.route.action
-
-        url = urllib2.unquote(self.controller.uri(action=action, _pass_all=True, _full=True))
+    def generate_upload_url(self, uri=None):
+        url = urllib2.unquote(self.controller.request.uri)
 
         return blobstore.create_upload_url(
             success_path=url,
