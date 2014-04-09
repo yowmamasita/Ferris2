@@ -1,5 +1,5 @@
 from google.appengine.api import users
-from decorator import decorator
+from ferris.core.decorator import decorator
 from ferris.core.oauth2.session import Session as OAuth2Session
 from ferris.core.oauth2.user_credentials import UserCredentials as OAuth2UserCredentials
 from oauth2client.client import AccessTokenRefreshError
