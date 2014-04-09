@@ -8,6 +8,8 @@
 <form method="POST" action="{{scaffolding.form_action|default(this.uri(_pass_all=True), True)}}" class="form" enctype="{{scaffolding.form_encoding|default('application/x-www-form-urlencoded', True)}}" role="form">
 {% endblock %}
 
+    {{this.events.before_form_fields()}}
+
     {{self.form_actions()}}
 
     <hr>
@@ -38,5 +40,8 @@
         {% endblock %}
     </div>
     {% endblock %}
+
+    {{this.events.after_form_fields()}}
+
 </form>
 {% endblock %}
