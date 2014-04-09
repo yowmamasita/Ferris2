@@ -1,2 +1,0 @@
-import inflection
-inflector = inflection
