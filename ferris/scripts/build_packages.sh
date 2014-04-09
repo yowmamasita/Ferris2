@@ -64,18 +64,6 @@ cd ../
 cp wtforms.zip $packages
 
 
-echo ' --> Packaging utils'
-cd /tmp
-mkdir utils
-cd utils
-wget https://micheles.googlecode.com/hg/decorator/src/decorator.py
-wget https://gist.github.com/n1ywb/2570004/raw/77cad4d81a19d7a0fdbae3d1a7cec2682778efeb/retries.py
-wget https://raw.github.com/jpvanhal/inflection/master/inflection.py
-zip ../utils.zip decorator.py retries.py inflection.py
-cd ../
-cp utils.zip $packages
-
-
 echo ' --> Packaging protopigeon'
 cd /tmp
 rm -rf protopigeon.zip protopigeon 2>/dev/null
