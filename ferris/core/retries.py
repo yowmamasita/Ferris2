@@ -1,6 +1,7 @@
 import functools
 from time import sleep
 import logging
+import json
 
 
 def retries(max_tries, should_retry, delay=1, backoff=2):
@@ -44,9 +45,13 @@ def apiclient_retry_policy(exception):
     from apiclient import errors
     if not isinstance(exception, errors.HttpError):
         return False
-    if exception.resp['status'] in ('400', '401', '402', '403', '404'):
-        return False
-    return True
+
+    error = json.loads(exception.content)
+    if error.get('code') == 403 and error.get('errors')[0].get('reason') in ('rateLimitExceeded', 'userRateLimitExceeded'):
+        logging.info("Rate limit exceeded, retrying...")
+        return True
+
+    return False
 
 
 def google_api_retries(f):
@@ -62,7 +67,6 @@ def google_api_retries(f):
         try:
             return f(*args, **kwargs)
         except errors.HttpError as error:
-            logging.warning("May retry: %s" % error)
             raise
         except Exception as error:
             logging.error("Non-recoverable exception: %s" % error)
