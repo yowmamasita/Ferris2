@@ -5,7 +5,7 @@ import hashlib
 def get_config():
     from ferris import settings
     config = settings.get('oauth2_service_account')
-    if not config['private_key'] or not config['client_email'] or not config['domain']:
+    if not config['private_key'] or not config['client_email']:
         raise RuntimeError("OAuth2 Service Account is not configured correctly")
     return config
 

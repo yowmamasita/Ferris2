@@ -12,6 +12,7 @@ class Settings(ferris.Controller):
         self.context['setting_classes'] = Setting.get_classes()
 
     def admin_list(self):
+        ferris.settings.load_settings()
         self.context['settings'] = ferris.settings.settings()
 
     def admin_edit(self, key):
