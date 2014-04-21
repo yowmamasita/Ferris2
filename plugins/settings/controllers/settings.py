@@ -23,4 +23,10 @@ class Settings(ferris.Controller):
 
         self.context['settings_class'] = model
 
+        def reload_settings(**kwargs):
+            ferris.settings.load_settings()
+            self.components.flash_messages('Settings saved, however, the settings may not be updated on all instances. You may have to restart instances for the settings to take effect.', 'warning')
+
+        self.events.scaffold_after_save += reload_settings
+
         return ferris.scaffold.edit(self, instance.key.urlsafe())
