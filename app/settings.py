@@ -36,9 +36,16 @@ settings['app_config'] = {
 
 settings['oauth2'] = {
     # OAuth2 Configuration should be generated from
-    # https://code.google.com/apis/console
+    # the google cloud console (Credentials for Web Application)
     'client_id': None,  # XXXXXXXXXXXXXXX.apps.googleusercontent.com
     'client_secret': None
+}
+
+settings['oauth2_service_account'] = {
+    # OAuth2 service account configuration should be generated
+    # from the google cloud console (Service Account Credentials)
+    'client_email': None,  # XXX@developer.gserviceaccount.com
+    'private_key': None,  # Must be in PEM format
 }
 
 settings['upload'] = {
@@ -64,8 +71,7 @@ settings['appstats'] = {
 
 # import any additional dynamic settings classes here.
 
-#import plugins.service_account.settings
+# import plugins.my_plugin.settings
 
 # Un-comment to enable dynamic settings
-
 #plugins.settings.activate(settings)

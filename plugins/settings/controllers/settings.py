@@ -16,7 +16,7 @@ class Settings(ferris.Controller):
 
     def admin_edit(self, key):
         model = Setting.factory(key)
-        instance = model.get_instance()
+        instance = model.get_instance(static_settings=ferris.settings.settings())
 
         self.meta.Model = model
         self.scaffold.ModelForm = ferris.model_form(model)

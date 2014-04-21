@@ -11,7 +11,7 @@ local_cache = threading.local()
 
 def activate(settings):
     if not hasattr(local_cache, 'overrides'):
-        local_cache.overrides = SettingsModel.get_settings()
+        local_cache.overrides = SettingsModel.get_settings(settings)
     settings.update(local_cache.overrides)
 
 
