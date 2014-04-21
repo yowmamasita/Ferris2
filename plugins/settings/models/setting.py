@@ -119,6 +119,7 @@ class OAuth2Setting(Setting):
     """
     client_id = ferris.ndb.StringProperty(indexed=False)
     client_secret = ferris.ndb.StringProperty(indexed=False)
+    developer_key = ferris.ndb.StringProperty(indexed=False)
 
 
 class ServiceAccountSetting(Setting):
@@ -126,3 +127,4 @@ class ServiceAccountSetting(Setting):
     _settings_key = 'oauth2_service_account'
     client_email = ferris.ndb.StringProperty(indexed=False, verbose_name="...@developer.gserviceaccount.com")
     private_key = ferris.ndb.TextProperty(verbose_name="PEM Format")
+    developer_key = ferris.ndb.StringProperty(indexed=False)

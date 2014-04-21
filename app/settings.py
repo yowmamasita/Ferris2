@@ -38,7 +38,8 @@ settings['oauth2'] = {
     # OAuth2 Configuration should be generated from
     # the google cloud console (Credentials for Web Application)
     'client_id': None,  # XXXXXXXXXXXXXXX.apps.googleusercontent.com
-    'client_secret': None
+    'client_secret': None,
+    'developer_key': None  # Optional
 }
 
 settings['oauth2_service_account'] = {
@@ -46,6 +47,7 @@ settings['oauth2_service_account'] = {
     # from the google cloud console (Service Account Credentials)
     'client_email': None,  # XXX@developer.gserviceaccount.com
     'private_key': None,  # Must be in PEM format
+    'developer_key': None  # Optional
 }
 
 settings['upload'] = {
