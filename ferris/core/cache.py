@@ -86,6 +86,19 @@ class MemcacheBackend(object):
         memcache.delete(key)
 
 
+class MemcacheCompareAndSetBackend(MemcacheBackend):
+    @classmethod
+    def set(cls, key, data, ttl):
+        client = memcache.Client()
+        if not client.gets(key):
+            memcache.set(key, data, ttl)
+            return
+
+        for _ in range(10):
+            if client.cas(key, data, ttl):
+                break
+
+
 class DatastoreBackend(object):
     @classmethod
     def set(cls, key, data, ttl):
