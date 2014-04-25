@@ -71,6 +71,11 @@ class LocalBackend(object):
         except AttributeError:
             pass
 
+    @classmethod
+    def reset(cls):
+        for a in cls.cache_obj.__dict__.keys():
+            delattr(cls.cache_obj, a)
+
 
 class MemcacheBackend(object):
     @classmethod
@@ -130,3 +135,22 @@ class DatastoreBackend(object):
 class DatastoreCacheModel(ndb.Model):
     data = ndb.PickleProperty(indexed=False, compressed=True)
     expires = ndb.DateTimeProperty(indexed=False)
+
+
+class LayeredBackend(object):
+    def __init__(self, *args):
+        self.backends = args
+
+    def set(self, key, data, ttl):
+        for b in self.backends:
+            b.set(key, data, ttl)
+
+    def get(self, key):
+        for b in self.backends:
+            data = b.get(key)
+            if data is not None:
+                return data
+
+    def delete(self, key):
+        for b in self.backends:
+            b.delete(key)

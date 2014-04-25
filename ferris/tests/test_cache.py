@@ -1,13 +1,14 @@
 from ferrisnose import AppEngineTest
 from google.appengine.api import memcache
-from ferris.core.cache import cache, none_sentinel_string, LocalBackend, MemcacheBackend, DatastoreBackend, MemcacheCompareAndSetBackend
+from ferris.core.cache import cache, none_sentinel_string, LocalBackend, MemcacheBackend, DatastoreBackend, MemcacheCompareAndSetBackend, LayeredBackend
 
 
 class CacheTest(AppEngineTest):
 
     def test_cache(self):
-        for backend in [LocalBackend, MemcacheBackend, DatastoreBackend, MemcacheCompareAndSetBackend]:
+        for backend in [LocalBackend, MemcacheBackend, DatastoreBackend, MemcacheCompareAndSetBackend, LayeredBackend(LocalBackend, MemcacheBackend)]:
             memcache.flush_all()
+            LocalBackend.reset()
 
             mutators = [0, 0, 0]
             print 'testing %s' % backend
