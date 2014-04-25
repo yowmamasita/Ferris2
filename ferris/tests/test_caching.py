@@ -1,6 +1,6 @@
 from ferrisnose import AppEngineTest
 from google.appengine.api import memcache
-from ferris.core.cache import cache, none_sentinel_string, LocalBackend, MemcacheBackend, DatastoreBackend, MemcacheCompareAndSetBackend, LayeredBackend
+from ferris.core.caching import cache, none_sentinel_string, LocalBackend, MemcacheBackend, DatastoreBackend, MemcacheCompareAndSetBackend, LayeredBackend
 
 
 class CacheTest(AppEngineTest):
