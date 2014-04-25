@@ -33,8 +33,14 @@ def cache(key, ttl=0, backend=None):
 
             return data
 
-        #setattr(dispatcher, 'clear_cache', _cache_invalidator(key))
-        #setattr(dispatcher, 'cached', _cache_getter(key))
+        def cache_getter():
+            data = backend.get(key)
+            if data == none_sentinel_string:
+                return None
+            return data
+
+        setattr(dispatcher, 'clear_cache', lambda: backend.delete(key))
+        setattr(dispatcher, 'cached', cache_getter)
         setattr(dispatcher, 'uncached', f)
         return dispatcher
     return wrapper
