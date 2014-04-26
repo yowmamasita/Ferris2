@@ -11,6 +11,20 @@ none_sentinel_string = u'☃☸☃ - caching sentinel'
 
 def cache(key, ttl=0, backend=None):
     """
+    General-purpose caching decorator. This decorator causes the result of a function
+    to be cached so that subsequent calls will return the cached result instead of
+    calling the function again. The ttl argument determines how long the cache is valid,
+    once the cache is invalid the function will be called to generate a new value and the
+    cache will be refreshed. The backend argument can be used to determine how the value
+    is cached- by default, the value is stored in memcache but there are built-in backends
+    for thread-local caching and caching via the datastore.
+
+    Example::
+
+        @cache('something_expensive', ttl=3600)
+        def expensive_function():
+            ...
+
     """
     if backend is None or backend == 'memcache':
         backend = MemcacheBackend
@@ -47,18 +61,31 @@ def cache(key, ttl=0, backend=None):
 
 
 def cache_using_local(key, ttl=0):
+    """
+    Shortcut decorator for caching using the thread-local cache.
+    """
     return cache(key, ttl, backend=LocalBackend)
 
 
 def cache_using_memcache(key, ttl=0):
+    """
+    Shortcut decorator for caching using the memcache.
+    """
     return cache(key, ttl, backend=MemcacheBackend)
 
 
 def cache_using_datastore(key, ttl=0):
+    """
+    Shortcut decorator for caching using the datastore
+    """
     return cache(key, ttl, backend=DatastoreBackend)
 
 
 class LocalBackend(object):
+    """
+    The local backend stores caches in a thread-local variable. The caches are available
+    for this thread and likely just for the duration of one request.
+    """
     cache_obj = threading.local()
 
     @classmethod
@@ -96,6 +123,10 @@ class LocalBackend(object):
 
 
 class MemcacheBackend(object):
+    """
+    Stores caches in memcache. Memcache is available across instances but is subject to
+    being dumped from the cache before the expiration time.
+    """
     @classmethod
     def set(cls, key, data, ttl):
         memcache.set(key, data, ttl)
@@ -110,6 +141,10 @@ class MemcacheBackend(object):
 
 
 class MemcacheCompareAndSetBackend(MemcacheBackend):
+    """
+    Same as the regular memcache backend but uses compare-and-set logic to ensure
+    that memcache updates are atomic.
+    """
     @classmethod
     def set(cls, key, data, ttl):
         client = memcache.Client()
@@ -123,6 +158,11 @@ class MemcacheCompareAndSetBackend(MemcacheBackend):
 
 
 class DatastoreBackend(object):
+    """
+    Stores caches in the datastore which has the effect of them being durable and persistent,
+    unlike the memcache and local backends. Items stored in the datastore are certain to remain
+    until the expiration time passes.
+    """
     @classmethod
     def set(cls, key, data, ttl):
         if ttl:
@@ -156,6 +196,19 @@ class DatastoreCacheModel(ndb.Model):
 
 
 class LayeredBackend(object):
+    """
+    Allows you to use multiple backends at once. When an item is cached it's put
+    in each backend. Retrieval checks each backend in order for the item. This is
+    very useful when combining fast but volatile backends (like local) with slow
+    but durable backends (like datastore).
+
+    Example::
+
+        @cache('something_expensive', ttl=3600, backend=LayeredBackend(LocalBackend, DatastoreBackend))
+        def expensive_function():
+            ...
+
+    """
     def __init__(self, *args):
         self.backends = args
 
