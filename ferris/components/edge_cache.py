@@ -1,7 +1,7 @@
 import functools
 
 
-class Cache(object):
+class EdgeCache(object):
     """
     Provides easy methods to for setting edge caching, both via the browser and App Engine's
     intermediate caching proxies.
@@ -28,14 +28,14 @@ class Cache(object):
     __call__ = set
 
 
-def set_cache(mode='public', minutes=None):
+def set(mode='public', minutes=None):
     """
     Decorator that calls the cache component automatically for an action
     """
     def inner(f):
         @functools.wraps(f)
         def inner2(self, *args, **kwargs):
-            self.components.cache(mode, minutes)
+            self.components.edge_cache(mode, minutes)
             return f(self, *args, **kwargs)
         return inner2
     return inner
