@@ -46,6 +46,18 @@ def cache(key, ttl=0, backend=None):
     return wrapper
 
 
+def cache_using_local(key, ttl=0):
+    return cache(key, ttl, backend=LocalBackend)
+
+
+def cache_using_memcache(key, ttl=0):
+    return cache(key, ttl, backend=MemcacheBackend)
+
+
+def cache_using_datastore(key, ttl=0):
+    return cache(key, ttl, backend=DatastoreBackend)
+
+
 class LocalBackend(object):
     cache_obj = threading.local()
 
