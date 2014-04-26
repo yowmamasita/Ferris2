@@ -4,6 +4,7 @@ from google.appengine.ext import ndb
 from functools import wraps
 import datetime
 import threading
+import inspect
 
 
 none_sentinel_string = u'☃☸☃ - caching sentinel'
@@ -60,6 +61,34 @@ def cache(key, ttl=0, backend=None):
     return wrapper
 
 
+def cache_by_args(key, ttl=0, backend=None):
+    """
+    Like :func:cache, but will use any arguments to the function as part of the key to
+    ensure that variadic functions are cached separately. Argument must be able to be
+    printed as a string- it's recommended to use plain data types as arguments.
+    """
+    def wrapper(f):
+        argspec = inspect.getargspec(f)[0]
+
+        if len(argspec) and argspec[0] in ('self', 'cls'):
+            is_method = True
+        else:
+            is_method = False
+
+        @wraps(f)
+        def dispatcher(*args, **kwargs):
+            targs = args if not is_method else args[1:]
+            arg_key = "%s:%s:%s" % (key, targs, kwargs)
+
+            @cache(arg_key, ttl, backend=backend)
+            def inner_dispatcher():
+                return f(*args, **kwargs)
+
+            return inner_dispatcher()
+        return dispatcher
+    return wrapper
+
+
 def cache_using_local(key, ttl=0):
     """
     Shortcut decorator for caching using the thread-local cache.
@@ -79,6 +108,27 @@ def cache_using_datastore(key, ttl=0):
     Shortcut decorator for caching using the datastore
     """
     return cache(key, ttl, backend=DatastoreBackend)
+
+
+def cache_by_args_using_local(key, ttl=0):
+    """
+    Shortcut decorator for caching by arguments using the thread-local cache.
+    """
+    return cache_by_args(key, ttl, backend=LocalBackend)
+
+
+def cache_by_args_using_memcache(key, ttl=0):
+    """
+    Shortcut decorator for caching by arguments using the memcache.
+    """
+    return cache_by_args(key, ttl, backend=MemcacheBackend)
+
+
+def cache_by_args_using_datastore(key, ttl=0):
+    """
+    Shortcut decorator for caching by arguments using the datastore
+    """
+    return cache_by_args(key, ttl, backend=DatastoreBackend)
 
 
 class LocalBackend(object):
