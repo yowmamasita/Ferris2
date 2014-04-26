@@ -28,10 +28,14 @@ class TemplateEngine(object):
 
     def __init__(self, theme=None, extra_globals=None, extra_paths=None):
         self.theme = theme
-        self.environment = jinja2.Environment(
-            loader=self._build_loader(extra_paths=extra_paths),
-            auto_reload=False,
-            cache_size=0 if debug else 50)
+        jinja2_env_kwargs = {
+            'loader':      self._build_loader(extra_paths=extra_paths),
+            'auto_reload': False,
+            'cache_size':  0 if debug else 50,
+        }
+        events.fire('before_jinja2_environment_creation', engine=self, jinja2_env_kwargs=jinja2_env_kwargs)
+        self.environment = jinja2.Environment(**jinja2_env_kwargs)
+        events.fire('after_jinja2_environment_creation', engine=self)
         self._update_globals(extra_globals)
 
     def _build_loader(self, extra_paths=None):
