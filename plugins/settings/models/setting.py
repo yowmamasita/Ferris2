@@ -65,7 +65,7 @@ class Setting(ferris.Model):
         return cls._settings
 
     @classmethod
-    @ferris.cached('__ferris_settings')
+    @ferris.caching.cache_using_memcache('__ferris_settings')
     def get_settings(cls, static_settings):
         settings = {}
 
