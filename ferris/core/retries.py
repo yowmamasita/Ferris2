@@ -39,38 +39,3 @@ def retries(max_tries, should_retry, delay=1, backoff=2):
                     break
         return f2
     return dec
-
-
-def apiclient_retry_policy(exception):
-    from apiclient import errors
-    if not isinstance(exception, errors.HttpError):
-        return False
-
-    error = json.loads(exception.content)
-    if error.get('code') == 403 and error.get('errors')[0].get('reason') in ('rateLimitExceeded', 'userRateLimitExceeded'):
-        logging.info("Rate limit exceeded, retrying...")
-        return True
-
-    return False
-
-
-def google_api_retries(f):
-    """
-    Shortcut decorator that uses the appropraite retry policy for dealing with Google APIs.
-
-    Will retry if an HttpError in the 5xx range is raise, but will fail if the error is in the 4xx range.
-    """
-    from apiclient import errors
-
-    @functools.wraps(f)
-    def inner(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except errors.HttpError as error:
-            raise
-        except Exception as error:
-            logging.error("Non-recoverable exception: %s" % error)
-            raise
-
-    r_inner = retries(max_tries=5, should_retry=apiclient_retry_policy, delay=1, backoff=2)(inner)
-    return r_inner
