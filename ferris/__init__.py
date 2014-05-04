@@ -1,7 +1,7 @@
-version = "2.1.0"
+version = "2.2.0a"
 
 from . import fix_imports, core, components, behaviors
-from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins, views, caching
+from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins, views, caching, google_api_helper
 from core.event import Event
 from core.bunch import Bunch
 from core.json_util import stringify as json_stringify, parse as json_parse
@@ -51,4 +51,5 @@ __all__ = (
     'decode_key',
     'encode_key',
     'model_form',
-    'model_message')
+    'model_message',
+    'google_api_helper')
