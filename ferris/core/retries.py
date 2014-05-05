@@ -1,7 +1,6 @@
 import functools
 from time import sleep
 import logging
-import json
 
 
 def retries(max_tries, should_retry, delay=1, backoff=2):
