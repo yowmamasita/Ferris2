@@ -5,22 +5,6 @@ import functools
 from apiclient import errors
 
 
-def apiclient_retry_policy(exception):
-    if not isinstance(exception, errors.HttpError):
-        return False
-
-    try:
-        error = json.loads(exception.content)
-        if error.get('code') == 403 and error.get('errors')[0].get('reason') in ('rateLimitExceeded', 'userRateLimitExceeded'):
-            logging.info("Rate limit exceeded, retrying...")
-            return True
-
-    except ValueError:
-        logging.error("Failed to parse json from exception: %s" % exception.content)
-
-    return False
-
-
 def google_api_retries(f):
     """
     Shortcut decorator that uses the appropraite retry policy for dealing with Google APIs.
@@ -41,6 +25,22 @@ def google_api_retries(f):
 
     r_inner = retries(max_tries=5, should_retry=apiclient_retry_policy, delay=1, backoff=2)(inner)
     return r_inner
+
+
+def apiclient_retry_policy(exception):
+    if not isinstance(exception, errors.HttpError):
+        return False
+
+    try:
+        error = json.loads(exception.content)
+        if error.get('code') == 403 and error.get('errors')[0].get('reason') in ('rateLimitExceeded', 'userRateLimitExceeded'):
+            logging.info("Rate limit exceeded, retrying...")
+            return True
+
+    except ValueError:
+        logging.error("Failed to parse json from exception: %s" % exception.content)
+
+    return False
 
 
 def get_discovery_document(api, api_version, uri_template="https://www.googleapis.com/discovery/v1/apis/{api}/{api_version}/rest", http=None):
