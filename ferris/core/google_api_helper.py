@@ -63,7 +63,7 @@ def retries(f):
         @retries
         def rename_file():
             client = build('drive', 'v2')
-            client.files.update(fileId="123", data={"name": "Test"}).execute()
+            client.files().update(fileId="123", data={"name": "Test"}).execute()
 
     """
     from ferris import retries as ferris_retries

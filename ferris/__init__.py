@@ -13,6 +13,7 @@ from core.views import ViewContext
 from core.ndb import Model, BasicModel, Behavior, decode_key, encode_key, ndb
 from core.forms import model_form
 from core.messages import model_message
+from core.retries import retries
 
 __all__ = (
     'ndb',
@@ -52,4 +53,5 @@ __all__ = (
     'encode_key',
     'model_form',
     'model_message',
-    'google_api_helper')
+    'google_api_helper',
+    'retries')
