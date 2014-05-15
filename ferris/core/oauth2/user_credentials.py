@@ -17,6 +17,9 @@ class UserCredentials(Model):
     filter_scopes = ndb.ComputedProperty(lambda x: ','.join(sorted(x.scopes)), indexed=True)
     updated = ndb.DateTimeProperty(indexed=False, auto_now=True)
 
+    def authorize(self, http):
+        return self.credentials.authorize(http)
+
     @classmethod
     def _get_kind(cls):
         return '_ferris_oauth2_user_credentials'
