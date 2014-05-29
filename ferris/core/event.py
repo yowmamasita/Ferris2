@@ -23,7 +23,8 @@ class Event(object):
         """
         Add a handler function to this event. You can also use +=
         """
-        bisect.insort(self.handlers, (priority, handler))
+        if not (priority, handler) in self.handlers:
+            bisect.insort(self.handlers, (priority, handler))
         return self
 
     def unhandle(self, handler, priority=0):

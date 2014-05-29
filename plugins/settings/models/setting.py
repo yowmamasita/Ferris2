@@ -1,6 +1,7 @@
 import ferris
 from google.appengine.api import memcache
 import logging
+import datetime
 
 
 class Setting(ferris.Model):
@@ -85,10 +86,13 @@ class Setting(ferris.Model):
 
             settings[settings_cls._settings_key] = value.to_dict()
 
+        logging.info("Dynamic settings loaded from datastore")
+
         return settings
 
     def after_put(self, key):
         memcache.delete('__ferris_settings')
+        memcache.set('_ferris_settings_update_mutex', datetime.datetime.utcnow())
 
 
 class TimezoneSetting(Setting):
