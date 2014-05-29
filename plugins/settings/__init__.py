@@ -38,7 +38,6 @@ def check_update_settings(settings):
 
     cts = global_cache.get('cts', None)
     nts = memcache.get('_ferris_settings_update_mutex')
-    logging.info("Checking settings c: %s n:%s" % (cts, nts))
     if (nts and cts and nts > cts) or (nts and not cts):
         logging.info("Settings update detected. Reloading.")
         clear_global_cache()
