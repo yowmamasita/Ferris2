@@ -28,6 +28,7 @@ def retries(max_tries, should_retry, delay=1, backoff=2):
                     return func(*args, **kwargs)
 
                 except Exception as e:
+                    logging.info("Caught %s with %s retries left" % (e, tries_remaining))
                     if tries_remaining > 0 and should_retry(e):
                         logging.info("Exception raised, retrying in %s seconds" % seconds)
                         sleep(seconds)
