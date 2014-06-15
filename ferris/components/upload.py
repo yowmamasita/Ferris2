@@ -84,7 +84,7 @@ class Upload(object):
                 delattr(form, field.name)
 
     def generate_upload_url(self, uri=None):
-        url = urllib2.unquote(self.controller.request.uri)
+        url = urllib2.unquote(uri if uri else self.controller.request.uri)
 
         return blobstore.create_upload_url(
             success_path=url,
