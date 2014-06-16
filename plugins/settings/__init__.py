@@ -32,6 +32,7 @@ def clear_global_cache():
 @events.on('after_settings')
 def check_update_settings(settings):
     if hasattr(local_cache, 'checked'):
+        activate(settings)
         return
 
     local_cache.checked = True
@@ -41,5 +42,6 @@ def check_update_settings(settings):
     if (nts and cts and nts > cts) or (nts and not cts):
         logging.info("Settings update detected. Reloading.")
         clear_global_cache()
-        activate(settings)
     global_cache['cts'] = nts
+
+    activate(settings)
