@@ -63,7 +63,7 @@ def cache(key, ttl=0, backend=None):
 
 def cache_by_args(key, ttl=0, backend=None):
     """
-    Like :func:cache, but will use any arguments to the function as part of the key to
+    Like :func:`cache`, but will use any arguments to the function as part of the key to
     ensure that variadic functions are cached separately. Argument must be able to be
     printed as a string- it's recommended to use plain data types as arguments.
     """
@@ -247,8 +247,8 @@ class DatastoreCacheModel(ndb.Model):
 
 class LayeredBackend(object):
     """
-    Allows you to use multiple backends at once. When an item is cached it's put
-    in each backend. Retrieval checks each backend in order for the item. This is
+    Allows you to use multiple backends at once. When an item is cached it is put
+    in to each backend. Retrieval checks each backend in order for the item. This is
     very useful when combining fast but volatile backends (like local) with slow
     but durable backends (like datastore).
 
