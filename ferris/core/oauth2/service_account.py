@@ -1,5 +1,6 @@
 from google.appengine.ext import ndb
 import hashlib
+import logging
 
 
 def get_config():
@@ -10,7 +11,12 @@ def get_config():
     return config
 
 
-from oauth2client.client import SignedJwtAssertionCredentials
+try:
+    from oauth2client.client import SignedJwtAssertionCredentials
+except ImportError:
+    logging.critical("PyCrypto is not available and the OAuth2 service account will not work. Please install PyCrypto to remove this warning.")
+    SignedJwtAssertionCredentials = None
+
 from oauth2client.appengine import StorageByKeyName, CredentialsNDBProperty
 
 
@@ -19,6 +25,9 @@ def build_credentials(scope, user=None):
     Builds service account credentials using the configuration stored in settings
     and masquerading as the provided user.
     """
+    if not SignedJwtAssertionCredentials:
+        raise EnvironmentError("Service account can not be used because PyCrypto is not available. Please install PyCrypto.")
+
     config = get_config()
 
     if not isinstance(scope, (list, tuple)):
