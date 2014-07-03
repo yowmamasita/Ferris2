@@ -54,7 +54,7 @@ class Upload(object):
         """
         if self.process_uploads:
             if not 'upload_url' in controller.context:
-                controller.context.set(upload_url=self.generate_upload_url(self.controller.route.action))
+                controller.context.set(upload_url=self.generate_upload_url())
                 if hasattr(controller, 'scaffold'):
                     controller.scaffold.form_action = controller.context['upload_url']
                     controller.scaffold.form_encoding = 'multipart/form-data'
