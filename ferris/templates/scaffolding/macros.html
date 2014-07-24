@@ -80,6 +80,6 @@
 #}
 {% macro nav_link(action, text) -%}
     {% if uri_exists(action=action) %}
-        <a href="{{uri(action=action)}}" class="btn btn-default">{{text}}</a>
+        <a href="{{uri(action=action)}}" class="btn btn-default {% if on_uri(action=action): %}active{% endif %}">{{text}}</a>
     {% endif %}
 {%- endmacro %}

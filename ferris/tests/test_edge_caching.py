@@ -1,24 +1,24 @@
 from ferrisnose import AppEngineWebTest
 from ferris.core.controller import Controller, route
-from ferris.components import cache
+from ferris.components import edge_cache
 
 
 class Cachable(Controller):
     class Meta:
-        components = (cache.Cache,)
+        components = (edge_cache.EdgeCache,)
 
     @route
     def public(self):
-        self.components.cache('public')
+        self.components.edge_cache('public')
         return 'public'
 
     @route
     def private(self):
-        self.components.cache('private')
+        self.components.edge_cache('private')
         return 'private'
 
     @route
-    @cache.set_cache('public')
+    @edge_cache.set('public')
     def decorator(self):
         return 'decorator'
 

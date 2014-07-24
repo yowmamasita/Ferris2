@@ -1,17 +1,22 @@
-from ferris import plugins, settings, ndb
+from google.appengine.ext import ndb
 import hashlib
-
-plugins.register('service_account')
+import logging
 
 
 def get_config():
+    from ferris import settings
     config = settings.get('oauth2_service_account')
-    if not config['private_key'] or not config['client_email'] or not config['domain']:
+    if not config['private_key'] or not config['client_email']:
         raise RuntimeError("OAuth2 Service Account is not configured correctly")
     return config
 
 
-from oauth2client.client import SignedJwtAssertionCredentials
+try:
+    from oauth2client.client import SignedJwtAssertionCredentials
+except ImportError:
+    logging.critical("PyCrypto is not available and the OAuth2 service account will not work. Please install PyCrypto to remove this warning.")
+    SignedJwtAssertionCredentials = None
+
 from oauth2client.appengine import StorageByKeyName, CredentialsNDBProperty
 
 
@@ -20,10 +25,10 @@ def build_credentials(scope, user=None):
     Builds service account credentials using the configuration stored in settings
     and masquerading as the provided user.
     """
-    config = get_config()
+    if not SignedJwtAssertionCredentials:
+        raise EnvironmentError("Service account can not be used because PyCrypto is not available. Please install PyCrypto.")
 
-    if not user:
-        user = config['default_user']
+    config = get_config()
 
     if not isinstance(scope, (list, tuple)):
         scope = [scope]
@@ -39,25 +44,6 @@ def build_credentials(scope, user=None):
     creds.set_store(storage)
 
     return creds
-
-
-def credentials_to_token(credentials):
-    """
-    Transforms an Oauth2 credentials object into an OAuth2Token object
-    to be used with the legacy gdata API
-    """
-    import httplib2
-    import gdata.gauth
-
-    credentials.refresh(httplib2.Http())
-    token = gdata.gauth.OAuth2Token(
-        client_id=credentials.client_id,
-        client_secret=credentials.client_secret,
-        scope=credentials.scope,
-        user_agent='lolidk/wtfbbq/cloudsherpas',
-        access_token=credentials.access_token,
-        refresh_token=credentials.refresh_token)
-    return token
 
 
 class ServiceAccountStorage(ndb.Model):

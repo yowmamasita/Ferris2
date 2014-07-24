@@ -1,5 +1,7 @@
 from webapp2 import get_request
 from . import events
+import logging
+import inspect
 
 _defaults = {}
 
@@ -8,22 +10,29 @@ class ConfigurationError(Exception):
     pass
 
 
-def load_settings():
+def load_settings(refresh=False):
     """
     Executed when the project is created and loads the settings from app/settings.py
     """
+    global _defaults
+
+    if _defaults and not refresh:
+        return
+
     try:
         import app.settings as appsettings
-    except ImportError as e:
-        raise e
+        reload(appsettings)
+    except ImportError:
         raise ConfigurationError("Settings not found. Please create /app/settings.py")
 
     try:
-        _defaults = appsettings.settings
+        appdefaults = appsettings.settings
     except AttributeError:
         raise ConfigurationError("No dictionary 'settings' found in settings.py")
 
-    defaults(_defaults)
+    logging.info("Ferris settings loaded")
+
+    defaults(appdefaults)
 
 
 def defaults(dict=None):
@@ -43,26 +52,10 @@ def settings():
     """
     Returns the entire settings registry
     """
-
-    # Check local request storage for the completed settings registry
-    try:
-        request = get_request()
-    except AssertionError:
-        request = None
-
-    if request and 'ferris-settings' in request.registry:
-        return request.registry['ferris-settings']
-
-    # If it's not there, do the normal thing
-
     settings = {}
+    events.fire('before_settings', settings=settings)
     settings.update(_defaults)
-    events.fire('build_settings', settings=settings)
-
-    # Try to store it back in the request
-    if request:
-        request.registry['ferris-settings'] = settings
-
+    events.fire('after_settings', settings=settings)
     return settings
 
 

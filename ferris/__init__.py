@@ -1,12 +1,11 @@
-version = "2.1.0"
+version = "2.2.0"
 
 from . import fix_imports, core, components, behaviors
-from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins, views
+from core import scaffold, events, routing, oauth2, forms, messages, inflector, settings, plugins, views, caching, google_api_helper
 from core.event import Event
 from core.bunch import Bunch
 from core.json_util import stringify as json_stringify, parse as json_parse
 from core.controller import Controller, route, route_with, auth, add_authorizations
-from core.memcache import cached, cached_by_args
 from core.request_parsers import RequestParser, FormParser
 from core.template import render_template
 from core.time_util import localize
@@ -14,6 +13,7 @@ from core.views import ViewContext
 from core.ndb import Model, BasicModel, Behavior, decode_key, encode_key, ndb
 from core.forms import model_form
 from core.messages import model_message
+from core.retries import retries
 
 __all__ = (
     'ndb',
@@ -39,8 +39,7 @@ __all__ = (
     'localize',
     'json_parse',
     'json_stringify',
-    'cached',
-    'cached_by_args',
+    'caching',
     'plugins',
     'RequestParser',
     'FormParser',
@@ -53,4 +52,6 @@ __all__ = (
     'decode_key',
     'encode_key',
     'model_form',
-    'model_message')
+    'model_message',
+    'google_api_helper',
+    'retries')

@@ -115,7 +115,7 @@ class Messaging(object):
             if next_cursor:
                 next_page_link = self.controller.uri(_pass_all=True, cursor=next_cursor, _full=True)
 
-            if previous_cursor is not None:
+            if previous_cursor is not None or page > 1:
                 prev_page_link = self.controller.uri(_pass_all=True, cursor=previous_cursor, _full=True)
 
         return ListMessage(

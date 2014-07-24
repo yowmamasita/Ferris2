@@ -37,6 +37,7 @@ class TemplateEngine(object):
         self.environment = jinja2.Environment(**jinja2_env_kwargs)
         events.fire('after_jinja2_environment_creation', engine=self)
         self._update_globals(extra_globals)
+        events.fire("template_engine_created", self)
 
     def _build_loader(self, extra_paths=None):
         # Paths for resolving template file locations
