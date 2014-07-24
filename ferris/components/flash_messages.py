@@ -24,7 +24,7 @@ class FlashMessages(object):
         """
         returns all flash messsages, and by default clears the queue
         """
-        flashes = self.controller.session.get('__flash', {})
+        flashes = self.controller.session.get('__flash', None) or {}
         if clear:
             self.controller.session['__flash'] = {}
         return flashes
