@@ -71,6 +71,9 @@ class DatastoreEncoder(json.JSONEncoder):
         elif isinstance(obj, ndb.Key):
             return {'__class__': 'ndb.Key', '__kind__': obj.kind(), '__id__': obj.id(), '__key__': obj.urlsafe()}
 
+        elif isinstance(obj, ndb.GeoPt):
+            return {'__class__': 'ndb.GeoPt', 'lat': obj.lat, 'lon': obj.lon}
+
         elif isinstance(obj, db.Model):
             properties = obj.properties().items()
             output = {'__class__': 'db.Model', '__kind__': obj.__class__.kind(), '__key__': None, '__id__': None}
@@ -88,13 +91,20 @@ class DatastoreEncoder(json.JSONEncoder):
             if obj.key:
                 output.update({'__id__': obj.key.id(), '__key__': obj.key.urlsafe()})
 
-            for name, prop in obj._properties.items():
+            def create_output(name, prop, output):
                 try:
                     if isinstance(prop, ndb.BlobProperty) and not isinstance(prop, (ndb.StringProperty, ndb.TextProperty)):
-                        continue
+                        return
                     output[name] = getattr(obj, name)
                 except AttributeError:
                     pass  # We got an bad property (old, etc.)
+
+            if obj._projection:
+                for name in obj._projection:
+                    create_output(name, obj._properties[name], output)
+            else:
+                for name, prop in obj._properties.items():
+                    create_output(name, prop, output)
             return output
 
         elif isinstance(obj, datetime.time):
@@ -164,6 +174,8 @@ class DatastoreDecoder(json.JSONDecoder):
                 return self.decode_datetime_object(dict)
             elif classname == 'ndb.Key':
                 return self.decode_ndb_key_object(dict)
+            elif classname == 'ndb.GeoPt':
+                return self.decode_ndb_geopt_object(dict)
             elif classname == 'ndb.Model':
                 return self.decode_ndb_model_object(dict)
             elif classname == 'blobstore.BlobKey':
@@ -184,6 +196,9 @@ class DatastoreDecoder(json.JSONDecoder):
 
     def decode_ndb_key_object(self, dict):
         return ndb.Key(urlsafe=dict['__key__'])
+
+    def decode_ndb_geopt_object(self, dict):
+        return ndb.GeoPt(dict['lat'], dict['lon'])
 
     def decode_ndb_model_object(self, dict):
         key = dict['__key__']
