@@ -13,7 +13,7 @@ builtins:
 
 includes:
 - ferris/include.yaml
-# If plugins require inculdes, put them here.
+# If plugins require includes, put them here.
 
 libraries:
 - name: jinja2
