@@ -1,12 +1,14 @@
 from ferrisnose import AppEngineTest
+import google
+print google.__path__
 from google.appengine.api import memcache
-from ferris.core.caching import cache, none_sentinel_string, LocalBackend, MemcacheBackend, DatastoreBackend, MemcacheCompareAndSetBackend, LayeredBackend
+from ferris.core.caching import cache, none_sentinel_string, LocalBackend, MemcacheBackend, MemcacheChunkedBackend, DatastoreBackend, DatastoreChunkedBackend, MemcacheCompareAndSetBackend, LayeredBackend
 
 
 class CacheTest(AppEngineTest):
 
     def test_cache(self):
-        for backend in [LocalBackend, MemcacheBackend, DatastoreBackend, MemcacheCompareAndSetBackend, LayeredBackend(LocalBackend, MemcacheBackend)]:
+        for backend in [LocalBackend, MemcacheBackend, MemcacheChunkedBackend, MemcacheCompareAndSetBackend, DatastoreBackend, DatastoreChunkedBackend, LayeredBackend(LocalBackend, MemcacheBackend)]:
             memcache.flush_all()
             LocalBackend.reset()
 
@@ -37,3 +39,21 @@ class CacheTest(AppEngineTest):
             assert test_cached_with_none() is None
             assert mutators[1] == 1
             assert backend.get('cache-test-key-none') == none_sentinel_string
+
+        from random import choice
+        from string import ascii_lowercase
+
+        for backend in [MemcacheChunkedBackend, DatastoreChunkedBackend]:
+            memcache.flush_all()
+            print 'testing %s' % backend
+            lis=list(ascii_lowercase)
+            bigobj = ''.join(choice(lis) for _ in xrange(backend.chunksize+1))
+
+            @cache('cache-test-key-2', backend=backend)
+            def test_cached():
+                return bigobj
+
+            assert test_cached() == bigobj, "%s != %s" % (test_cached()[0:10], bigobj[0:10])
+            assert test_cached() == bigobj
+            assert backend.get('cache-test-key-2') == bigobj
+
