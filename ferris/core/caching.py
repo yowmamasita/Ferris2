@@ -197,22 +197,21 @@ class MemcacheChunkedBackend(MemcacheBackend):
     Stores cache in memcache as multiple chunks if needed.  Chunking code informed from
     `flask-cache` repository by Thadeus Burgess.
     """
-
-    chunksize = 1024 * 1024  #1MB
+    chunksize = 1000000 # 10^6 bytes is Memcache's max.
     # 32 Megabytes is max set_multi for memcache
     maxchunks = 32 * 1024 * 1024 // chunksize
 
     @classmethod
     def set(cls, key, data, ttl):
         """ Divides the object into multiple chunks and sets it. """
-        serialized = pickle.dumps(data, 2)
+        serialized = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
         len_serialized = len(serialized)
         # create a (generator) for chunk sizes
         chunks = xrange(0, len_serialized, cls.chunksize)
         multi_data = {}
         if len(chunks) > cls.maxchunks:
-            raise ValueError("File size %i is %i chunks, more than max of %i" % \
-                             (len_serialized, len(chunks), cls.maxchunks))
+            raise ValueError("Cached object %s's size %i is %i chunks, more than maximum of %i" % \
+                             (key, len_serialized, len(chunks), cls.maxchunks))
 
         for i in chunks:
             multi_data['%s.%i' % (key, i//cls.chunksize)] = serialized[i:i+cls.chunksize]
@@ -234,7 +233,6 @@ class MemcacheChunkedBackend(MemcacheBackend):
         """ Deletes all the keys from memcache"""
         multi_keys = ['%s.%i' % (key, i) for i in xrange(cls.maxchunks)]
         memcache.delete_multi(multi_keys)
-
 
 
 class MemcacheCompareAndSetBackend(MemcacheBackend):
@@ -308,17 +306,18 @@ class DatastoreChunkedBackend(object):
         else:
             expires = None
 
-        serialized = pickle.dumps(data,  pickle.HIGHEST_PROTOCOL)
+        serialized = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
         len_serialized = len(serialized)
         # create a (generator) for chunk sizes
         chunks = xrange(0, len_serialized, cls.chunksize)
         multi_data = {}
         if len(chunks) > cls.maxchunks:
-            raise ValueError("File size %i is %i chunks, more than maximum of %i" % \
-                             (len_serialized, len(chunks), cls.maxchunks))
+            raise ValueError("Cached object %s's size %i is %i chunks, more than maxium of %i" % \
+                             (key, len_serialized, len(chunks), cls.maxchunks))
 
         for i in chunks:
-            DatastoreCacheModel(id="%s.%i" % (key, i//cls.chunksize), data=serialized[i:i+cls.chunksize],
+            DatastoreCacheModel(id="%s.%i" % (key, i//cls.chunksize),\
+                                data=serialized[i:i+cls.chunksize],\
                                 expires=expires).put_async()
 
 
