@@ -1,3 +1,4 @@
+import time
 from ferrisnose import AppEngineTest
 import google
 print google.__path__
@@ -6,20 +7,25 @@ from ferris.core.caching import cache, none_sentinel_string, LocalBackend, Memca
 
 
 class CacheTest(AppEngineTest):
-
+    
     def test_cache(self):
         for backend in [LocalBackend, MemcacheBackend, MemcacheChunkedBackend, MemcacheCompareAndSetBackend, DatastoreBackend, DatastoreChunkedBackend, LayeredBackend(LocalBackend, MemcacheBackend)]:
             memcache.flush_all()
             LocalBackend.reset()
 
             mutators = [0, 0, 0]
-            print 'testing %s' % backend
+            t0 = time.time()
+            print 'testing %s' % backend,
 
             @cache('cache-test-key', backend=backend)
             def test_cached():
                 mutators[0] += 1
                 return mutators[0]
 
+            # to see output of print statements, run with '--nocapture', e.g.
+            #   nosetests --with-ferris --nocapture ferris/tests/test_caching.py
+            print "storage overhead ~", time.time()-t0
+             
             assert test_cached() == 1
             assert test_cached() == 1
             assert mutators[0] == 1
@@ -45,14 +51,16 @@ class CacheTest(AppEngineTest):
 
         for backend in [MemcacheChunkedBackend, DatastoreChunkedBackend]:
             memcache.flush_all()
-            print 'testing %s' % backend
+            print 'testing %s' % backend,
             lis=list(ascii_lowercase)
-            bigobj = ''.join(choice(lis) for _ in xrange(backend.chunksize+1))
-
+            bigobj = ''.join(choice(lis) for _ in xrange(backend.chunksize*2))
+            t0 = time.time()
+            
             @cache('cache-test-key-2', backend=backend)
             def test_cached():
                 return bigobj
-
+            print "big obj. storage overhead ~", time.time()-t0
+            
             assert test_cached() == bigobj, "%s != %s" % (test_cached()[0:10], bigobj[0:10])
             assert test_cached() == bigobj
             assert backend.get('cache-test-key-2') == bigobj
