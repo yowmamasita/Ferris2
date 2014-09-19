@@ -2,7 +2,9 @@
 from google.appengine.api import memcache
 from google.appengine.ext import ndb
 from functools import wraps
+import cPickle as pickle
 import datetime
+import logging
 import threading
 import inspect
 
@@ -190,6 +192,49 @@ class MemcacheBackend(object):
         memcache.delete(key)
 
 
+class MemcacheChunkedBackend(MemcacheBackend):
+    """
+    Stores cache in memcache as multiple chunks if needed.  Chunking code informed from
+    `flask-cache` repository by Thadeus Burgess.
+    """
+    chunksize = 1000000 # 10^6 bytes is Memcache's max.
+    # 32 Megabytes is max set_multi for memcache
+    maxchunks = 32 * 1024 * 1024 // chunksize
+
+    @classmethod
+    def set(cls, key, data, ttl):
+        """ Divides the object into multiple chunks and sets it. """
+        serialized = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+        len_serialized = len(serialized)
+        # create a (generator) for chunk sizes
+        chunks = xrange(0, len_serialized, cls.chunksize)
+        multi_data = {}
+        if len(chunks) > cls.maxchunks:
+            raise ValueError("Cached object %s's size %i is %i chunks, more than maximum of %i" % \
+                             (key, len_serialized, len(chunks), cls.maxchunks))
+
+        for i in chunks:
+            multi_data['%s.%i' % (key, i//cls.chunksize)] = serialized[i:i+cls.chunksize]
+        return memcache.set_multi(multi_data, time=(ttl or 0))
+
+
+    @classmethod
+    def get(cls, key):
+        """ Loads the keys from memcached and deserializes. """
+        multi_keys = ['%s.%i' % (key, i) for i in xrange(cls.maxchunks)]
+        multi_values = memcache.get_multi(multi_keys)
+        serialized = ''.join([multi_values[k] for k in multi_keys if k in multi_values])
+        if not serialized:
+            return None
+        return pickle.loads(serialized)
+
+    @classmethod
+    def delete(cls, key):
+        """ Deletes all the keys from memcache"""
+        multi_keys = ['%s.%i' % (key, i) for i in xrange(cls.maxchunks)]
+        memcache.delete_multi(multi_keys)
+
+
 class MemcacheCompareAndSetBackend(MemcacheBackend):
     """
     Same as the regular memcache backend but uses compare-and-set logic to ensure
@@ -238,6 +283,70 @@ class DatastoreBackend(object):
     @classmethod
     def delete(cls, key):
         ndb.Key(DatastoreCacheModel, key).delete()
+
+
+class DatastoreChunkedBackend(object):
+    """
+    Stores caches in the datastore which has the effect of them being durable and persistent,
+    unlike the memcache and local backends. Items stored in the datastore are certain to remain
+    until the expiration time passes.  Chunks the data if it is greater than the chunksize (1MB).
+    """
+
+    chunksize = 1024 * 1024  #1MB
+    maxchunks = 20 # limit this to be close to the max obj size, to reduce number of
+                   # unnecessary queries.
+
+
+    @classmethod
+    @ndb.toplevel
+    def set(cls, key, data, ttl):
+        """ Adds data to the Datastore, broken into as a series of chunks <= `chunksize`"""
+        if ttl:
+            expires = datetime.datetime.now() + datetime.timedelta(seconds=ttl)
+        else:
+            expires = None
+
+        serialized = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+        len_serialized = len(serialized)
+        # create a (generator) for chunk sizes
+        chunks = xrange(0, len_serialized, cls.chunksize)
+        multi_data = {}
+        if len(chunks) > cls.maxchunks:
+            raise ValueError("Cached object %s's size %i is %i chunks, more than maxium of %i" % \
+                             (key, len_serialized, len(chunks), cls.maxchunks))
+
+        for i in chunks:
+            DatastoreCacheModel(id="%s.%i" % (key, i//cls.chunksize),\
+                                data=serialized[i:i+cls.chunksize],\
+                                expires=expires).put_async()
+
+
+    @classmethod
+    def get(cls, key):
+        """ Loads the key's chunks from Datastore and reassembles them. """
+        multi_keys = [ndb.Key(DatastoreCacheModel, '%s.%i' % (key, i)) for i in xrange(cls.maxchunks)]
+        multi_values = ndb.get_multi(multi_keys, use_memcache=False, use_cache=False)
+        chunks = []
+        for item in multi_values:
+            if not item:
+                break # end of the line
+            if item.expires and item.expires < datetime.datetime.now():
+                logging.info("DatastoreChunkedBackend item '%s' is expired. Returning None" % (key))
+                cls.delete(key)
+                return None
+            chunks.append(item.data)
+
+        serialized = ''.join(chunks)
+        if not serialized:
+            return None
+        data = pickle.loads(serialized)
+        return data
+
+    @classmethod
+    def delete(cls, key):
+        """ Deletes all entires in the Datastore for the given Key's chunks."""
+        multi_keys = [ndb.Key(DatastoreCacheModel, '%s.%i' % (key, i)) for i in xrange(cls.maxchunks)]
+        ndb.delete_multi(multi_keys)
 
 
 class DatastoreCacheModel(ndb.Model):
