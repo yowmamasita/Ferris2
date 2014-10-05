@@ -12,6 +12,12 @@ For help and questions:
     https://groups.google.com/forum/?fromgroups#!forum/ferris-framework
 
 
+Ferris 3
+--------
+
+If you are starting a new project from scratch it is recommend to use [Ferris 3](https://github.com/jonparrott/Ferris3) instead. This repository will only receive bugfixes from the core team. 
+
+
 Starting a new project
 ----------------------
 
