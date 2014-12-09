@@ -18,19 +18,19 @@ class Download(Controller):
 
     You can then generate URLs to download files::
 
-        self.uri("download", blob=blobkey)
-        self.uri("download", blob=blobkey, save=True)
-        self.uri("download-with-filename", blob=blobkey, filename="whatever.jpg")
+        self.uri("download", blobkey=blobkey)
+        self.uri("download", blobkey=blobkey, save=True)
+        self.uri("download-with-filename", blobkey=blobkey, filename="whatever.jpg")
 
     """
     _BlobstoreDownloadHandler__use_range_unset = object()
     get_range = BlobstoreDownloadHandler.get_range.im_func
     send_blob = BlobstoreDownloadHandler.send_blob.im_func
 
-    @route_with(template='/download/<blob>', name='download')
-    @route_with(template='/download/<blob>/<filename>', name='download-with-filename')
-    def download(self, blob, filename=None):
-        blob = blobstore.get(blob)
+    @route_with(template='/download/<blobkey>', name='download')
+    @route_with(template='/download/<blobkey>/<filename>', name='download-with-filename')
+    def download(self, blobkey, filename=None):
+        blob = blobstore.get(blobkey)
 
         if not blob:
             return 404
