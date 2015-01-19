@@ -13,6 +13,9 @@ handlers:
 - url: /img
   static_dir: app/static/img
 
+- url: /fonts
+  static_dir: app/static/fonts
+
 # Ferris static resources
 - url: /ferris/static
   static_dir: ferris/static
